@@ -41,6 +41,8 @@ The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is 
 - Layer 15 - VCC layer - 0.5oz copper
 - Layer Bottom - signal traces - 2oz copper
 
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a>
+
 The YAZ180 requires 15V to 40V DC supply. If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.
 
 The main supply is switchmode 5V 3A, which is used by most of the traditional devices on the board. Note that the TIL-311 LED display devices consume approximately 105mA each, and operate HOT TO TOUCH.
@@ -56,12 +58,12 @@ The Z180 data lines are also buffered by a bus transceiver. This is to ensure th
 
 ## BOM
 
-The Bill of Material is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
+The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
 
 Note that there are two significant items missing from the Cart.
 
-- The Am9511A-1 is obsolete, and is only available from second tier chip sellers.
-- The TIL-311 is not obsolete, but is no longer used in modern development and so is also not generally available.
+- The <a href="https://github.com/feilipu/yaz180/blob/master/docs/datasheets/Am9511%20Arithmetic%20Processor.pdf" target="_blank">Am9511A-1</a> is obsolete, and is only available from second tier chip sellers.
+- The <a href="https://github.com/feilipu/yaz180/blob/master/docs/datasheets/til311.pdf" target="_blank">TIL-311</a> is not obsolete, but is no longer used in modern development and so is also not generally available.
 
 Both of these products are readily available from second tier sources, but due to their scarcity they are not inexpensive.
 
@@ -221,7 +223,11 @@ Using GAL to generate the I/O address mapping also allows flexibility to latch d
 
 The YAZ180 is essentially software defined hardware. The use of Programmable Logic Devices (PLD) to control the board has enabled me to avoid multiple rework to repair issues, and has enabled reconfiguration of memory and I/O logic without raising a soldering iron.
 
-The YAZ180 CUPL code is available in the respective directory.
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png"/></a>
+
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/LOGIC_PLD.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/LOGIC_PLD.png"/></a>
+
+The YAZ180 CUPL code is available in the [respective directory](https://github.com/feilipu/yaz180/tree/master/cupl).
 
 ## BIOS
 
