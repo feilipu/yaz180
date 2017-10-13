@@ -41,17 +41,24 @@ To interface with modern sensors and devices, two separate I2C interface PCA9665
 
 To interface with TCP/IP networks, using WiFi, an ESP8266 pin-out for the ESP-01S is provided, connected to ASCI1. This enables the YAZ180 to operate as an Internet server (with attached IDE hard drive), and / or to be controlled using Secure Shell from anywhere.
 
-A USB parallel interface is provided to enable "tool-less" programming of the YAZ180. A perl script is provided to upload Intel HEX code and program it into the system Flash memory. To enable this featured, hardware is provided to reconfigure the memory map to allow boot from USB.
+A USB parallel interface is provided to enable "tool-less" programming of the YAZ180. A perl script is provided to upload Intel HEX code and program it into the system Flash memory. To enable this feature hardware is provided to reconfigure the memory map to allow boot from USB.
 
 
 ## PCB
 
-The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is the maximum size supported by the Eagle "Hobby Licence", which was used to create the PCB.
+The YAZ180 PCB is 160mm x 100mm in size, with 4 layers.<br>
+This is the maximum size supported by the Eagle "Hobby Licence", which was used to create the PCB.
 
-- Layer Top - all active devices - 2oz copper
-- Layer 2 - GND layer - 0.5oz copper
-- Layer 15 - VCC layer - 0.5oz copper
-- Layer Bottom - signal traces - 2oz copper
+- Layer Top - all active devices (RED) - 2oz copper
+- Layer 2 - GND layer (flood fill) - 0.5oz copper
+- Layer 15 - VCC layer (flood fill) - 0.5oz copper
+- Layer Bottom - signal traces (BLUE) - 2oz copper
+
+- PCB Dimension - 160mm*100mm
+- Material - FR-4 TG130
+- Surface Finish - ENIG
+- Min Solder Mask Dam - 0.4mm
+- PCB Color - Black
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -66,13 +73,14 @@ The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is 
 </table>
 </div>
 
-The YAZ180 requires 15V to 40V DC supply. If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.
+The YAZ180 requires 15V to 40V, 2A power supply, through a standard 2.1mm barrel jack.<br>
+If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.
 
-The main supply is switchmode 5V 3A, which is used by most of the traditional devices on the board. Note that the <strong>TIL-311</strong> LED display devices consume approximately 105mA each, and operate <strong>HOT TO TOUCH</strong>.
+The main supply is switchmode rated at 5V 3A, which is used by most of the traditional devices on the board. Note that the <strong>TIL-311</strong> LED display devices consume approximately 105mA each, and operate <strong>HOT TO TOUCH</strong>.
 
-A 3.3V 1A linear supply is fed from the 5V internal source. 3.3V is needed to support the I2C and ESP-01S devices.
+A 3.3V 1A rated linear supply is fed from the 5V internal source. 3.3V is needed to support the I2C and ESP-01S devices.
 
-The internal 12V 500mA switchmode supply is generated only to support the APU.
+The internal 12V 500mA rated switchmode supply is generated only to support the APU.
 Note that the <strong>Am9511A-1</strong> consumes 5V 70mA plus 12V 70mA normally, and operates <strong>BURNING HOT TO TOUCH</strong> (seriously).
 
 The Z180 is supported by a signal buffer on the /RD, /RW, /MREQ, and /IORQ lines, together with the four lowest address lines, A3, A2, A1, and A0. These signals are provided to all active elements, and so even though the Z180 includes its own signal buffers, I thought these signals should be additionally buffered.
@@ -83,7 +91,7 @@ The Z180 data lines are also buffered by a bus transceiver. This is to ensure th
 
 The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
 
-Note that there are two significant items missing from the Cart.
+Note that there are two significant items missing from the Shopping Cart.
 
 - The <a href="https://github.com/feilipu/yaz180/blob/master/docs/datasheets/Am9511%20Arithmetic%20Processor.pdf" target="_blank">Am9511A-1</a> is obsolete, and is only available from second tier chip sellers.
 - The <a href="https://github.com/feilipu/yaz180/blob/master/docs/datasheets/til311.pdf" target="_blank">TIL-311</a> is not obsolete, but is no longer used in modern development and so is also not generally available.
@@ -98,12 +106,11 @@ Some other smaller pin-outs and connectors are not included:
 
 ## Memory & I/O Address Layout
 
-The physical address mapping is provided by the standard CUPL (described below), and is completely arbitrary.
-Any other CUPL definitions can be programmed into the GAL16V8D "Memory" device to provide any memory layout desired.
+The physical address mapping is provided by the standard CUPL (described below), and is completely arbitrary. Any other CUPL definitions can be programmed into the GAL16V8D "Memory" device to provide any memory layout desired.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 8kB of each application space will be masked by COMMON AREA 1, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 8kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
 
 The additional flash memory is assigned to the upper memory space BANK13, BANK14, and BANK15.
 This non-volatile storage can be used for any purpose.
@@ -185,7 +192,7 @@ Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots o
 
 ### I/O Address Space
 
-A computer always needs to be extended and to interact with the real world, and the YAZ180 provides multiple high-speed interfaces. Address lines A15-A13 to provide I/O selection options on the YAZ180.
+A computer always needs to be extended and to interact with the real world, and the YAZ180 provides multiple high-speed interfaces. As the Z180 supports 16 bit I/O addressing, the address lines A15-A13 to provide I/O selection options on the YAZ180.
 
 Using a PLD to generate the I/O address mapping also allows flexibility to latch data into the Hex Display, or trigger breakpoints using Z180 #M1 and #Wait signals to allow Single Step execution from any code point.
 
