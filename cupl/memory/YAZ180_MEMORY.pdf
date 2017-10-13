@@ -1,0 +1,203 @@
+{COMPONENT C:\USERS\PHILLIP\DESKTOP\Z8S180 PROJECT\YAZ180_PLD\YAZ180_MEMORY.SYM
+
+ {ENVIRONMENT
+  {PDIFvrev 3.00}
+  {Program "CUPL(WM) Version 5.0a"}
+  {DBtype "Schematic"}
+  {DBvrev 1.01}
+  {DBtime "Thu Oct 12 08:11:38 2017 "}
+  {DBunit "MIL"}
+  {DBgrid 10}
+  {Lyrstr "WIRES" 1 "BUS" 1 "GATE" 2 "IEEE" 2 "PINFUN" 3 "PINNUM" 1 
+          "PINNAM" 6 "PINCON" 4 "REFDES" 2 "ATTR" 6 "SDOT" 1 
+          "DEVICE" 5 "OUTLIN" 5 "ATTR2" 6 "NOTES" 6 "NETNAM" 4 
+          "CMPNAM" 5 "BORDER" 5}
+ }
+
+ {USER
+  {VIEW
+   {Mode SYMB}
+   {Nlst OPEN}
+   {Vw 0 0 2}
+   {Lv 12 2 2 2 0 0 2 2 2 2 0 0 2 1 2 0 0 0 0}
+   {Gs 10 10}
+  }
+ }
+
+ {DISPLAY
+  [Ly "PINNUM"]
+  [Ls "SOLID"][Wd 0]
+  [Ts 15][Tj "LC"][Tr 0][Tm "N"]
+ }
+
+ {SYMBOL
+  {PIN_DEF
+   [Ly "PINCON"]
+   {P PROGRAM' {Pt "INPUT"}{Lq 0}{Ploc 100 200}}
+   {P MREQ' {Pt "INPUT"}{Lq 0}{Ploc 100 180}}
+   {P A19 {Pt "INPUT"}{Lq 0}{Ploc 100 160}}
+   {P A18 {Pt "INPUT"}{Lq 0}{Ploc 100 140}}
+   {P A17 {Pt "INPUT"}{Lq 0}{Ploc 100 120}}
+   {P A16 {Pt "INPUT"}{Lq 0}{Ploc 100 100}}
+   {P A15 {Pt "INPUT"}{Lq 0}{Ploc 100 80}}
+   {P A14 {Pt "INPUT"}{Lq 0}{Ploc 100 60}}
+   {P A13 {Pt "INPUT"}{Lq 0}{Ploc 100 40}}
+   {P IORQ' {Pt "INPUT"}{Lq 0}{Ploc 100 20}}
+   {P BREAK {Pt "I/O"}{Lq 0}{Ploc 350 20}}
+   {P DIO_CS' {Pt "I/O"}{Lq 0}{Ploc 350 40}}
+   {P I2C_CS1' {Pt "I/O"}{Lq 0}{Ploc 350 60}}
+   {P I2C_CS2' {Pt "I/O"}{Lq 0}{Ploc 350 80}}
+   {P USB_CS' {Pt "I/O"}{Lq 0}{Ploc 350 100}}
+   {P FLASH_CS' {Pt "I/O"}{Lq 0}{Ploc 350 120}}
+   {P RAM_CS' {Pt "I/O"}{Lq 0}{Ploc 350 140}}
+   {P APU_CS' {Pt "I/O"}{Lq 0}{Ploc 350 160}}
+  }
+
+  {PKG
+   [Ly "REFDES"]
+   [Ts 25][Tj "CB"][Tr 0][Tm "N"]
+   {Rdl 225 230}
+
+   [Ly "PINNUM"]
+   [Ts 15][Tj "RC"]
+   {Pnl 120 210}
+   {Pnl 120 190}
+   {Pnl 120 170}
+   {Pnl 120 150}
+   {Pnl 120 130}
+   {Pnl 120 110}
+   {Pnl 120 90}
+   {Pnl 120 70}
+   {Pnl 120 50}
+   {Pnl 120 30}
+   [Ts 15][Tj "LC"]
+   {Pnl 330 30}
+   {Pnl 330 50}
+   {Pnl 330 70}
+   {Pnl 330 90}
+   {Pnl 330 110}
+   {Pnl 330 130}
+   {Pnl 330 150}
+   {Pnl 330 170}
+
+   {Sd A 1 2 3 4 5 6 7 8 9 11 12 13 14 15 16 17 18 19}
+  }
+
+  {PIC
+   [Ly "GATE"]
+   [Ts 15][Tj "LC"][Tr 0][Tm "N"]
+   {R 130 220 320 0}
+   {L 120 200 100 200}
+   {C 125 200 5}
+   {L 120 180 100 180}
+   {C 125 180 5}
+   {L 130 160 100 160}
+   {L 130 140 100 140}
+   {L 130 120 100 120}
+   {L 130 100 100 100}
+   {L 130 80 100 80}
+   {L 130 60 100 60}
+   {L 130 40 100 40}
+   {L 120 20 100 20}
+   {C 125 20 5}
+   {L 320 20 350 20}
+   {C 325 40 5}
+   {L 330 40 350 40}
+   {C 325 60 5}
+   {L 330 60 350 60}
+   {C 325 80 5}
+   {L 330 80 350 80}
+   {C 325 100 5}
+   {L 330 100 350 100}
+   {C 325 120 5}
+   {L 330 120 350 120}
+   {C 325 140 5}
+   {L 330 140 350 140}
+   {C 325 160 5}
+   {L 330 160 350 160}
+   [Ly "PINNAM"]
+   [Tj "LC"]
+   {T "PROGRAM'" 140 200}
+   {T "MREQ'" 140 180}
+   {T "A19" 140 160}
+   {T "A18" 140 140}
+   {T "A17" 140 120}
+   {T "A16" 140 100}
+   {T "A15" 140 80}
+   {T "A14" 140 60}
+   {T "A13" 140 40}
+   {T "IORQ'" 140 20}
+   [Tj "RC"]
+   {T "BREAK" 310 20}
+   {T "DIO_CS'" 310 40}
+   {T "I2C_CS1'" 310 60}
+   {T "I2C_CS2'" 310 80}
+   {T "USB_CS'" 310 100}
+   {T "FLASH_CS'" 310 120}
+   {T "RAM_CS'" 310 140}
+   {T "APU_CS'" 310 160}
+   [Ly "DEVICE"]
+   [Tj "CT"]
+   {T "G16V8MA" 225 -10}
+  }
+
+  {ATR
+   {IN
+    {Org 100 20}
+    {Ty 255}
+   }
+   {EX
+    [Ly "ATTR2"]
+    [Ts 12][Tj "CT"][Tr 0][Tm "N"]
+    {At PLD C:\USERS\PHILLIP\DESKTOP\Z8S180 PROJECT\YAZ180_PLD\YAZ180_MEMORY 225 220}
+   }
+  }
+ }
+
+ {DETAIL
+  {ANNOTATE
+  }
+
+  {NET_DEF
+   {N PROGRAM'
+   }
+   {N MREQ'
+   }
+   {N A19
+   }
+   {N A18
+   }
+   {N A17
+   }
+   {N A16
+   }
+   {N A15
+   }
+   {N A14
+   }
+   {N A13
+   }
+   {N IORQ'
+   }
+   {N BREAK
+   }
+   {N DIO_CS'
+   }
+   {N I2C_CS1'
+   }
+   {N I2C_CS2'
+   }
+   {N USB_CS'
+   }
+   {N FLASH_CS'
+   }
+   {N RAM_CS'
+   }
+   {N APU_CS'
+   }
+  }
+
+  {SUBCOMP
+  }
+ }
+}

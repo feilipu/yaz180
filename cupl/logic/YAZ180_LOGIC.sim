@@ -1,0 +1,62 @@
+%SIGNAL
+PIN   2 = !HALT 
+PIN   8 = !PAUSE 
+PIN  19 = !PROGRAM 
+PIN   4 = !RD 
+PIN   1 =  RESET_CLK 
+PIN  13 = !RESET_REQ 
+PIN  18 = !RESIN 
+PIN   7 = !RXF 
+PIN   9 = !SS_REQ 
+PIN  12 = !SS_WAIT_REQ 
+PIN   6 = !TXE 
+PIN   5 = !USB_CS 
+PIN  15 = !USB_RD 
+PIN  16 = !USB_WR 
+PIN  17 = !WAIT 
+PIN   3 = !WR 
+%END
+
+%FIELD
+%END
+
+%EQUATION
+PROGRAM.d  =>
+    !RXF
+
+RESIN =>
+    !RESET_REQ
+  # !HALT & !PROGRAM
+  # PROGRAM & !RXF
+
+USB_RD =>
+    !RD & !USB_CS
+
+USB_WR =>
+    !USB_CS & !WR
+
+WAIT =>
+    !PAUSE
+  # !SS_REQ & !SS_WAIT_REQ
+  # !RD & RXF & !USB_CS
+  # !TXE & !USB_CS & !WR
+
+RESET_REQ.oe  =>
+    0 
+
+RESIN.oe  =>
+    1 
+
+SS_WAIT_REQ.oe  =>
+    0 
+
+USB_RD.oe  =>
+    1 
+
+USB_WR.oe  =>
+    1 
+
+WAIT.oe  =>
+    1 
+
+%END

@@ -1,0 +1,98 @@
+
+*******************************************************************************
+                                 YAZ180_Logic
+*******************************************************************************
+
+CUPL(WM)        5.0a Serial# 60008009
+Device          g16v8ms  Library DLIB-h-40-11
+Created         Sat Sep 16 13:08:42 2017
+Name            YAZ180_Logic 
+Partno          00 
+Revision        09 
+Date            16/09/2017 
+Designer        Phillip Stevens 
+Company         Emotiv8 
+Assembly        None 
+Location        Melbourne Australia 
+
+===============================================================================
+                            Expanded Product Terms
+===============================================================================
+
+PROGRAM.d  =>
+    RXF
+
+RESIN =>
+    RESET_REQ
+  # HALT & PROGRAM
+  # !PROGRAM & RXF
+
+USB_RD =>
+    RD & USB_CS
+
+USB_WR =>
+    USB_CS & WR
+
+WAIT =>
+    PAUSE
+  # SS_REQ & SS_WAIT_REQ
+  # RD & !RXF & USB_CS
+  # TXE & USB_CS & WR
+
+RESET_REQ.oe  =>
+    0 
+
+RESIN.oe  =>
+    1 
+
+SS_WAIT_REQ.oe  =>
+    0 
+
+USB_RD.oe  =>
+    1 
+
+USB_WR.oe  =>
+    1 
+
+WAIT.oe  =>
+    1 
+
+
+===============================================================================
+                                 Symbol Table
+===============================================================================
+
+Pin Variable                                    Pterms   Max     Min    
+Pol   Name              Ext     Pin     Type     Used   Pterms  Level   
+--- --------            ---     ---     ----    ------  ------  -----   
+
+ !  HALT                        2        V        -       -       -     
+ !  PAUSE                       8        V        -       -       -     
+ !  PROGRAM                     19       V        -       -       -     
+ !  PROGRAM             d       19       X        1       8       2     
+ !  RD                          4        V        -       -       -     
+    RESET_CLK                   1        V        -       -       -     
+ !  RESET_REQ                   13       V        -       -       -     
+ !  RESIN                       18       V        3       7       2     
+ !  RXF                         7        V        -       -       -     
+ !  SS_REQ                      9        V        -       -       -     
+ !  SS_WAIT_REQ                 12       V        -       -       -     
+ !  TXE                         6        V        -       -       -     
+ !  USB_CS                      5        V        -       -       -     
+ !  USB_RD                      15       V        1       7       2     
+ !  USB_WR                      16       V        1       7       2     
+ !  WAIT                        17       V        4       7       2     
+ !  WR                          3        V        -       -       -     
+    RESET_REQ           oe      13       D        1       1       0     
+    RESIN               oe      18       D        1       1       0     
+    SS_WAIT_REQ         oe      12       D        1       1       0     
+    USB_RD              oe      15       D        1       1       0     
+    USB_WR              oe      16       D        1       1       0     
+    WAIT                oe      17       D        1       1       0     
+
+
+LEGEND    D : default variable         F : field      G : group
+          I : intermediate variable    N : node       M : extended node
+          U : undefined                V : variable   X : extended variable
+          T : function
+
