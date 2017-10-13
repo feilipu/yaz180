@@ -3,7 +3,21 @@
 There needed to be Yet Another Z180 computer created.
 And so, here it is.
 
-<a href="https://github.com/feilipu/yaz180/blob/master/docs/P1080760.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/P1080760.JPG"/></a>
+<div>
+<table style="border: 2px solid #cccccc;">
+<tbody>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/P1080760.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/P1080760.JPG"/></a></td>
+</tr>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2<center></th>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+
 
 The YAZ180 is a modern single board computer, based on the tradition rich Z180 CPU and the AMD Am9511A-1 APU.
 
@@ -45,10 +59,10 @@ The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is 
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB<center></th>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a></td>
 </tr>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a></td>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB<center></th>
 </tr>
 </tbody>
 </table>
