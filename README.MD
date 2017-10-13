@@ -41,10 +41,18 @@ The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is 
 - Layer 15 - VCC layer - 0.5oz copper
 - Layer Bottom - signal traces - 2oz copper
 
-
-
-<a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a>
-<center><strong>YAZ180 Version 2.1 PCB</strong></center>
+<div>
+<table style="border: 2px solid #cccccc;">
+<tbody>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB<center></th>
+</tr>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a></td>
+</tr>
+</tbody>
+</table>
+</div>
 
 The YAZ180 requires 15V to 40V DC supply. If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.
 
