@@ -41,7 +41,10 @@ The YAZ180 PCB is 10cm x 16cm in size. The layout is based on 4 layers. This is 
 - Layer 15 - VCC layer - 0.5oz copper
 - Layer Bottom - signal traces - 2oz copper
 
+
+
 <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a>
+<center><strong>YAZ180 Version 2.1 PCB</strong></center>
 
 The YAZ180 requires 15V to 40V DC supply. If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.
 
@@ -80,7 +83,7 @@ Any other CUPL definitions can be programmed into the GAL16V8D "Memory" device t
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB application spaces. The upper 8kB of each application space will be masked by COMMON AREA 1, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 8kB of each application space will be masked by COMMON AREA 1, which provides system utilities.
 
 The additional flash memory is assigned to the upper memory space BANK13, BANK14, and BANK15.
 This non-volatile storage can be used for any purpose.
@@ -127,12 +130,11 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 There is no need to follow this mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK0 containing YABIOS (boot and Z88dk library code) and a system heap space.
-The COMMON AREA 1 space from 0xD000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK0 containing YABIOS (boot and Z88dk library code) and a system heap space. The COMMON AREA 1 space from 0xD000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programms, both are supported through system calls to BANK0.
 
-Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots of frequent applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to. Suggested initial snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, & Webserver, for example.
+Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots of frequent applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested initial snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, & Webserver, for example.
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -223,7 +225,11 @@ Using GAL to generate the I/O address mapping also allows flexibility to latch d
 
 The YAZ180 is essentially software defined hardware. The use of Programmable Logic Devices (PLD) to control the board has enabled me to avoid multiple rework to repair issues, and has enabled reconfiguration of memory and I/O logic without raising a soldering iron.
 
+### Memory GAL Configuration
+
 <a href="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png"/></a>
+
+### Logic (Single Step) GAL Configuration
 
 <a href="https://github.com/feilipu/yaz180/blob/master/docs/LOGIC_PLD.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/LOGIC_PLD.png"/></a>
 
