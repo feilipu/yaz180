@@ -17,7 +17,7 @@ YABIOS is designed to look substantially like CP/M BIOS to CP/M applications, bu
 There are three ways to interact with YABIOS,
 
 1. the Command Line Interface, on either of the ASCI serial interfaces,
-2. the Z80 `RST` short calls established to support access to YABIOS functions, and
+2. the Z80 `RST` short calls established to support access to YABIOS system functions, and
 3. the CP/M BIOS calls integrating YABIOS with the CP/M CCP/BDOS.
 
 The location of the `RST` short calls is defined within the YABIOS Page 0.
@@ -245,7 +245,25 @@ These system functions are essential for creating bank handling for the YAZ180.
 
 Whilst they will be exposed to the user through linkage into the z88dk libraries, they are not expected to be used by an application, and they may cause harm to the coherency of the system if they are used.
 
-*Legend: register & stack parameters*
+__Note on BANK relative addressing__
+
+For all memory related functions in the Z180 which extend beyond the Z80 addressing capability of 64kB, there needs to be a decision made as to how to address locations. Where a flat RAM model is being pursued, it makes sense to create a flat addressing structure.
+
+However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in BANK0. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
+
+The for all memory functions, the following standard for the high byte of the 20bit address will be followed.
+
+    **bAAAARRRR hHHLL**
+    bAAAA is the absolute bank address (0 through 15 valid) of the address. Therefore b0000.0000 is the current bank.
+    bRRRR is the relative bank address (in 4 bit two's complement) to the current bank. b0000.1111 is one bank lower than current bank.
+    The separate values provided in the high byte can be added, so that bank indexing is implemented.
+    b0100.1110 means BANK4 - 2, or BANK2, for example.
+
+    hHH is the normal high or page address, within 64kB.
+    hLL is the normal low address, within 64kB.
+
+
+__Legend: register & stack parameters__
 
 IN:
 
@@ -267,11 +285,107 @@ Related calls:
 
 ### `__far_memcpy`
 
+    `far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`
+    `str1` − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type `far_void*`.
+    `str2` − This is pointer to the source of data to be copied, type-casted to a pointer of type `far_void*`.
+    `n` − This is the number of bytes to be copied.
+    This function returns a pointer to destination, which is `str1`.
+
+IN:
+
+stack:
+    n high
+    n low
+    str2 far
+    str2 high
+    str2 low
+    str1 far
+    str1 high
+    str1 low
+    ret high
+    ret low
+
+OUT:
+
+stack:
+    str1 far
+    str1 high
+    str1 low
+
+Registers affected after return:
+
+    ..BCDEHL/IXIY preserved
+    AF....../.... modified
+
+Notes:
+
+`__far_memcpy` respects overlapping source and destination regions.
+No checking is done to prevent writing to COMMON1 or PAGE0 regions, as this will be a common requirement.
+
+Related calls:
 
 ### `__far_memset`
 
+    `far_void *memset(far_void *str, int c, size_t n)`
+    `str` − This is a pointer to the block of memory to fill.
+    `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
+    `n` − This is the number of bytes to be set to the value.
+    This function returns a pointer to the memory area str.
+
+IN:
+
+stack:
+    n high
+    n low
+    c high
+    c low
+    str far
+    str high
+    str low
+    ret high
+    ret low
+
+OUT:
+
+stack:
+    str far
+    str high
+    str low
+
+Registers affected after return:
+
+    ..BCDEHL/IXIY preserved
+    AF....../.... modified
+
+Notes:
+
+No checking is done to prevent writing to COMMON1 or PAGE0 regions, as this will be a common requirement.
+
+Related calls:
 
 ### `__bank_switch`
+
+    `void __bank_switch(char bank)`
+    `bank` − This is the desired bank, defined as bAAAA.RRRR. bAAAA is the _absolute_ bank address (0 through 15 valid). bRRRR is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example b0000.1111 is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. b0100.1110 means BANK4 - 2, or BANK2, for example.
+
+IN:
+
+    A = bank
+
+OUT:
+
+    -
+
+Registers affected after return:
+
+    ..BCDEHL/IXIY preserved
+    AF....../.... modified
+
+Notes:
+
+No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
+
+Related calls:
 
 
 ### `__load_hex`
