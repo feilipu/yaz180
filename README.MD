@@ -263,44 +263,15 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 ## YABIOS
 
-Work in progress.
+Please see here for status of [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
 
 Currently the YAZ180 is initialised to load [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k), and within the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
 
-The Yet Another BIOS (YABIOS) being developed for the YAZ180 is proposed to implement the following memory map.
-
-<div>
-<table style="border: 2px solid #cccccc;">
-<tbody>
-<tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png"/></a></td>
-</tr>
-<tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YABIOS Memory Map<center></th>
-</tr>
-</tbody>
-</table>
-</div>
-
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of RST+DEFW short calls, and will include a FAR_CALL capability to allow applications to grow beyond 64kB.
-
-<div>
-<table style="border: 2px solid #cccccc;">
-<tbody>
-<tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YABIOS%20-%20Page%200.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YABIOS%20-%20Page%200.png"/></a></td>
-</tr>
-<tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YABIOS Page 0<center></th>
-</tr>
-</tbody>
-</table>
-</div>
-
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `__far_call` capability to allow applications to grow beyond 56kB.
 
 ## Z88dk
 
-[Z88dk support](https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180) has been completed, but work continues daily.
+[Z88dk support](https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180) has been completed, but improvement work continues daily.
 
 ## CPM
 
