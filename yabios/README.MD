@@ -44,7 +44,7 @@ Each one of these intems will need to be implemented.
 
 ### Phase 1 - z88dk application support
 
-- [ ] [`__far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcpy), [`__far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memset), [`__far_memcmp`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcmp) functions
+- [ ] [`__far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcpy), [`__far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memset) functions
 - [ ] [`__bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#__bank_switch) function
 - [ ] [`__load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_hex), [`__load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
@@ -60,17 +60,17 @@ Each one of these intems will need to be implemented.
 - [ ] `setdma`, `seldsk`, `settrk`, `setsec` calls
 - [ ] `read`, `write`, `sectran` calls
 - [ ] integrate CP/M IOBYTE support
-- [ ] integrate YABIOS CLI support
+- [ ] integrate CLI support
 
 ### Phase 3 - Flash Snapshot support
 
 - [ ] add flash support into `_ far_memcpy` or similar
-- [ ] integrate YABIOS CLI support
+- [ ] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
 
 - [ ] port FreeRTOS within an application (single BANK)
-- [ ] integrate FreeRTOS with YABIOS (Page 0 TCB*)
+- [ ] integrate FreeRTOS with YABIOS (Page 0 `TCB*`)
 
 ### Phase 5 - Multi-bank application support
 
@@ -248,14 +248,17 @@ Whilst they will be exposed to the user through linkage into the z88dk libraries
 *Legend: register & stack parameters*
 
 IN:
-     A = character to output
 
-OUT: -
+    A = character to output
+
+OUT:
+
+    -
 
 Registers affected after return:
 
-     ..BCDEHL/IXIY same
-     AF....../.... different
+    ..BCDEHL/IXIY preserved
+    AF....../.... modified
 
 Notes:
 
@@ -265,11 +268,7 @@ Related calls:
 ### `__far_memcpy`
 
 
-
 ### `__far_memset`
-
-
-### `__far_memcmp`
 
 
 ### __bank_switch`
