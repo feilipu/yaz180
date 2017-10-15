@@ -254,12 +254,12 @@ However, in the YAZ180 we have a BANKED memory assignment. This means that the t
 The for all memory functions, the following standard for the high byte of the 20bit address will be followed.
 
 **bAAAARRRR hHHLL**
-`bAAAA` is the absolute bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the current bank.
-`bRRRR` is the relative bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.
+`bAAAA` is the absolute bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the current bank.<br>
+`bRRRR` is the relative bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
 The separate values provided in the high byte can be added, so that bank indexing is implemented.
-`b0100.1110` means BANK4 - 2, or BANK2, for example.
-
-`hHH` is the normal high or page address, within 64kB.
+`b0100.1110` means BANK4 - 2, or BANK2, for example.<br>
+<br>
+`hHH` is the normal high or page address, within 64kB.<br>
 `hLL` is the normal low address, within 64kB.
 
 
@@ -285,10 +285,10 @@ Related calls:
 
 ### `__far_memcpy`
 
-`far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`
-`str1` − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type `far_void*`.
-`str2` − This is pointer to the source of data to be copied, type-casted to a pointer of type `far_void*`.
-`n` − This is the number of bytes to be copied.
+`far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`<br>
+`str1` − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type `far_void*`.<br>
+`str2` − This is pointer to the source of data to be copied, type-casted to a pointer of type `far_void*`.<br>
+`n` − This is the number of bytes to be copied.<br>
 This function returns a pointer to destination, which is `str1`.
 
 IN:
@@ -328,10 +328,11 @@ Related calls:
 
 ### `__far_memset`
 
-`far_void *memset(far_void *str, int c, size_t n)`
-`str` − This is a pointer to the block of memory to fill.
-`c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
-`n` − This is the number of bytes to be set to the value.
+`far_void *memset(far_void *str, int c, size_t n)`<br>
+`str` − This is a pointer to the block of memory to fill.<br>
+`c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
+`n` − This is the number of bytes to be set to the value.<br>
+
 This function returns a pointer to the memory area str.
 
 IN:
@@ -369,7 +370,7 @@ Related calls:
 
 ### `__bank_switch`
 
-`void __bank_switch(char bank)`
+`void __bank_switch(char bank)`<br>
 `bank` − This is the desired bank, defined as bAAAA.RRRR. bAAAA is the _absolute_ bank address (0 through 15 valid). bRRRR is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example b0000.1111 is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. b0100.1110 means BANK4 - 2, or BANK2, for example.
 
 IN:
