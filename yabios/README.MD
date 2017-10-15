@@ -1,14 +1,14 @@
 # YABIOS
 
-There needed to be Yet Another Z180 computer created, and for that computer Yet Another BIOS.
+There needed to be Yet Another Z180 computer created, and for that computer: <strong>Yet Another BIOS</strong>.
 
 The YAZ180 is a modern single board computer, built on the tradition rich Z180 CPU and the AMD Am9511A-1 APU.
 
 It is my attempt to create a perfect mix of "ancient" and  modern computing technology. Specifically, it is an attempt to marry CPU/APU technology from 40 years ago, with modern I2C, USB, and WiFi capabilities, and make an powerful 8-bit computer that can either be embedded into an application, or operate as a stand-alone computer (with some accessories).
 
-The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled programs.
+The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled applications.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, and APU, time, and floating point libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `__far_call` capability to allow applications to grow beyond 64kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, with APU, FatFs, and time libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `__far_call` capability to allow applications to grow beyond 56kB.
 
 ## Design Concept
 
@@ -20,7 +20,7 @@ There are three ways to interact with YABIOS,
 2. the Z80 `RST` short calls established to support access to YABIOS functions, and
 3. the CP/M BIOS calls integrating YABIOS with the CP/M CCP/BDOS.
 
-The design of the `RST` short calls is defined within the YABIOS Page 0.
+The location of the `RST` short calls is defined within the YABIOS Page 0.
 <div>
 <table style="border: 2px solid #cccccc;">
 <tbody>
@@ -40,14 +40,14 @@ As the YAZ180 has multiple BANK locations in which to run an application, one de
 
 As the development of YABIOS is going to take some effort and time, the work will be divided into phases, each providing measurable and useable outcomes. Each phase should provide services to the following phases, upon which that development phase will build.
 
+Each one of these intems will need to be implemented.
+
 ### Phase 1 - z88dk application support
 
-Each one of these functions will need to be implemented.
-
-- [ ] `__far_memcpy`, `__far_memset`, `__far_memcmp` functions
-- [ ] `__bank_switch` function
-- [ ] `__hex_load` function with support for `__far_memcpy` or similar
-- [ ] YABIOS Command Line Interface
+- [ ] [`__far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcpy), [`__far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memset), [`__far_memcmp`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcmp) functions
+- [ ] [`__bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#__bank_switch) function
+- [ ] [`__load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_hex), [`__load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_bin) functions with support for `__far_memcpy` or similar
+- [ ] YABIOS [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [ ] YABIOS `RST+DEFW` System Call
 - [ ] YABIOS `RST+DEFB` APU Call
 - [ ] YABIOS `RST+DEFB` Error Handler
@@ -78,9 +78,11 @@ Each one of these functions will need to be implemented.
 - [ ] finalise and test
 - [ ] to be added
 
-## Logical Memory Map
+## Memory Map
 
-The organisation below is an attempt to provide a BANK0 containing YABIOS (boot and Z88dk library code) and a system heap space. The COMMON AREA 1 space from 0xD000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
+
+BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xE000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
 
@@ -98,6 +100,8 @@ Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots o
 </tbody>
 </table>
 </div>
+
+Further description of the memory map when programming via the USB parallel port, the physical arrangement of RAM and Flash memory, and the I/O arrangement are provided below.
 
 ### Programming Memory Map
 
@@ -179,7 +183,7 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 </table>
 </div>
 
-## I/O Address Space
+### I/O Address Space
 
 A computer always needs to be extended and to interact with the real world, and the YAZ180 provides multiple high-speed interfaces. As the Z180 supports 16 bit I/O addressing, the address lines A15-A13 to provide I/O selection options on the YAZ180.
 
@@ -193,8 +197,8 @@ A computer always needs to be extended and to interact with the real world, and 
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $1FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">DO NOT USE</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Internal I/O z180 INT $0000-$00FF Registers</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">-</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Internal I/O z180 #INTn $0000-$00FF Registers</td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$2000 - $3FFF</th>
@@ -208,7 +212,7 @@ A computer always needs to be extended and to interact with the real world, and 
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$6000 - $7FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">EXPANSION</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">-</td>
 <td style="border: 1px solid #cccccc; padding: 6px;">Hold for Expansion</td>
 </tr>
 <tr>
@@ -228,9 +232,35 @@ A computer always needs to be extended and to interact with the real world, and 
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$E000 - $FFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">EXPANSION</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">-</td>
 <td style="border: 1px solid #cccccc; padding: 6px;">Hold for Expansion</td>
 </tr>
 </tbody>
 </table>
 </div>
+
+## Function Definitions
+
+### `__far_memcpy`
+
+### `__far_memset`
+
+### `__far_memcmp`
+
+### __bank_switch`
+
+### `__load_hex`
+
+### `__load_bin`
+
+### `RST20+DEFW` System Call
+
+### `RST18+DEFB` APU Call
+
+### `RST10+DEFW+DEFB` `__far_call`
+
+### `RST8+DEFB` Error Handler
+
+
+### Command Line Interface
+

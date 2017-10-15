@@ -1,6 +1,6 @@
 # YAZ180
 
-There needed to be Yet Another Z180 computer created.<br>
+There needed to be <strong>Yet Another Z180</strong> computer created.<br>
 And so, here it is.
 
 <div>
@@ -156,7 +156,7 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK0 containing YABIOS (boot and Z88dk library code) and a system heap space. The COMMON AREA 1 space from 0xD000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xE000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
 
@@ -206,7 +206,7 @@ Using a PLD to generate the I/O address mapping also allows flexibility to latch
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $1FFF</th>
 <td style="border: 1px solid #cccccc; padding: 6px;">DO NOT USE</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Internal I/O z180 INT $0000-$00FF Registers</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Internal I/O z180 #INTn $0000-$00FF Registers</td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;">$2000 - $3FFF</th>
