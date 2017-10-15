@@ -46,11 +46,11 @@ Each one of these intems will need to be implemented.
 
 - [ ] [`__far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcpy), [`__far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memset), [`__far_memcmp`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcmp) functions
 - [ ] [`__bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#__bank_switch) function
-- [ ] [`__load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_hex), [`__load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_bin) functions with support for `__far_memcpy` or similar
-- [ ] YABIOS [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
-- [ ] YABIOS `RST+DEFW` System Call
-- [ ] YABIOS `RST+DEFB` APU Call
-- [ ] YABIOS `RST+DEFB` Error Handler
+- [ ] [`__load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_hex), [`__load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_bin) functions
+- [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
+- [ ] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
+- [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst18defb-apu-call)
+- [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [ ] I/O redirection for CP/M IOBYTE support
 
 ### Phase 2 - CP/M application support
@@ -74,7 +74,7 @@ Each one of these intems will need to be implemented.
 
 ### Phase 5 - Multi-bank application support
 
-- [ ] `__far_call` `RST` function
+- [ ] [`RST+DEFW+DEFB` `__far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-__far_call)
 - [ ] finalise and test
 - [ ] to be added
 
@@ -239,25 +239,64 @@ A computer always needs to be extended and to interact with the real world, and 
 </table>
 </div>
 
-## Function Definitions
+## System Function Definitions
+
+These system functions are essential for creating bank handling for the YAZ180.
+
+Whilst they will be exposed to the user through linkage into the z88dk libraries, they are not expected to be used by an application, and they may cause harm to the coherency of the system if they are used.
+
+*Legend: register & stack parameters*
+
+IN:
+     A = character to output
+
+OUT: -
+
+Registers affected after return:
+
+     ..BCDEHL/IXIY same
+     AF....../.... different
+
+Notes:
+
+Related calls:
+
 
 ### `__far_memcpy`
 
+
+
 ### `__far_memset`
+
 
 ### `__far_memcmp`
 
+
 ### __bank_switch`
+
 
 ### `__load_hex`
 
+
 ### `__load_bin`
+
+
+## System Interfaces
+
+Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 56kB in size) is designed to be through the `RST10` `__far_call`. General management of the YAZ180 is to be done through the Command Line Interface.
+
+Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
+
+Additional short call `RST` addresses may be used by the application as desired.
 
 ### `RST20+DEFW` System Call
 
+
 ### `RST18+DEFB` APU Call
 
+
 ### `RST10+DEFW+DEFB` `__far_call`
+
 
 ### `RST8+DEFB` Error Handler
 
