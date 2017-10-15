@@ -245,7 +245,7 @@ These system functions are essential for creating bank handling for the YAZ180.
 
 Whilst they will be exposed to the user through linkage into the z88dk libraries, they are not expected to be used by an application, and they may cause harm to the coherency of the system if they are used.
 
-__Note on BANK relative addressing__
+### Note on BANK relative addressing
 
 For all memory related functions in the Z180 which extend beyond the Z80 addressing capability of 64kB, there needs to be a decision made as to how to address locations. Where a flat RAM model is being pursued, it makes sense to create a flat addressing structure.
 
@@ -253,17 +253,18 @@ However, in the YAZ180 we have a BANKED memory assignment. This means that the t
 
 The for all memory functions, the following standard for the high byte of the 20bit address will be followed.
 
-**bAAAARRRR hHHLL**
-`bAAAA` is the absolute bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the current bank.<br>
-`bRRRR` is the relative bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
-The separate values provided in the high byte can be added, so that bank indexing is implemented.
+__bAAAARRRR hHHLL__<br>
+<br>
+`bAAAA` is the _absolute_ bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the current bank.<br>
+`bRRRR` is the _relative_ bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
+The separate values provided in the high byte can be added, so that bank _indexing_ is implemented.
 `b0100.1110` means BANK4 - 2, or BANK2, for example.<br>
 <br>
 `hHH` is the normal high or page address, within 64kB.<br>
 `hLL` is the normal low address, within 64kB.
 
 
-__Legend: register & stack parameters__
+### __Legend: register & stack parameters__
 
 IN:
 
@@ -371,7 +372,7 @@ Related calls:
 ### `__bank_switch`
 
 `void __bank_switch(char bank)`<br>
-`bank` − This is the desired bank, defined as bAAAA.RRRR. bAAAA is the _absolute_ bank address (0 through 15 valid). bRRRR is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example b0000.1111 is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. b0100.1110 means BANK4 - 2, or BANK2, for example.
+`bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
 
 IN:
 
