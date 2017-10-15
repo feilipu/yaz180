@@ -253,14 +253,14 @@ However, in the YAZ180 we have a BANKED memory assignment. This means that the t
 
 The for all memory functions, the following standard for the high byte of the 20bit address will be followed.
 
-    **bAAAARRRR hHHLL**
-    bAAAA is the absolute bank address (0 through 15 valid) of the address. Therefore b0000.0000 is the current bank.
-    bRRRR is the relative bank address (in 4 bit two's complement) to the current bank. b0000.1111 is one bank lower than current bank.
-    The separate values provided in the high byte can be added, so that bank indexing is implemented.
-    b0100.1110 means BANK4 - 2, or BANK2, for example.
+**bAAAARRRR hHHLL**
+`bAAAA` is the absolute bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the current bank.
+`bRRRR` is the relative bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.
+The separate values provided in the high byte can be added, so that bank indexing is implemented.
+`b0100.1110` means BANK4 - 2, or BANK2, for example.
 
-    hHH is the normal high or page address, within 64kB.
-    hLL is the normal low address, within 64kB.
+`hHH` is the normal high or page address, within 64kB.
+`hLL` is the normal low address, within 64kB.
 
 
 __Legend: register & stack parameters__
@@ -294,6 +294,7 @@ Related calls:
 IN:
 
 stack:
+```
     n high
     n low
     str2 far
@@ -304,14 +305,15 @@ stack:
     str1 low
     ret high
     ret low
-
+```
 OUT:
 
 stack:
+```
     str1 far
     str1 high
     str1 low
-
+```
 Registers affected after return:
 
     ..BCDEHL/IXIY preserved
@@ -335,6 +337,7 @@ Related calls:
 IN:
 
 stack:
+```
     n high
     n low
     c high
@@ -344,14 +347,15 @@ stack:
     str low
     ret high
     ret low
-
+```
 OUT:
 
 stack:
+```
     str far
     str high
     str low
-
+```
 Registers affected after return:
 
     ..BCDEHL/IXIY preserved
