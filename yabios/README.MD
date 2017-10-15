@@ -271,7 +271,7 @@ Related calls:
 ### `__far_memset`
 
 
-### __bank_switch`
+### `__bank_switch`
 
 
 ### `__load_hex`
@@ -286,7 +286,7 @@ Access to YABIOS is designed to be through calls to the `RST20` System Call, and
 
 Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
 
-Additional short call `RST` addresses may be used by the application as desired.
+Additional short call `RST28` and `RST30` addresses may be used by the application as desired.
 
 ### `RST20+DEFW` System Call
 
