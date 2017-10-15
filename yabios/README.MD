@@ -285,11 +285,11 @@ Related calls:
 
 ### `__far_memcpy`
 
-    `far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`
-    `str1` − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type `far_void*`.
-    `str2` − This is pointer to the source of data to be copied, type-casted to a pointer of type `far_void*`.
-    `n` − This is the number of bytes to be copied.
-    This function returns a pointer to destination, which is `str1`.
+`far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`
+`str1` − This is pointer to the destination array where the content is to be copied, type-casted to a pointer of type `far_void*`.
+`str2` − This is pointer to the source of data to be copied, type-casted to a pointer of type `far_void*`.
+`n` − This is the number of bytes to be copied.
+This function returns a pointer to destination, which is `str1`.
 
 IN:
 
@@ -328,11 +328,11 @@ Related calls:
 
 ### `__far_memset`
 
-    `far_void *memset(far_void *str, int c, size_t n)`
-    `str` − This is a pointer to the block of memory to fill.
-    `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
-    `n` − This is the number of bytes to be set to the value.
-    This function returns a pointer to the memory area str.
+`far_void *memset(far_void *str, int c, size_t n)`
+`str` − This is a pointer to the block of memory to fill.
+`c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.
+`n` − This is the number of bytes to be set to the value.
+This function returns a pointer to the memory area str.
 
 IN:
 
@@ -369,8 +369,8 @@ Related calls:
 
 ### `__bank_switch`
 
-    `void __bank_switch(char bank)`
-    `bank` − This is the desired bank, defined as bAAAA.RRRR. bAAAA is the _absolute_ bank address (0 through 15 valid). bRRRR is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example b0000.1111 is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. b0100.1110 means BANK4 - 2, or BANK2, for example.
+`void __bank_switch(char bank)`
+`bank` − This is the desired bank, defined as bAAAA.RRRR. bAAAA is the _absolute_ bank address (0 through 15 valid). bRRRR is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example b0000.1111 is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. b0100.1110 means BANK4 - 2, or BANK2, for example.
 
 IN:
 
