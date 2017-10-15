@@ -19,7 +19,7 @@ And so, here it is.
 
 The YAZ180 is a modern single board computer, built on the tradition rich Z180 CPU and the AMD Am9511A-1 APU.
 
-It is my attempt to create a perfect mix of modern and "ancient" computing technology. Further, it is an attempt to marry CPU/APU technology from 40 years ago, with modern I2C, USB, and WiFi capabilities, and make an powerful 8-bit computer that can either be embedded into an application, or operate stand-alone (with some accessories).
+It is my attempt to create a perfect mix of "ancient" and  modern computing technology. Specifically, it is an attempt to marry CPU/APU technology from 40 years ago, with modern I2C, USB, and WiFi capabilities, and make an powerful 8-bit computer that can either be embedded into an application, or operate as a stand-alone computer (with some accessories).
 
 The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled programs.
 
@@ -33,11 +33,11 @@ The Z180 can operate internally at 2x the external Phi clock, which means that t
 
 In addition to the internal Z180 interfaces, I have added a 82C55 Parallel Input Output (PIO) Controller. This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing.
 
-As the IDE interface requires control signals that are active low, several of the PIO Port C lines are passed through inverters. Importantly, those Port C lines that can accept input in PIO Mode 1 or Mode 2 are not inverted, and are therefore available as inputs from off-board applications. The IDE physical interface cable also provides a tidy board extension format, to allow accessory boards to be attached to the YAZ180.
+As the IDE interface requires control signals that are active low, several of the PIO Port C lines are passed through inverters. Importantly, those Port C lines that can accept input in PIO Mode 1 or Mode 2 are not inverted, and are therefore available as inputs from off-board applications. The IDE physical interface cable also provides a tidy board extension format, to allow extension or accessory devices to be attached to the YAZ180.
 
 A single step circuitry has been implemented, which is enabled by a switch, and triggered by writing to an I/O port address. This enables the YAZ180 to run normally, until it becomes interesting to enable a breakpoint.
 
-To interface with modern sensors and devices, two separate I2C interface PCA9665 devices have been provided. This enables one device to be running at 1MHz in Fast-mode Plus (or even Turbo mode) driving a LCD controller for a screen (for example FTDI EVE), and have the other interface connected to over longer distances to sensors or keyboard running at 100kHz in Standard mode. The PCA9665 has deep 68 byte hardware buffers, and can operate in buffered or streaming mode, enabling complete I2C sentences to be transmitted or received without CPU interaction. A complete GL graphics command can be sent with one CPU DMA, for example.
+To interface with modern sensors and devices, two separate I2C interface PCA9665 devices have been provided. This enables one I2C device to be running at 1MHz in Fast-mode Plus (or even Turbo mode) driving a LCD controller for a screen (for example FTDI EVE), and have the other I2C interface connected over longer distances to sensors or keyboard running at 100kHz in Standard mode. The PCA9665 has deep 68 byte hardware buffers, and can operate in buffered or streaming mode, enabling complete I2C sentences to be transmitted or received without CPU interaction. A complete GL graphics command can be sent with one CPU DMA, for example.
 
 To interface with TCP/IP networks, using WiFi, an ESP8266 pin-out for the ESP-01S is provided, connected to ASCI1. This enables the YAZ180 to operate as an Internet server (with attached IDE hard drive), and / or to be controlled using Secure Shell from anywhere.
 
@@ -80,12 +80,11 @@ The main supply is switchmode rated at 5V 3A, which is used by most of the tradi
 
 A 3.3V 1A rated linear supply is fed from the 5V internal source. 3.3V is needed to support the I2C and ESP-01S devices.
 
-The internal 12V 500mA rated switchmode supply is generated only to support the APU.
-Note that the <strong>Am9511A-1</strong> consumes 5V 70mA plus 12V 70mA normally, and operates <strong>BURNING HOT TO TOUCH</strong> (seriously).
+The internal 12V 500mA rated switchmode supply is generated only to support the APU. Note that the <strong>Am9511A-1</strong> consumes 5V 70mA plus 12V 70mA normally, and operates <strong>BURNING HOT TO TOUCH</strong> (seriously).
 
-The Z180 is supported by a signal buffer on the /RD, /RW, /MREQ, and /IORQ lines, together with the four lowest address lines, A3, A2, A1, and A0. These signals are provided to all active elements, and so even though the Z180 includes its own signal buffers, I thought these signals should be additionally buffered.
+The Z180 is supported by an ABT logic signal buffer on the /RD, /WR, /MREQ, and /IORQ lines, together with the four lowest address lines, A3, A2, A1, and A0. These signals are provided to all active elements, and so even though the Z180 includes its own signal buffers, I thought these signals should be additionally buffered.
 
-The Z180 data lines are also buffered by a bus transceiver. This is to ensure that these lines are also optimally driven.
+The Z180 data lines are also buffered by an ABT logic bus transceiver. This is to ensure that these lines are also optimally driven.
 
 ## BOM
 
@@ -155,7 +154,7 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 ### Logical Memory Address Space
 
-There is no need to follow this mapping. This is what I prefer. You can do whatever you want.
+There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
 The organisation below is an attempt to provide a BANK0 containing YABIOS (boot and Z88dk library code) and a system heap space. The COMMON AREA 1 space from 0xD000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
 
@@ -283,7 +282,7 @@ The Yet Another BIOS (YABIOS) being developed for the YAZ180 is proposed to impl
 </table>
 </div>
 
-The YABIOS Page 0 will support CP/M 2.2 compatibility, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of RST+DEFB short calls, and will include a FAR_CALL capability to allow applications to grow beyond 64kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of RST+DEFW short calls, and will include a FAR_CALL capability to allow applications to grow beyond 64kB.
 
 <div>
 <table style="border: 2px solid #cccccc;">
