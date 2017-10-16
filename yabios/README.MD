@@ -378,7 +378,7 @@ Registers affected after return:
 
     ..BCDEHL/IXIY   preserved
     AF....../....   modified
-    ..BCDEHL exx    modified
+    AFBCDEHL exx    modified
 
 Notes:
 
@@ -386,7 +386,7 @@ Alternate register set used and interrupts disabled during `__bank_switch`. Corr
 
 No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
 
-When the user function `__far_call` is implemented, relative bank addressing will skip BANK0 through BANK15, enabling relocation of applications.
+When the user function `__far_call` is implemented, relative bank addressing will skip BANK0 through BANK15, enabling relocation and relative BANK locations for applications.
 
 ### `__load_hex`
 
@@ -405,7 +405,7 @@ Registers affected after return:
 
     ..BCDEHL/IXIY   preserved
     AF....../....   modified
-    ..BCDEHL exx    modified
+    AFBCDEHL exx    modified
 
 Notes:
 
@@ -439,7 +439,7 @@ Registers affected after return:
 
     ..BC..../IXIY   preserved
     AF..DEHL/....   modified
-    ..BCDEHL exx    modified
+    AFBCDEHL exx    modified
 
 Notes:
 
@@ -473,9 +473,9 @@ OUT:
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check System Function)
-    AFBCDEHL/....   modified  (check System Function)
-    ..BCDEHL exx    modified
+    ......../IXIY   preserved (check called System Function)
+    AFBCDEHL/....   modified  (check called System Function)
+    AFBCDEHL exx    modified
 
 Notes:
 
@@ -505,8 +505,8 @@ OUT:
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check APU Function)
-    AFBCDEHL/....   modified  (check APU Function)
+    ......../IXIY   preserved (check called APU Function)
+    AFBCDEHL/....   modified  (check called APU Function)
     ..BCDEHL exx    modified
 
 Notes:
@@ -537,9 +537,9 @@ OUT:
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check __far_call Function)
-    AFBCDEHL/....   modified  (check __far_call Function)
-    ..BCDEHL exx    modified
+    ......../IXIY   preserved (check called __far_call Function)
+    AFBCDEHL/....   modified  (check called __far_call Function)
+    AFBCDEHL exx    modified
 
 Notes:
 
@@ -575,9 +575,8 @@ OUT:
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check __error Function)
-    AFBCDEHL/....   modified  (check __error Function)
-    ..BCDEHL exx    modified
+    ......../IXIY   preserved (check called __error Function)
+    AFBCDEHL/....   modified  (check called __error Function)
 
 Notes:
 
@@ -593,9 +592,7 @@ DEFB 0xEE
 Where:<br>
 EE = error code as defined by the application.<br>
 
-Following execution `__error` call, the operation returns to the Command Line interface
-
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+Following execution `__error` call, the operation returns to the Command Line interface via `__warm_start`.
 
 ```
 RST08:
