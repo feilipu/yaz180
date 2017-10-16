@@ -537,8 +537,8 @@ OUT:
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check called __far_call Function)
-    AFBCDEHL/....   modified  (check called __far_call Function)
+    ......../IXIY   preserved (check called __user_function)
+    AFBCDEHL/....   modified  (check called __user_function)
     AFBCDEHL exx    modified
 
 Notes:
