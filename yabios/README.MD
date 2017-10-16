@@ -319,7 +319,7 @@ Registers affected after return:
 Notes:
 
 `__far_memcpy` respects overlapping source and destination regions.
-No checking is done to prevent writing to COMMON1 or PAGE0 regions, as this will be a common requirement.
+No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as this will be a common requirement.
 
 Memory copying is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
@@ -357,7 +357,7 @@ Registers affected after return:
 
 Notes:
 
-No checking is done to prevent writing to COMMON1 or PAGE0 regions, as this will be a common requirement.
+No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as this will be a common requirement.
 
 Memory setting is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
