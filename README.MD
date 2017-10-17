@@ -156,7 +156,7 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xE000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
 
@@ -267,7 +267,7 @@ Please see here for status of [work in progress](https://github.com/feilipu/yaz1
 
 Currently the YAZ180 is initialised to load [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k), and within the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `__far_call` capability to allow applications to grow beyond 56kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB.
 
 ## Z88dk
 

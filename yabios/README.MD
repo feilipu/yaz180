@@ -8,7 +8,7 @@ It is my attempt to create a perfect mix of "ancient" and  modern computing tech
 
 The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled applications.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, with APU, FatFs, and time libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `__far_call` capability to allow applications to grow beyond 56kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, with APU, FatFs, and time libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB.
 
 ## Design Concept
 
@@ -34,13 +34,13 @@ The location of the `RST` short calls is defined within the YABIOS Page 0.
 </table>
 </div>
 
-As the YAZ180 has multiple BANK locations in which to run an application, one design goal is to minimise (remove) dependency on the application being loaded into a particular BANK. This will require the development of BANK relative addressing for `__far_call` and other system functionalities, if an application is to be larger than 56kB, or is to be independent of its initial BANK location.
+As the YAZ180 has multiple BANK locations in which to run an application, one design goal is to minimise (remove) dependency on the application being loaded into a particular BANK. This will require the development of BANK relative addressing for `_far_call` and other system functionalities, if an application is to be larger than 60kB, or is to be independent of its initial BANK location.
 
 ## Development Path
 
 As the development of YABIOS is going to take some effort and time, the work will be divided into phases, each providing measurable and useable outcomes. Each phase should provide services to the following phases, upon which that development phase will build.
 
-Each one of these intems will need to be implemented.
+Each one of these items will need to be implemented.
 
 ### Phase 1 - z88dk application support
 
@@ -82,7 +82,7 @@ Each one of these intems will need to be implemented.
 
 The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
 
-BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xE000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
 
@@ -455,7 +455,7 @@ When the user function `__load_bin_user` is implemented, access to BANK0 through
 
 ## User System Interfaces
 
-Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 56kB in size) is designed to be through the `RST10` `__far_call`. General management of the YAZ180 is to be done through the Command Line Interface.
+Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 60kB in size) is designed to be through the `RST10` `_far_call`. General management of the YAZ180 is to be done through the Command Line Interface.
 
 Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
 
