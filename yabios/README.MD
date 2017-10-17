@@ -92,7 +92,7 @@ Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots o
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map2.png"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YABIOS Memory Map<center></th>
