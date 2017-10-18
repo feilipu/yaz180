@@ -44,9 +44,9 @@ Each one of these items will need to be implemented.
 
 ### Phase 1 - z88dk application support
 
-- [ ] [`__far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memcpy), [`__far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#__far_memset) functions
-- [ ] [`__bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#__bank_switch) function
-- [ ] [`__load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_hex), [`__load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#__load_bin) functions
+- [ ] [`_far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memcpy), [`_far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memset) functions
+- [ ] [`_bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#_bank_switch) function
+- [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [ ] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
 - [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst18defb-apu-call)
@@ -74,7 +74,7 @@ Each one of these items will need to be implemented.
 
 ### Phase 5 - Multi-bank application support
 
-- [ ] [`RST+DEFW+DEFB` `__far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-__far_call)
+- [ ] [`RST+DEFW+DEFB` `_far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_far_call)
 - [ ] finalise and test
 - [ ] to be added
 
@@ -82,7 +82,7 @@ Each one of these items will need to be implemented.
 
 The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
 
-BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system calls, interrupt service routines, system buffers, and a system stack.
+BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
 Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
 
@@ -140,7 +140,7 @@ Preparation of the programming mode perl tool is work in progress.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 8kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
 
 The additional flash memory is assigned to the upper memory space BANK13, BANK14, and BANK15.
 This non-volatile storage can be used for any purpose.
@@ -253,7 +253,7 @@ However, in the YAZ180 we have a BANKED memory assignment. This means that the t
 
 For all memory functions, the following standard for the high byte of the 20bit address will be followed.
 
-__bAAAARRRR hHHLL__<br>
+__bAAAA.RRRR hHHLL__<br>
 <br>
 `bAAAA` is the _absolute_ bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the YABIOS system bank.<br>
 `bRRRR` is the _relative_ bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
@@ -284,7 +284,7 @@ Registers affected after return (example):
 Notes:
 
 
-### `__far_memcpy`
+### `_far_memcpy`
 
 `far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`<br>
 `str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far_void*`.<br>
@@ -318,12 +318,12 @@ Registers affected after return:
 
 Notes:
 
-`__far_memcpy` respects overlapping source and destination regions.
+`_far_memcpy` respects overlapping source and destination regions.
 No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as this will be a common requirement.
 
 Memory copying is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
-### `__far_memset`
+### `_far_memset`
 
 `far_void *memset(far_void *str, int c, size_t n)`<br>
 `str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far_void*`.<br>
@@ -361,9 +361,9 @@ No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as thi
 
 Memory setting is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
-### `__bank_switch`
+### `_bank_switch`
 
-`void __bank_switch(char bank)`<br>
+`void _bank_switch(char bank)`<br>
 `bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
 
 IN:
@@ -382,15 +382,15 @@ Registers affected after return:
 
 Notes:
 
-Alternate register set used and interrupts disabled during `__bank_switch`. Correct interrupt state reset on exit.
+Alternate register set used and interrupts disabled during `_bank_switch`. Correct interrupt state reset on exit.
 
 No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
 
-When the user function `__far_call` is implemented, relative bank addressing will skip BANK0 through BANK15, enabling relocation and relative BANK locations for applications.
+When the user function `_far_call` is implemented, relative bank addressing will skip BANK0 through BANK15, enabling relocation and relative BANK locations for applications.
 
-### `__load_hex`
+### `_load_hex`
 
-`void __load_hex(char bank)`<br>
+`void _load_hex(char bank)`<br>
 `bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
 
 IN:
@@ -409,21 +409,21 @@ Registers affected after return:
 
 Notes:
 
-When called `__load_hex` waits for Intel HEX to be loaded via the CLI, and will load it into the provided initial BANK. Any Type 2 ESA HEX instruction present within the Intel HEX will override CLI selection.
+When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will load it into the provided initial BANK. Any Type 2 ESA HEX instruction present within the Intel HEX will override CLI selection.
 
-`__load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _absolute_ or _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing) with `MSB = 0`, should the program to be loaded extend beyond one BANK.
+`_load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _absolute_ or _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing) with `MSB = 0`, should the program to be loaded extend beyond one BANK.
 
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `__load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
+The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
 No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
 
 No checking is done to prevent PAGE0 and COMMON AREA 1 memory being overwritten.
 
-When the user function `__load_hex_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
+When the user function `_load_hex_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
 
-### `__load_bin`
+### `_load_bin`
 
-`void __load_bin(far_void* str)`<br>
+`void _load_bin(far_void* str)`<br>
 `str` − This is a pointer to the destination where the content is to be copied, type-cast to a pointer of type `far_void*`.<br>
 
 IN:
@@ -443,15 +443,15 @@ Registers affected after return:
 
 Notes:
 
-When called `__load_bin` waits for binary data to be loaded via the CLI, and will load it into memory starting from the provided initial destination  `str`.
+When called `_load_bin` waits for binary data to be loaded via the CLI, and will load it into memory starting from the provided initial destination  `str`.
 
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `__load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
+The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
 No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
 
 No checking is done to prevent COMMON AREA 1 memory being overwritten.
 
-When the user function `__load_bin_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
+When the user function `_load_bin_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
 
 ## User System Interfaces
 
@@ -490,7 +490,7 @@ DEFW _f_printf
 
 Following execution of the System Call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled. Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
+The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled. Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
 
 
 ### `RST18+DEFB` APU Call
@@ -523,31 +523,31 @@ DEFB __IO_APU_OP_ENT16
 
 Following execution of the APU Call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
 
-### `RST10+DEFW+DEFB` `__far_call`
+### `RST10+DEFW+DEFB` `_far_call`
 
 IN:
 
-    Parameters required to execute the `__user_function` call, in Registers or on Stack
+    Parameters required to execute the `_user_function` call, in Registers or on Stack
 
 OUT:
 
-    Parameters returned by the `__user_function` call
+    Parameters returned by the `_user_function` call
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check called __user_function)
-    AFBCDEHL/....   modified  (check called __user_function)
+    ......../IXIY   preserved (check called _user_function)
+    AFBCDEHL/....   modified  (check called _user_function)
     AFBCDEHL exx    modified
 
 Notes:
 
-YABIOS `__far_call` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far_void*`.
+YABIOS `_far_call` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far_void*`.
 
-Checking is done to prevent the `__far_call` call reaching within the BANK0, or COMMON AREA 1 memory space, to protect the system integrity.
+Checking is done to prevent the `_far_call` call reaching within the BANK0, or COMMON AREA 1 memory space, to protect the system integrity.
 
-The `_user_function` parameters are placed on the Stack or Registers, and the `__far_call` call is generated by following example byte code:
+The `_user_function` parameters are placed on the Stack or Registers, and the `_far_call` call is generated by following example byte code:
 
 ```
 RST10
@@ -561,28 +561,28 @@ Where:<br>
 
 Following execution `_user_function` call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `__bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
 
 ### `RST8+DEFB` Error Handler
 
 IN:
 
-    Parameters required to execute the `__error` call, in Registers or on Stack
+    Parameters required to execute the `_error` call, in Registers or on Stack
 
 OUT:
 
-    Parameters returned by the `__error` call
+    Parameters returned by the `_error` call
 
 Registers affected after return:
 
-    ......../IXIY   preserved (check called __error Function)
-    AFBCDEHL/....   modified  (check called __error Function)
+    ......../IXIY   preserved (check called _error Function)
+    AFBCDEHL/....   modified  (check called _error Function)
 
 Notes:
 
-YABIOS `__error` calls are provided to support an application in its own memory space. The location of the application `__error` function is provided by a `void*` in the application's own BANK.
+YABIOS `_error` calls are provided to support an application in its own memory space. The location of the application `_error` function is provided by a `void*` in the application's own BANK.
 
-The `__error` parameters are placed on the Stack or Registers, and the `_error` call is generated by following example byte code:
+The `_error` parameters are placed on the Stack or Registers, and the `_error` call is generated by following example byte code:
 
 ```
 RST08
@@ -592,13 +592,13 @@ DEFB 0xEE
 Where:<br>
 EE = error code as defined by the application.<br>
 
-Following execution `__error` call, the operation returns to the Command Line interface via `__warm_start`.
+Following execution `_error` call, the operation returns to the Command Line interface via `_warm_start`.
 
 ```
 RST08:
     pop hl              ; get return address in hl
-    call __error        ; user provided function, minimum is `ret`
-    jp __warm_start     ; YABIOS provided warm restart function
+    call _error        ; user provided function, minimum is `ret`
+    jp _warm_start     ; YABIOS provided warm restart function
 ```
 
 ### Command Line Interface
