@@ -259,11 +259,12 @@ __bAAAA.RRRR hHHLL__<br>
 `bRRRR` is the _relative_ bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
 The separate nibble values provided in the high byte can be added, so that bank _indexing_ is implemented.
 `b0100.1110` means BANK4 - 2, or BANK2, for example.<br>
-This will be noted as `0xEE = 4E`<br>
+This example would be notated as `0xEE = 4E`<br>
+<br>
+Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
+`0xEE` is the bank address, as defined above, as `bAAAA.RRRR`.<br>
 `0xHH` is the normal high or page address, within 64kB.<br>
 `0xLL` is the normal low address, within 64kB.<br>
-<br>
-Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.
 
 ### __Legend: register & stack parameters__
 
@@ -364,7 +365,7 @@ Memory setting is done with DMAC0, using burst mode. This means that the CPU is 
 ### `_bank_switch`
 
 `void _bank_switch(char bank)`<br>
-`bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
+`bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than the current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
 
 IN:
 
@@ -386,7 +387,7 @@ Alternate register set used and interrupts disabled during `_bank_switch`. Corre
 
 No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
 
-When the user function `_far_call` is implemented, relative bank addressing will skip BANK0 through BANK15, enabling relocation and relative BANK locations for applications.
+When the user function `_far_call` is implemented, relative bank addressing will skip BANK0 and BANK13 through BANK15, enabling relocation and relative BANK locations for applications.
 
 ### `_load_hex`
 
