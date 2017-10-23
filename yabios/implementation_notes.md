@@ -17,9 +17,9 @@ The CP/M BIOS functions will be below the YABIOS area, because they relate only 
 
 We have `$0600` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom, then unaligned data starts at `$F600`. That allows the code section to flow after, and makes copying on setup a single transfer.
 
-So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFC0`, and that is followed by the Z180 `__crt_io_vector_base` `0x0020` bytes later at `$FFE0`. As we don't want to waste bytes, we could reuse the null Z80 jump table. There are no Z80 jump table vectors defined, as we want to keep the jump delay to a minimum. At the moment let's keep things simple, and leave it empty.
+So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x0000` bytes later at `$FFE0`.
 
-We can use these `$20` bytes to record the local `SP` for each of `BANKnn`, and system SP for `BANK0`.
+We can use these `$20` bytes from `$FFC0` to `$FFDF` to record the local `SP` for each of the 15 `BANKnn`, and system SP for `BANK0`.
 
 That puts the initial system stack pointer at `$FFC0`, with two bytes available at `$FFC0` to enable the global SP to be stored, when local SP is switched over.
 
