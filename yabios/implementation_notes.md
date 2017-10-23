@@ -43,12 +43,12 @@ We need to have the YABIOS constructed in just three files. The `PAGE0` file, th
 
 ## Setting up the Z80 `RST` calls
 
-Because we're using all of the `RST` calls except for `RST28`, (`RST30` is reserved for FUZIX), the resulting code is `$00DE`. There is no Z80 jump table built, and the `RST` jumps will be directly to the actual function. These functions calls must be filled into the page zero table in `rodata_page0`.
+Because we're using all of the `RST` calls, (except `RST28` is reserved for the user, and `RST30` is reserved for FUZIX), the resulting code is `$00FE`. There is no Z80 jump table built, and the `RST` jumps will be directly to the actual function. These functions calls must be filled into the page zero table in `rodata_page0`.
 
 The `__crt_enable_trap` enables us to use the `RST00` to do a warm boot, or optionally jump to the start of a transitory program in TPA space `$0100`.
 
 ```asm
-   defc TAR__crt_enable_rst            = 0x00DE
+   defc TAR__crt_enable_rst            = 0x00FE
    defc TAR__crt_enable_nmi            = 0
    defc TAR__crt_enable_trap           = 1
 ```
