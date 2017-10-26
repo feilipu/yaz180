@@ -269,9 +269,9 @@ For all memory related functions in the Z180 which extend beyond the Z80 address
 However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in BANK0. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
 For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
-<br>
+
 Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
-`0xEE` is the twos compliment bank address, as defined above.<br>
+`0xEE` is the twos complement bank address, as defined above.<br>
 `0xHH` is the normal high or page address, within 64kB.<br>
 `0xLL` is the normal low address, within 64kB.<br>
 
@@ -286,11 +286,11 @@ OUT:
     -
 
 Registers affected after return (example):
-
+```
     ..BCDEHL/IXIY   preserved
     AF....../....   modified
     ..BCDEHL exx    modified
-
+```
 Notes:
 
 
