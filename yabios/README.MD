@@ -323,8 +323,8 @@ OUT:
 
 Registers affected after return:
 ```
-    ..BC..../IXIY   preserved
-    AF..DEHL/....   modified
+    ......../IXIY   preserved
+    AFBCDEHL/....   modified
 ```
 Notes:
 
