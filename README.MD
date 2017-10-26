@@ -31,9 +31,9 @@ The fastest readily available Flash memory is 55ns. This is matched by the faste
 
 The Z180 can operate internally at 2x the external Phi clock, which means that the YAZ180 is configured to run at 36.864MHz in normal situations. This is slightly outside the Z180 specification (33MHz), but this frequency is widely recommended even in Zilog documentation.
 
-In addition to the internal Z180 interfaces, I have added a 82C55 Parallel Input Output (PIO) Controller. This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing.
+In addition to the internal Z180 interfaces, I have added a 82C55 Programmable Peripheral Interface (PPI) Controller. This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing to future expansion boards.
 
-As the IDE interface requires control signals that are active low, several of the PIO Port C lines are passed through inverters. Importantly, those Port C lines that can accept input in PIO Mode 1 or Mode 2 are not inverted, and are therefore available as inputs from off-board applications. The IDE physical interface cable also provides a tidy board extension format, to allow extension or accessory devices to be attached to the YAZ180.
+As the IDE interface requires control signals that are active low, several of the PPI Port C lines are passed through inverters. Importantly, those Port C lines that can accept input in PPI Mode 1 or Mode 2 are not inverted, and are therefore available as inputs from off-board applications. The IDE physical interface cable also provides a tidy board extension format, to allow extension or accessory devices to be attached to the YAZ180.
 
 A single step circuitry has been implemented, which is enabled by a switch, and triggered by writing to an I/O port address. This enables the YAZ180 to run normally, until it becomes interesting to enable a breakpoint.
 

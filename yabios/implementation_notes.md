@@ -17,17 +17,15 @@ The CP/M BIOS functions will be below the YABIOS area, because they relate only 
 
 We have `$0600` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom, then unaligned data starts at `$F600`. That allows the code section to flow after, and makes copying on setup a single transfer.
 
-So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x0000` bytes later at `$FFE0`.
+So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x00` bytes later at `$FFE0`.
 
-We can use these `$20` bytes from `$FFC0` to `$FFDF` to record the local `SP` for each of the 15 `BANKnn`, and system SP for `BANK0`.
+We can use the `$20` bytes from `$FFC0` to `$FFDF` to record the local `SP` for each of the 15 `BANKnn`, and system SP for `BANK0`.
 
 That puts the initial system stack pointer at `$FFC0`, with two bytes available at `$FFC0` to enable the global SP to be stored, when local SP is switched over.
 
-Before initialisation, keep `SP` starting down at `$F000`, otherwise it will be overwritten by the `COMMON_AREA_1` memory initialisation.
-
 ## Modifying the memory model
 
-Based on the above, we can allow the memory model to be expanded by just 3 items. The `rodata_page0` contains `$0040` bytes of simple page zero code, to be replicated to each `BANKnn` during initialisation, and when a bank is reloaded.
+Based on the above, we can allow the memory model to be expanded by just 3 items. The `rodata_page0` contains `$003B` bytes of simple page zero code, to be replicated to each `BANKnn` during initialisation, and when a bank is reloaded.
 
 Then the `rodata_common1_data` and `rodata_common1_driver` can just follow each other into the space from `$F000`. The global stack will grow down to meet them somewhere (hopefully not too often).
 

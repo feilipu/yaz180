@@ -268,18 +268,10 @@ For all memory related functions in the Z180 which extend beyond the Z80 address
 
 However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in BANK0. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
-For all memory functions, the following standard for the high byte of the 20bit address will be followed.
-
-__bAAAA.RRRR hHHLL__<br>
-<br>
-`bAAAA` is the _absolute_ bank address (0 through 15 valid) of the address. Therefore `b0000.0000` is the YABIOS system bank.<br>
-`bRRRR` is the _relative_ bank address (in 4 bit two's complement) to the current bank. `b0000.1111` is one bank lower than current bank.<br>
-The separate nibble values provided in the high byte can be added, so that bank _indexing_ is implemented.
-`b0100.1110` means BANK4 - 2, or BANK2, for example.<br>
-This example would be notated as `0xEE = 4E`<br>
+For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
 <br>
 Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
-`0xEE` is the bank address, as defined above, as `bAAAA.RRRR`.<br>
+`0xEE` is the twos compliment bank address, as defined above.<br>
 `0xHH` is the normal high or page address, within 64kB.<br>
 `0xLL` is the normal low address, within 64kB.<br>
 
@@ -337,7 +329,7 @@ Registers affected after return:
 Notes:
 
 `_far_memcpy` respects overlapping source and destination regions.
-No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as this will be a common requirement.
+No checking is done to prevent writing to the `PAGE0` region, as this will be a common requirement.
 
 Memory copying is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
@@ -375,14 +367,14 @@ Registers affected after return:
 
 Notes:
 
-No checking is done to prevent writing to PAGE0 or COMMON AREA 1 regions, as this will be a common requirement.
+No checking is done to prevent writing to `PAGE0` regions, as this will be a common requirement.
 
 Memory setting is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
 ### `_bank_switch`
 
 `void _bank_switch(char bank)`<br>
-`bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than the current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
+`bank` − This is the desired bank (in two's complement) _relative_ to the current bank. For example `0xFF` is one bank lower than the current bank. Additionally, calling bank switch from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached.
 
 IN:
 
@@ -409,7 +401,7 @@ When the user function `_far_call` is implemented, relative bank addressing will
 ### `_load_hex`
 
 `void _load_hex(char bank)`<br>
-`bank` − This is the desired bank, defined as `bAAAA.RRRR`. `bAAAA` is the _absolute_ bank address (0 through 15 valid). `bRRRR` is the bank address (in 4 bit two's complement) _relative_ to the current bank. For example `b0000.1111` is one bank lower than current bank. The separate values provided in the high byte can be added, so that bank _indexing_ is implemented. `b0100.1110` means BANK4 - 2, or BANK2, for example.
+`bank` − This is the desired bank (in two's complement) _relative_ to the current bank. For example `0xFF` is one bank lower than the current bank.
 
 IN:
 
@@ -429,15 +421,15 @@ Notes:
 
 When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will load it into the provided initial BANK. Any Type 2 ESA HEX instruction present within the Intel HEX will override CLI selection.
 
-`_load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _absolute_ or _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing) with `MSB = 0`, should the program to be loaded extend beyond one BANK.
+`_load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing), should the program to be loaded extend beyond one BANK.
 
 The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
+No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected, if the system calls `_load_hex`.
 
-No checking is done to prevent PAGE0 and COMMON AREA 1 memory being overwritten.
+No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_hex`.
 
-When the user function `_load_hex_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
+When the user calls `_load_hex`, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
 
 ### `_load_bin`
 
@@ -465,11 +457,11 @@ When called `_load_bin` waits for binary data to be loaded via the CLI, and will
 
 The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
+No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected, if the system calls `_load_bin`.
 
-No checking is done to prevent COMMON AREA 1 memory being overwritten.
+No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_bin`.
 
-When the user function `_load_bin_user` is implemented, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
+When the user calls `_load_bin`, access to `BANK0` through `BANK15` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ## User System Interfaces
 
@@ -478,6 +470,14 @@ Access to YABIOS is designed to be through calls to the `RST20` System Call, and
 Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
 
 Additional short call `RST28` and `RST30` addresses may be used by the application as desired.
+
+### `RST30` Reserved for FUZIX System Call
+
+FUZIX uses `RST30`. Let's hold it in reserve.
+
+### `RST28` Reserved User Call
+
+The user might want to have a `RST` short call available. Reserve this `RST` for user short calls within a BANK.
 
 ### `RST20+DEFW` System Call
 
@@ -490,11 +490,11 @@ OUT:
     Parameters returned by the System Call
 
 Registers affected after return:
-
+```
     ......../IXIY   preserved (check called System Function)
     AFBCDEHL/....   modified  (check called System Function)
-    AFBCDEHL exx    modified
-
+exx AFBCDEHL exx    modified
+```
 Notes:
 
 YABIOS System Calls are provided within the BANK0, or COMMON AREA 1 memory space, and can be linked to an Z88dk application program.
@@ -522,11 +522,11 @@ OUT:
     DEHL = Parameters in subset of DEHL for `__IO_APU_OP_REM16` or `__IO_APU_OP_REM32`
 
 Registers affected after return:
-
+```
     ......../IXIY   preserved (check called APU Function)
     AFBCDEHL/....   modified  (check called APU Function)
-    ..BCDEHL exx    modified
-
+exx ..BCDEHL        modified
+```
 Notes:
 
 YABIOS APU Calls are provided within the BANK0, or COMMON AREA 1 memory space, and can be linked to an Z88dk application program.
@@ -554,11 +554,11 @@ OUT:
     Parameters returned by the `_user_function` call
 
 Registers affected after return:
-
+```
     ......../IXIY   preserved (check called _user_function)
     AFBCDEHL/....   modified  (check called _user_function)
-    AFBCDEHL exx    modified
-
+exx AFBCDEHL        modified
+```
 Notes:
 
 YABIOS `_far_call` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far_void*`.
@@ -592,10 +592,10 @@ OUT:
     Parameters returned by the `_error` call
 
 Registers affected after return:
-
+```
     ......../IXIY   preserved (check called _error Function)
     AFBCDEHL/....   modified  (check called _error Function)
-
+```
 Notes:
 
 YABIOS `_error` calls are provided to support an application in its own memory space. The location of the application `_error` function is provided by a `void*` in the application's own BANK.
