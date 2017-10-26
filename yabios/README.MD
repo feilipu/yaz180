@@ -44,7 +44,7 @@ Each one of these items will need to be implemented.
 
 ### Phase 1 - Z88dk application support
 
-- [ ] [`_far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memcpy), [`_far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memset) functions
+- [x] [`_far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memcpy), [`_far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memset) functions
 - [ ] [`_bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#_bank_switch) function
 - [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
@@ -262,45 +262,27 @@ These system functions are essential for creating bank handling for the YAZ180.
 
 Whilst they will be exposed to the user through linkage into the Z88dk libraries, they are not expected to be used by an application, and they may cause harm to the coherency of the system if they are used.
 
-### Note on BANK relative addressing, the `far_void*`
+### Note on BANK relative addressing, the `far void*`
 
 For all memory related functions in the Z180 which extend beyond the Z80 addressing capability of 64kB, there needs to be a decision made as to how to address locations. Where a flat RAM model is being pursued, it makes sense to create a flat addressing structure.
 
 However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in BANK0. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
-For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
+For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
 
 Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
 `0xEE` is the twos complement bank address, as defined above.<br>
 `0xHH` is the normal high or page address, within 64kB.<br>
 `0xLL` is the normal low address, within 64kB.<br>
 
-### __Legend: register & stack parameters__
-
-IN:
-
-    A = character to output
-
-OUT:
-
-    -
-
-Registers affected after return (example):
-```
-    ..BCDEHL/IXIY   preserved
-    AF....../....   modified
-exx ..BCDEHL        modified
-```
-Notes:
-
 
 ### `_far_memcpy`
 
-`far_void *memcpy(far_void *str1, const far_void *str2, size_t n)`<br>
-`str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far_void*`.<br>
-`str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `far_void*`.<br>
+`far void *memcpy(far void *str1, const far void *str2, size_t n)`<br>
+`str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far void*`.<br>
+`str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `far void*`.<br>
 `n` − This is the number of bytes to be copied.<br>
-This function returns a _relative_ `far_void*` to destination, which is `str1` in `EHL`.
+This function returns a _relative_ `far void*` to destination, which is `str1` in `EHL`.
 
 IN:
 
@@ -335,12 +317,12 @@ Memory copying is done with DMAC0, using burst mode. This means that the CPU is 
 
 ### `_far_memset`
 
-`far_void *memset(far_void *str, int c, size_t n)`<br>
-`str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far_void*`.<br>
+`far void *memset(far void *str, int c, size_t n)`<br>
+`str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far void*`.<br>
 `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
 `n` − This is the number of bytes to be set to the value.<br>
 
-This function returns a _relative_ `far_void*` pointer to the memory area `str` in `EHL`.
+This function returns a _relative_ `far void*` pointer to the memory area `str` in `EHL`.
 
 IN:
 
@@ -433,8 +415,8 @@ When the user calls `_load_hex`, access to BANK0 through BANK15 will be prevente
 
 ### `_load_bin`
 
-`void _load_bin(far_void* str)`<br>
-`str` − This is a pointer to the destination where the content is to be copied, type-cast to a pointer of type `far_void*`.<br>
+`void _load_bin(far void* str)`<br>
+`str` − This is a pointer to the destination where the content is to be copied, type-cast to a pointer of type `far void*`.<br>
 
 IN:
 
