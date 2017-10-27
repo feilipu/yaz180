@@ -82,11 +82,11 @@ Each one of these items will need to be implemented.
 
 The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
 
-BANK0 contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+`BANK0` contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
+Additional `BANK1` through `BANK12` are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to `BANK0`.
 
-Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example
+Flash found in `BANK13`, `BANK14`, and `BANK15` is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -140,10 +140,9 @@ Preparation of the programming mode perl tool is work in progress.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a system `BANK0`, with additional `BANK1` through `BANK12` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space BANK13, BANK14, and BANK15.
-This non-volatile storage can be used for any purpose.
+The additional flash memory is assigned to the upper memory space `BANK13`, `BANK14`, and `BANK15`. This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
 
@@ -266,7 +265,7 @@ Whilst they will be exposed to the user through linkage into the Z88dk libraries
 
 For all memory related functions in the Z180 which extend beyond the Z80 addressing capability of 64kB, there needs to be a decision made as to how to address locations. Where a flat RAM model is being pursued, it makes sense to create a flat addressing structure.
 
-However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in BANK0. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
+However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in `BANK0`. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
 For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
 
@@ -278,7 +277,7 @@ Far pointers will normally be passed in the `EHL` registers, as is the z88dk sta
 
 ### `_far_memcpy`
 
-`far void *memcpy(far void *str1, const far void *str2, size_t n)`<br>
+`far void *far_memcpy(far void *str1, const far void *str2, size_t n)`<br>
 `str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far void*`.<br>
 `str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `far void*`.<br>
 `n` − This is the number of bytes to be copied.<br>
@@ -317,7 +316,7 @@ Memory copying is done with DMAC0, using burst mode. This means that the CPU is 
 
 ### `_far_memset`
 
-`far void *memset(far void *str, int c, size_t n)`<br>
+`far void *far_memset(far void *str, int c, size_t n)`<br>
 `str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far void*`.<br>
 `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
 `n` − This is the number of bytes to be set to the value.<br>
@@ -356,7 +355,7 @@ Memory setting is done with DMAC0, using burst mode. This means that the CPU is 
 ### `_bank_switch`
 
 `void _bank_switch(char bank)`<br>
-`bank` − This is the desired bank (in two's complement) _relative_ to the current bank. For example `0xFF` is one bank lower than the current bank. Additionally, calling bank switch from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached.
+`bank` − This is the desired bank (in two's complement) _relative_ to the current bank. For example `0xFF` is one bank lower than the current bank.
 
 IN:
 
@@ -376,9 +375,9 @@ Notes:
 
 Alternate register set used and interrupts disabled during `_bank_switch`. Correct interrupt state reset on exit.
 
-No checking is done to prevent the BANK0 or flash memory banks BANK13, BANK14, or BANK15 from being selected.
+No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected.
 
-When the user function `_far_call` is implemented, relative bank addressing will skip BANK0 and BANK13 through BANK15, enabling relocation and relative BANK locations for applications.
+When the user function `_far_call` is implemented, relative bank addressing will skip `BANK0` and `BANK13` through `BANK15`, enabling relocation and relative BANK locations for applications.
 
 ### `_load_hex`
 
@@ -411,7 +410,7 @@ No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK
 
 No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_hex`.
 
-When the user calls `_load_hex`, access to BANK0 through BANK15 will be prevented, enabling relocation of applications, and will ensure that critical PAGE0 and COMMON AREA 1 memory cannot be overwritten.
+When the user calls `_load_hex`, access to `BANK0` down through `BANK13` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ### `_load_bin`
 
@@ -479,7 +478,7 @@ exx AFBCDEHL        modified  (check called System Function)
 ```
 Notes:
 
-YABIOS System Calls are provided within the BANK0, or COMMON AREA 1 memory space, and can be linked to an Z88dk application program.
+YABIOS System Calls are provided within the `BANK0`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
 
 For example, the `_f_printf` function parameters are placed on the Stack or Registers, and the System Call is generated by following example byte code:
 
