@@ -48,7 +48,7 @@ Each one of these items will need to be implemented.
 - [ ] [`_bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#_bank_switch) function
 - [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
-- [ ] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
+- [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
 - [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call)
 - [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [ ] I/O redirection for CP/M IOBYTE support
@@ -74,8 +74,8 @@ Each one of these items will need to be implemented.
 
 ### Phase 5 - Multi-bank application support
 
-- [ ] [`RST+DEFW+DEFB` `_far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_far_call)
-- [ ] [`RST+DEFW+DEFB` `_far_jp`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18defwdefb-_far_jp)
+- [x] [`RST+DEFW+DEFB` `_far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_far_call)
+- [x] [`RST+DEFW+DEFB` `_far_jp`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18defwdefb-_far_jp)
 - [ ] finalise and test
 - [ ] to be added
 
