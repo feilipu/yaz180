@@ -45,7 +45,6 @@ Each one of these items will need to be implemented.
 ### Phase 1 - Z88dk application support
 
 - [x] [`_far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memcpy), [`_far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memset) functions
-- [ ] [`_bank_switch`](https://github.com/feilipu/yaz180/tree/master/yabios#_bank_switch) function
 - [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
@@ -75,7 +74,7 @@ Each one of these items will need to be implemented.
 ### Phase 5 - Multi-bank application support
 
 - [x] [`RST+DEFW+DEFB` `_far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_far_call)
-- [x] [`RST+DEFW+DEFB` `_far_jp`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18defwdefb-_far_jp)
+- [x] [`RST` `_far_jp`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_far_jp)
 - [ ] finalise and test
 - [ ] to be added
 
@@ -249,9 +248,9 @@ Some design rules which (hopefully) will allow a responsive multi-tasking system
 
 2. All the hardware resources will be protected by their own Mutual Exclusion (mutex) semaphore (or lock). Irrespective of whether you need exclusive use of a resource, use the lock. Otherwise you might be trampling another application's I/O. Potentially, a queuing semaphore may be needed at some stage, but for now, it is simply a `SRA` based little mutex.
 
-3. Shadow (alternate) registers are reserved for the use of the `_bank_switch` routine. Interrupt service routines should not use the shadow registers. Z88dk system library code uses shadow registers, and if this is known then the calling bios code will take the `shadowLock` mutex, to ensure that the Z88dk library code is not affected by a bank switch at an inconvenient time.
+3. Shadow (alternate) registers are reserved for the use of the bank switching routines, and for yabios library code. Interrupt service routines should not use the shadow registers. Z88dk system library code uses shadow registers, and the calling yabios code will retain the `shadowLock` mutex, to ensure that the Z88dk library code is not affected by a bank switch at an inconvenient time.
 
-4. Applications should use their own stack, which will be located at the top of the BANK space when they are initialised (unless otherwise defined), and not rely on the system stack being available.
+4. Applications should use their own stack, which will be located at the top of the BANK space when they are initialised (unless otherwise defined), and not rely on the system stack being available. If parameters need to be passed on the stack to the library code, then they will have to be pushed onto the system stack, before the `system` call.
 
 5. CP/M specific BIOS items will exist in the BANK space, below the YABIOS space, ensuring that the CP/M specific buffers and jump tables do not consume space in non-CP/M applications.
 
@@ -352,33 +351,6 @@ Notes:
 No checking is done to prevent writing to `PAGE0` regions, as this will be a common requirement.
 
 Memory setting is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
-
-### `_bank_switch`
-
-`void _bank_switch(char bank)`<br>
-`bank` − This is the desired bank (in two's complement) _relative_ to the current bank. For example `0xFF` is one bank lower than the current bank.
-
-IN:
-
-    A = bank
-
-OUT:
-
-    -
-
-Registers affected after return:
-```
-    ..BCDEHL/IXIY   preserved
-    AF....../....   modified
-exx AFBCDEHL        modified
-```
-Notes:
-
-Alternate register set used and interrupts disabled during `_bank_switch`. Correct interrupt state reset on exit.
-
-No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected.
-
-When the user function `_far_call` is implemented, relative bank addressing will skip `BANK0` and `BANK13` through `BANK15`, enabling relocation and relative BANK locations for applications.
 
 ### `_load_hex`
 
@@ -520,41 +492,34 @@ Following execution of the System Call, the operation returns to the calling app
 
 The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled. Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
 
-### `RST18+DEFW+DEFB` `_far_jp`
+### `RST18` `_far_jp`
 
 IN:
 
-    Parameters required to execute the `_user_function` call, in Registers or on Stack
+    `far void *` in EHL, to the location
 
 OUT:
 
-    NIL
-
 Registers affected after return:
 ```
-    ......../IXIY   preserved (check called _user_function)
-    AFBCDEHL/....   modified  (check called _user_function)
-exx AFBCDEHL        modified  (check called _user_function)
+    ......../IXIY   preserved (check called System Function)
+    AFBCDEHL/....   modified  (check called System Function)
+exx AFBCDEHL        modified  (check called System Function)
 ```
+
 Notes:
 
-YABIOS `_far_jp` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
+YABIOS `_far_jp` call are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
 
-The `_user_function` parameters are placed on the Stack or Registers, and the `_far_jp` call is generated by following example byte code:
+The `_far_jp` call is generated by following example byte code:
 
 ```
+LD E, -1                ; Destination BANK, for example one bank below
+LD HL, _user_function   ; Address of _user_function
 RST18
-DEFW 0xHHLL
-DEFB 0xEE
 ```
 
-Where:<br>
-0xEE = destination BANK, _relative_ addressed, to the current BANK.<br>
-0xHHLL = `void*` to `_function`
-
-Following execution `_user_function` call, the operation continues in the new BANK.
-
-The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The alternate register set is modified only during the internal bank switch with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
 
 ### `RST10+DEFW+DEFB` `_far_call`
 
@@ -576,7 +541,7 @@ Notes:
 
 YABIOS `_far_call` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
 
-The `_user_function` parameters are placed on the Stack or Registers, and the `_far_call` call is generated by following example byte code:
+The called `_user_function` parameters are placed on the Stack or Registers, and the `_far_call` call is generated by following example byte code:
 
 ```
 RST10
@@ -585,12 +550,12 @@ DEFB 0xEE
 ```
 
 Where:<br>
+0xHHLL = `void*` to `_user_function`
 0xEE = destination BANK, _relative_ addressed, to the current BANK.<br>
-0xHHLL = `void*` to `_function`
 
 Following execution `_user_function` call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The alternate register set is modified only during the internal bank switch with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
 
 ### `RST8+DEFB` Error Handler
 
@@ -615,13 +580,13 @@ The `_error` parameters are placed on the Stack or Registers, and the `_error` c
 
 ```
 RST08
-DEFB 0xEE
+DEFB 0xEE           ; optional if error code is placed in subset of DEHL
 ```
 
 Where:<br>
 EE = error code as defined by the application.<br>
 
-Following execution `_error` call, the operation returns to the Command Line interface via `_warm_start`.
+Following execution `_error` call, the operation returns to the Command Line interface via `_warm_start`, and does not return to the calling function.
 
 ```
 RST08:
