@@ -44,7 +44,7 @@ Each one of these items will need to be implemented.
 
 ### Phase 1 - Z88dk application support
 
-- [x] [`_far_memcpy`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memcpy), [`_far_memset`](https://github.com/feilipu/yaz180/tree/master/yabios#_far_memset) functions
+- [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far), [`_memset_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memset_far) functions
 - [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
@@ -63,7 +63,7 @@ Each one of these items will need to be implemented.
 
 ### Phase 3 - Flash Snapshot support
 
-- [ ] add flash support into `_ far_memcpy` or similar
+- [ ] add flash support into `_ memcpy_far` or similar
 - [ ] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
@@ -275,9 +275,9 @@ Far pointers will normally be passed in the `EHL` registers, as is the z88dk sta
 `0xLL` is the normal low address, within 64kB.<br>
 
 
-### `_far_memcpy`
+### `_memcpy_far`
 
-`far void *far_memcpy(far void *str1, const far void *str2, size_t n)`<br>
+`far void *memcpy_far(far void *str1, const far void *str2, size_t n)`<br>
 `str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far void*`.<br>
 `str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `far void*`.<br>
 `n` − This is the number of bytes to be copied.<br>
@@ -309,14 +309,14 @@ Registers affected after return:
 ```
 Notes:
 
-`_far_memcpy` respects overlapping source and destination regions.
+`_memcpy_far` respects overlapping source and destination regions.
 No checking is done to prevent writing to the `PAGE0` region, as this will be a common requirement.
 
 Memory copying is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
-### `_far_memset`
+### `_memset_far`
 
-`far void *far_memset(far void *str, int c, size_t n)`<br>
+`far void *memset_far(far void *str, int c, size_t n)`<br>
 `str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far void*`.<br>
 `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
 `n` − This is the number of bytes to be set to the value.<br>

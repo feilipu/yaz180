@@ -58,7 +58,7 @@ Based on the [design rules](https://github.com/feilipu/yaz180/blob/master/yabios
 - All interrupt code, for Z180 interrupts, and the Z80 INT0 APU ISR.
 - ASCI0/1 get character code, so that `_load_hex` and `_load_bin` can work quickly.
 - Banking code and handling the error, system and APU `RST` calls.
-- DMAC0/1 code for doing `_far_memcpy` and `_far_memset`.
+- DMAC0/1 code for doing `_memcpy_far` and `_memset_far`.
 - Any Z80dk library code that is called by either a `PAGE0` or `COMMON_AREA_1` resident call, unless it is specifically a banked call.
 - Scheduling code, when we get that far...
 
