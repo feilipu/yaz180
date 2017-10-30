@@ -277,11 +277,13 @@ Far pointers will normally be passed in the `EHL` registers, as is the z88dk sta
 
 ### `_memcpy_far`
 
-`far void *memcpy_far(far void *str1, const far void *str2, size_t n)`<br>
-`str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `far void*`.<br>
-`str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `far void*`.<br>
+`void *memcpy_far(void *str1, int8_t bank1, const void *str2, const int8_t bank2, size_t n)`<br>
+`str1` − This is a pointer to the destination array where the content is to be copied, type-cast to a pointer of type `void*`.<br>
+`bank1` − This is the destination bank, relative to the current bank.<br>
+`str2` − This is a pointer to the source of data to be copied, type-cast to a pointer of type `void*`.<br>
+`bank2` − This is the source bank, relative to the current bank.<br>
 `n` − This is the number of bytes to be copied.<br>
-This function returns a _relative_ `far void*` to destination, which is `str1` in `EHL`.
+This function returns a `void*` to destination, which is `str1` in `HL`.
 
 IN:
 
@@ -299,7 +301,6 @@ IN:
 
 OUT:
 
-    E = destination BANK, _relative_ addressed, to `str1`
     HL = `void*` to `str1`
 
 Registers affected after return:
@@ -316,12 +317,13 @@ Memory copying is done with DMAC0, using burst mode. This means that the CPU is 
 
 ### `_memset_far`
 
-`far void *memset_far(far void *str, int c, size_t n)`<br>
+`void *memset_far(void *str, int8_t bank, const int16_t c, size_t n)`<br>
 `str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far void*`.<br>
+`bank` − This is the bank address, relative to the current bank.
 `c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
-`n` − This is the number of bytes to be set to the value.<br>
+`n` − This is the number of bytes to be set to the value `c`.<br>
 
-This function returns a _relative_ `far void*` pointer to the memory area `str` in `EHL`.
+This function returns a `void*` pointer to the memory area `str` in `HL`.
 
 IN:
 
@@ -337,8 +339,6 @@ IN:
     ret low
 
 OUT:
-
-    E = destination BANK, _relative_ addressed, to `str`
     HL = `void*` to `str`
 
 Registers affected after return:
