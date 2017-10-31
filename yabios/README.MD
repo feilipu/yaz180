@@ -45,11 +45,13 @@ Each one of these items will need to be implemented.
 ### Phase 1 - Z88dk application support
 
 - [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far), [`_memset_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memset_far) functions
-- [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex), [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
+- [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex)
+- [ ] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
-- [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call)
+- [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
 - [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
+- [ ] Integrate existing FatFs code for IDE interface on 82C55.
 - [ ] I/O redirection for CP/M IOBYTE support
 
 ### Phase 2 - CP/M application support
@@ -290,10 +292,10 @@ IN:
     stack:
     n high
     n low
-    str2 far
+    bank2 far
     str2 high
     str2 low
-    str1 far
+    bank1 far
     str1 high
     str1 low
     ret high
@@ -332,7 +334,7 @@ IN:
     n low
     c high
     c low
-    str far
+    bank far
     str high
     str low
     ret high
@@ -359,7 +361,7 @@ Memory setting is done with DMAC0, using burst mode. This means that the CPU is 
 
 IN:
 
-    A = bank
+    L = destination BANK, _relative_ addressed.
 
 OUT:
 
@@ -377,7 +379,7 @@ When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will l
 
 `_load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing), should the program to be loaded extend beyond one BANK.
 
-The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
+The contents of the alternate register set is modified only during the internal banks which function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
 No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected, if the system calls `_load_hex`.
 
@@ -392,7 +394,7 @@ When the user calls `_load_hex`, access to `BANK0` down through `BANK13` will be
 
 IN:
 
-    E = destination BANK, _relative_ addressed, to `str`
+    E = destination BANK, _relative_ addressed.
     HL = `void*` to `str`
 
 OUT:
@@ -459,8 +461,6 @@ DEFB __IO_APU_OP_ENT16
 
 Following execution of the APU Call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
-
 ### `RST20+DEFW` System Call
 
 IN:
@@ -490,7 +490,7 @@ DEFW _f_printf
 
 Following execution of the System Call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled. Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
+The the contents of the alternate register set is modified during the internal bank switch with interrupts disabled, during a System Call. Interrupts are disabled only for a momentary situation. Normal operation is with interrupts enabled.  Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
 
 ### `RST18` `_far_jp`
 
@@ -518,8 +518,7 @@ LD E, -1                ; Destination BANK, for example one bank below
 LD HL, _user_function   ; Address of _user_function
 RST18
 ```
-
-The alternate register set is modified only during the internal bank switch with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The the contents of the alternate register set is modified during the internal bank switch with interrupts disabled, during a System Call. Interrupts are disabled only for a momentary situation. Normal operation is with interrupts enabled.
 
 ### `RST10+DEFW+DEFB` `_far_call`
 
@@ -555,7 +554,7 @@ Where:<br>
 
 Following execution `_user_function` call, the operation returns to the calling application.
 
-The alternate register set is modified only during the internal bank switch with interrupts disabled, during a System Call. This is only a momentary situation. Normal operation is with interrupts enabled.
+The the contents of the alternate register set is modified during the internal bank switch with interrupts disabled, during a System Call. Interrupts are disabled only for a momentary situation. Normal operation is with interrupts enabled.
 
 ### `RST8+DEFB` Error Handler
 

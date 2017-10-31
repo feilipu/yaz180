@@ -17,11 +17,13 @@ And so, here it is.
 </div>
 
 
-The YAZ180 is a modern single board computer, built on the tradition rich Z180 CPU and the AMD Am9511A-1 APU.
+The [YAZ180](https://feilipu.me/?s=yaz180) is a modern single board computer, built on the tradition rich Z180 CPU and the AMD Am9511A-1 APU.
 
 It is my attempt to create a perfect mix of "ancient" and  modern computing technology. Specifically, it is an attempt to marry CPU/APU technology from 40 years ago, with modern I2C, USB, and WiFi capabilities, and make an powerful 8-bit computer that can either be embedded into an application, or operate as a stand-alone computer (with some accessories).
 
 The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled programs.
+
+The YAZ180 is fully open source. All documentation and design is available from this repository. I will be making the raw PCBs and completed YAZ180 boards available on [Tindie](https://www.tindie.com/stores/feilipu/), shortly.
 
 ## Concept
 
@@ -31,7 +33,9 @@ The fastest readily available Flash memory is 55ns. This is matched by the faste
 
 The Z180 can operate internally at 2x the external Phi clock, which means that the YAZ180 is configured to run at 36.864MHz in normal situations. This is slightly outside the Z180 specification (33MHz), but this frequency is widely recommended even in Zilog documentation.
 
-In addition to the internal Z180 interfaces, I have added a 82C55 Programmable Peripheral Interface (PPI) Controller. This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing to future expansion boards.
+The AMD Am9511A (1977) was the first hardware arithmetic Floating Point Unit (FPU) developed. It is essentially a "scientific calculator" on a chip, and is capable of both 16 bit and 32 bit fixed and 32 bit floating point processing, across all the standard and trancendental functions. Even though this device is 40 years old, it is still [comparable in performance](https://feilipu.me/2017/02/22/characterising-am9511a-1-apu/) of mathematical calculation to its Z180 host.
+
+In addition to the internal Z180 interfaces, I have added a 82C55 Programmable Peripheral Interface (PPI) Controller (1974). This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing to future expansion boards.
 
 As the IDE interface requires control signals that are active low, several of the PPI Port C lines are passed through inverters. Importantly, those Port C lines that can accept input in PPI Mode 1 or Mode 2 are not inverted, and are therefore available as inputs from off-board applications. The IDE physical interface cable also provides a tidy board extension format, to allow extension or accessory devices to be attached to the YAZ180.
 
@@ -88,7 +92,7 @@ The Z180 data lines are also buffered by an ABT logic bus transceiver. This is t
 
 ## BOM
 
-The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
+The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8), or possibly most accurately from thisrepository [here](https://github.com/feilipu/yaz180/blob/master/docs/2017-10-30T22_14_47.csv).
 
 Note that there are two significant items missing from the Shopping Cart.
 
