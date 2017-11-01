@@ -361,7 +361,7 @@ Memory setting is done with DMAC0, using burst mode. This means that the CPU is 
 
 IN:
 
-    L = destination BANK, _relative_ addressed.
+    L = destination BANK, relative addressed.
 
 OUT:
 
@@ -394,7 +394,7 @@ When the user calls `_load_hex`, access to `BANK0` down through `BANK13` will be
 
 IN:
 
-    E = destination BANK, _relative_ addressed.
+    E = destination BANK, relative addressed.
     HL = `void*` to `str`
 
 OUT:

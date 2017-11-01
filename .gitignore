@@ -11,6 +11,8 @@
 *.ilk
 *.map
 *.exp
+*.def
+*.lis
 
 # Precompiled Headers
 *.gch
@@ -20,6 +22,11 @@
 *.exe
 *.out
 *.app
+*.bin
+
+# Intel Hex Executables
+*.ihx
+*.hex
 
 # Debug files
 *.dSYM/
