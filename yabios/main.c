@@ -331,7 +331,7 @@ int8_t ya_ls(char **args)
 int8_t ya_rm(char **args)      // delete a directory or file
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected arguments to \"rm\"\n");
+        fprintf(stderr, "yash: expected 1 argument to \"rm\"\n");
     } else {
         put_rc(f_unlink(args[1]));
     }
@@ -349,34 +349,37 @@ int8_t ya_mv(char **args)      // copy a file
     int32_t p1;
 	uint16_t s1, s2;
 
-	fprintf(stdout,"Opening \"%s\"", args[1]);
-	res = f_open(&File[0], args[1], FA_OPEN_EXISTING | FA_READ);
-	fputc('\n', stdout);
-	if (res) {
-		put_rc(res);
-		return 1;
-	}
-	fprintf(stdout,"Creating \"%s\"", args[2]);
-	res = f_open(&File[1], args[2], FA_CREATE_ALWAYS | FA_WRITE);
-	fputc('\n', stdout);
-	if (res) {
-		put_rc(res);
-		f_close(&File[0]);
-		return 1;
-	}
-	fprintf(stdout,"Copying file...");
-	p1 = 0;
-	while (1) {
-		res = f_read(&File[0], buffer, sizeof(buffer), &s1);
-		if (res || s1 == 0) break;   /* error or eof */
-		res = f_write(&File[1], buffer, s1, &s2);
-		p1 += s2;
-		if (res || s2 < s1) break;   /* error or disk full */
-	}
-	fprintf(stdout," %lu bytes copied.\n", p1);
-	f_close(&File[0]);
-	f_close(&File[1]);
-    
+    if (args[1] == NULL && args[2] == NULL {
+        fprintf(stderr, "yash: expected 2 arguments to \"mv\"\n");
+    } else {
+	    fprintf(stdout,"Opening \"%s\"", args[1]);
+	    res = f_open(&File[0], args[1], FA_OPEN_EXISTING | FA_READ);
+	    fputc('\n', stdout);
+	    if (res) {
+		    put_rc(res);
+		    return 1;
+	    }
+	    fprintf(stdout,"Creating \"%s\"", args[2]);
+	    res = f_open(&File[1], args[2], FA_CREATE_ALWAYS | FA_WRITE);
+	    fputc('\n', stdout);
+	    if (res) {
+		    put_rc(res);
+		    f_close(&File[0]);
+		    return 1;
+	    }
+	    fprintf(stdout,"Copying file...");
+	    p1 = 0;
+	    while (1) {
+		    res = f_read(&File[0], buffer, sizeof(buffer), &s1);
+		    if (res || s1 == 0) break;   /* error or eof */
+		    res = f_write(&File[1], buffer, s1, &s2);
+		    p1 += s2;
+		    if (res || s2 < s1) break;   /* error or disk full */
+	    }
+	    fprintf(stdout," %lu bytes copied.\n", p1);
+	    f_close(&File[0]);
+	    f_close(&File[1]);
+    }
     return 1;
 }
 
@@ -389,7 +392,7 @@ int8_t ya_mv(char **args)      // copy a file
 int8_t ya_cd(char **args)
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected arguments to \"cd\"\n");
+        fprintf(stderr, "yash: expected 1 argument to \"cd\"\n");
     } else {
         put_rc(f_chdir(args[1]));
     }
@@ -426,7 +429,7 @@ int8_t ya_pwd(char **args)     // show the current working directory
 int8_t ya_mkdir(char **args)    // create a new directory
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected arguments to \"mkdir\"\n");
+        fprintf(stderr, "yash: expected 1 argument to \"mkdir\"\n");
     } else {
         put_rc(f_mkdir(args[1]));
     }
@@ -504,7 +507,7 @@ int8_t ya_ds(char **args)      // disk status
 	const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
 	
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 arguments to \"ds\"\n");
+        fprintf(stderr, "yash: expected 1 argument to \"ds\"\n");
     } else {
 	    res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
 	    if (res) { put_rc(res); return 1; }
