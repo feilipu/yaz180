@@ -87,45 +87,46 @@ static FRESULT scan_files (char* path); // scan through files in a directory
 struct Builtin {
   char *name;
   int8_t (*func) (char** args);
+  char *help;
 };
 
 struct Builtin builtins[] = {
   
   // bank related functions
-    { "mkb", &ya_mkb },         // initialise the nominated bank (to warm state)
-    { "mvb", &ya_mvb },         // move or clone the nominated bank
-    { "rmb", &ya_rmb },         // remove the nominated bank (to cold state)
-    { "lsb", &ya_lsb },         // list the usage of banks, and whether they are cold, warm, or hot
-    { "initb", &ya_initb },     // jump to and begin executing the nominated bank at nominated address
-    { "loadh", &ya_loadh },     // load the nominated bank with intel hex
-    { "loadb", &ya_loadb },     // load the nominated bank and address with binary code
-    { "saveb", &ya_saveb },     // save the nominated bank from 0x0100 to 0xF000 by default
+    { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
+    { "mvb", &ya_mvb, "[src] [dest] - move or clone the nominated bank"},
+    { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
+    { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
+    { "initb", &ya_initb, "[bank] [origin] - begin executing the nominated bank at nominated address"},
+    { "loadh", &ya_loadh, "[bank] - load the nominated bank with intel hex"},
+    { "loadb", &ya_loadb, "[bank] [origin] - load the nominated bank from origin with binary code"},
+    { "saveb", &ya_saveb, "[bank] [path] - save the nominated bank from 0x0100 to 0xF000"},
 
 // system related functions
-    { "reset", &ya_reset },     // reset YAZ180 to cold start, clear all bank information
-    { "help", &ya_help },       // help
-    { "exit", &ya_exit },       // exit and halt
+    { "reset", &ya_reset, "- reset YAZ180 to cold start, clear all bank information"},
+    { "help", &ya_help, "- this is it"},
+    { "exit", &ya_exit, "- exit and halt"},
 
 // fat related functions
-    { "ls", &ya_ls },           // directory listing
-    { "rm", &ya_rm },           // delete a file
-    { "mv", &ya_mv },           // copy a file
-    { "cd", &ya_cd },           // change the current working directory
-    { "pwd", &ya_pwd },         // show the current working directory
-    { "mkdir", &ya_mkdir },     // create a new directory
-    { "chmod", &ya_chmod },     // change file or directory attributes
-    { "mkfs", &ya_mkfs },       // create a FAT file system
-    { "mount", &ya_mount },     // mount a FAT file system
+    { "ls", &ya_ls, "[path] - directory listing"},
+    { "rm", &ya_rm, "[path] - delete a file"},
+    { "mv", &ya_mv, "[src] [dest] - copy a file"},
+    { "cd", &ya_cd, "[path] - change the current working directory"},
+    { "pwd", &ya_pwd, "- show the current working directory"},
+    { "mkdir", &ya_mkdir, "[path] - create a new directory"},
+    { "chmod", &ya_chmod, "[path] [attr] [mask] - change file or directory attributes"},
+    { "mkfs", &ya_mkfs, "[type] [block size] - create a FAT file system (excluded)"},
+    { "mount", &ya_mount, "[path] [option] - mount a FAT file system"},
 
 // disk related functions
-    { "ds", &ya_ds },            // disk status
-    { "dd", &ya_dd },            // disk dump sector
+    { "ds", &ya_ds, "[drive] - disk status"},
+    { "dd", &ya_dd, "[drive] [sector] - disk dump"},
 
 // time related functions
-    { "clock", &ya_clock },      // set the time (UNIX epoch)
-    { "tz", &ya_tz },            // set timezone (no daylight savings, so adjust manually)
-    { "diso", &ya_diso },        // print the local time in ISO: 2013-03-23 01:03:52
-    { "date", &ya_date }         // print the local time in US: Sun Mar 23 01:03:52 2013
+    { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch)"},
+    { "tz", &ya_tz, "[tz] - set timezone (no daylight saving)"},
+    { "diso", &ya_diso, "- local time ISO format: 2013-03-23 01:03:52"},
+    { "date", &ya_date, "- local time: Sun Mar 23 01:03:52 2013" }
 };
 
 uint8_t ya_num_builtins() {
@@ -141,7 +142,7 @@ uint8_t ya_num_builtins() {
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "mkb".  args[1] is the nominatedbank.
+   @param args List of args.  args[0] is "mkb".  args[1] is the nominated bank.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
@@ -245,7 +246,7 @@ int8_t ya_saveb(char **args)   // save the nominated bank from 0x0100 to CBAR 0x
 int8_t ya_reset(char **args)   // reset YAZ180 to cold start, clear all bank information
 {  
     (void *)args;
-    return 1;
+    return 0;
 }
 
 
@@ -260,12 +261,11 @@ int8_t ya_help(char **args)
 
     (void *)args;
 
-    printf("YABIOS\n");
-    printf("Type program names and arguments, and hit enter.\n");
-    printf("The following are built in:\n");
+    printf("YAZ180 - yabios v0.1\n");
+    printf("The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
-        fprintf(stdout,"  %s\n", builtins[i].name);
+        fprintf(stdout,"  %s %s\n", builtins[i].name, builtins[i].help);
     }
 
     return 1;
@@ -411,7 +411,7 @@ int8_t ya_mv(char **args)      // copy a file
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\r\nCopied %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+        fprintf(stdout, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -512,7 +512,7 @@ int8_t ya_mkfs(char **args)    // create a FAT file system
     if (args[1] == NULL && args[2] == NULL ) {
         fprintf(stderr, "yash: expected 2 arguments to \"mkfs\"\n");
     } else {
-        fprintf(stdout, "The drive will be erased and formatted. Are you sure [y/N]\r\n");
+        fprintf(stdout, "The drive will be erased and formatted. Are you sure [y/N]\n");
         getline(&line, &bufsize, stdin);
         if (line[0] == 'Y')
             put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(buffer)));
@@ -547,7 +547,7 @@ int8_t ya_mount(char **args)    // mount a FAT file system
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "ds".  args[1] is the directory.
+   @param args List of args.  args[0] is "ds".  args[1] is the drive.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_ds(char **args)      // disk status
@@ -566,7 +566,7 @@ int8_t ya_ds(char **args)      // disk status
 	    if (res != FR_OK) { put_rc(res); return 1; }
 	    fprintf(stdout, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
 			    "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
-			    "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,clustor) = %lu\nData start (lba) = %lu\n\n",
+			    "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n\n",
 			    ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
 			    fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
 			    fs->volbase, fs->fatbase, fs->dirbase, fs->database);
@@ -594,27 +594,23 @@ int8_t ya_ds(char **args)      // disk status
    @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_dd(char **args)      // disk dump sector
+int8_t ya_dd(char **args)      // disk dump
 {
     FRESULT res;
-    static uint32_t ofs, sect;
+    static uint32_t sect;
     static uint8_t drv;
+    uint32_t ofs;
     uint8_t * ptr;
-    
-    if ( args[2] == NULL ) {
-        sect = atoi(args[1]);
-    } else {
-        if (args[1] == NULL && args[2] == NULL) {
-            fprintf(stderr, "yash: expected 2 arguments to \"dd\"\n");
-            return 1;
-         }
+
+    if (args[1] != NULL && args[2] != NULL) {
+        drv = atoi(args[1]);
+        sect = (uint32_t)atol(args[2]);
     }
-    drv = atoi(args[1]);
-    sect = atoi(args[2]);
+
 	res = disk_read(drv, buffer, sect, 1);
 	if (res != FR_OK) { fprintf(stdout, "rc=%d\n", (WORD)res); return 1; }
 	fprintf(stdout, "PD#:%u LBA:%lu\n", drv, sect++);
-	for (ptr=(char*)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
+	for (ptr=(uint8_t*)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
 		put_dump(ptr, ofs, 16);
     return 1;
 }
@@ -662,7 +658,7 @@ int8_t ya_diso(char **args)    // print the local time in ISO std: 2013-03-23 01
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     isotime_r(&CurrTimeDate, timeStore);
-    fprintf(stdout, "%s\r\n", timeStore);
+    fprintf(stdout, "%s\n", timeStore);
 
     return 1;
 }
@@ -684,7 +680,7 @@ int8_t ya_date(char **args)    // print the local time: Sun Mar 23 01:03:52 2013
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     asctime_r(&CurrTimeDate, timeStore);
-    fprintf(stdout, "%s\r\n", timeStore);
+    fprintf(stdout, "%s\n", timeStore);
 
     return 1;
 }
@@ -705,7 +701,7 @@ void put_rc (FRESULT rc)
 	for (i = 0; i != rc && *str; i++) {
 		while (*str++) ;
 	}
-	fprintf(stderr,"\r\nrc=%u FR_%s\r\n", (uint8_t)rc, str);
+	fprintf(stderr,"\nrc=%u FR_%s\n", (uint8_t)rc, str);
 }
 
 
@@ -775,7 +771,7 @@ int8_t ya_execute(char **args)
         }
     }
 
-    return 0;
+    return 1;
 }
 
 extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx polling routine, checks Rx buffer fullness
@@ -825,7 +821,7 @@ char *ya_read_line(void)
                 bufsize += YA_RL_BUFSIZE;
                 line_buffer_backup = line_buffer;
                 line_buffer = realloc(line_buffer, bufsize);
-                if (!line_buffer) {
+                if (line_buffer == NULL) {
                     fprintf(stderr, "yash: line_buffer realloc failure\n");
                     free(line_buffer_backup);
                     exit(EXIT_FAILURE);
@@ -865,7 +861,7 @@ char **ya_split_line(char *line)
                 tokens = (char **)realloc(tokens, bufsize * sizeof(char*));
                 if (tokens == NULL) {
                     free(tokens_backup);
-                    fprintf(stderr, "yash: tokens realloc failur\n");
+                    fprintf(stderr, "yash: tokens realloc failure\n");
                     exit(EXIT_FAILURE);
                 }
             }
@@ -887,7 +883,7 @@ void ya_loop(void)
     int status;
 
     do {
-        fprintf(stdout,"> ");
+        fprintf(stdout,"\n> ");
 
         line = ya_read_line();        
         args = ya_split_line(line);
@@ -919,6 +915,8 @@ void main(int argc, char **argv)
     buffer = malloc(BUFFER_SIZE * sizeof(char *));  /* Get working buffer space */
 
     // Load config files, if any.
+    
+    fprintf(stdout,"YAZ180 - yabios");
 
     // Run command loop if we got all the memory allocations we need.
     if ( fs && dir && buffer)
