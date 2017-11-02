@@ -20,7 +20,7 @@
 
 #define BUFFER_SIZE 1024	    // size of working buffer (on heap)
 #define LINE_SIZE 256			// size of a command line (on heap)
-#define MAX_FILES 4             // number of files open at any time
+#define MAX_FILES 8             // number of files open at any time
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
@@ -629,7 +629,7 @@ int8_t ya_dd(char **args)      // disk dump sector
  */
 int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
 {
-    set_system_time(atol(args[1]) - UNIX_OFFSET);
+    set_system_time((uint32_t)atol(args[1]) - UNIX_OFFSET);
     return 1;
 }
 
@@ -641,7 +641,7 @@ int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
  */
 int8_t ya_tz(char **args)      // set timezone (no daylight savings, so adjust manually)
 {
-    set_zone(atoi(args[1]) * ONE_HOUR);
+    set_zone(atol(args[1]) * ONE_HOUR);
     return 1;
 }
 
@@ -658,7 +658,8 @@ int8_t ya_diso(char **args)    // print the local time in ISO std: 2013-03-23 01
     char timeStore[26];
 
     (void *)args;
-
+    
+    time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     isotime_r(&CurrTimeDate, timeStore);
     fprintf(stdout, "%s\r\n", timeStore);
@@ -679,7 +680,8 @@ int8_t ya_date(char **args)    // print the local time: Sun Mar 23 01:03:52 2013
     char timeStore[26];
 
     (void *)args;
-
+    
+    time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     asctime_r(&CurrTimeDate, timeStore);
     fprintf(stdout, "%s\r\n", timeStore);
@@ -776,8 +778,64 @@ int8_t ya_execute(char **args)
     return 0;
 }
 
+extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx polling routine, checks Rx buffer fullness
+extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx receive routine, from Rx buffer
+extern uint8_t asci0_peekc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx peek routine, reads Rx without removing it from buffer
+extern uint8_t asci0_putc(uint8_t) __preserves_regs(b,c,d,e,h,iyl,iyh) __z88dk_fastcall; // Tx write routine, writes to Tx buffer
 
-#define YA_TOK_BUFSIZE 64
+
+#define YA_RL_BUFSIZE 128
+/**
+   @brief Read a line of input from stdin.
+   @return The line from stdin.
+ */
+char *ya_read_line(void)
+{
+    uint16_t bufsize = YA_RL_BUFSIZE;
+    uint16_t position = 0;
+    char c;
+    char *line_buffer, *line_buffer_backup;
+
+    line_buffer = (char *)malloc(bufsize * sizeof(char));
+
+    if (line_buffer)
+    {
+        while (1)
+        {
+            // Read a character
+//          c = getchar();      // don't know why this doesn't give me CR or LF ?
+
+            while(asci0_pollc() == 0);
+            c = asci0_getc();
+
+            line_buffer[position] = c;            
+            fputc(c, stdout);
+
+            if ( c == CHAR_CR || c == CHAR_LF )
+            {
+                line_buffer[position] = '\0';
+                return line_buffer;
+            }
+
+            position++;
+
+            // If we have exceeded the line_buffer, reallocate.
+            if (position >= bufsize)
+            {
+                bufsize += YA_RL_BUFSIZE;
+                line_buffer_backup = line_buffer;
+                line_buffer = realloc(line_buffer, bufsize);
+                if (!line_buffer) {
+                    fprintf(stderr, "yash: line_buffer realloc failure\n");
+                    free(line_buffer_backup);
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+    }
+}
+
+#define YA_TOK_BUFSIZE 32
 #define YA_TOK_DELIM " \t\r\n\a"
 /**
    @brief Split a line into tokens (very naively).
@@ -786,37 +844,38 @@ int8_t ya_execute(char **args)
  */
 char **ya_split_line(char *line)
 {
-    int bufsize = YA_TOK_BUFSIZE, position = 0;
+    uint16_t bufsize = YA_TOK_BUFSIZE;
+    uint16_t position = 0;
     char *token;
     char **tokens, **tokens_backup;
      
-    tokens = malloc(bufsize * sizeof(char*));
+    tokens = (char **)malloc(bufsize * sizeof(char*));
     
-    if (tokens != NULL)
+    if (tokens && line)
     {
         token = strtok(line, YA_TOK_DELIM);
         while (token != NULL) {
             tokens[position] = token;
             position++;
 
+            // If we have exceeded the tokens buffer, reallocate.
             if (position >= bufsize) {
                 bufsize += YA_TOK_BUFSIZE;
                 tokens_backup = tokens;
-                tokens = realloc(tokens, bufsize * sizeof(char*));
+                tokens = (char **)realloc(tokens, bufsize * sizeof(char*));
                 if (tokens == NULL) {
                     free(tokens_backup);
-                    fprintf(stderr, "yash: allocation error\n");
+                    fprintf(stderr, "yash: tokens realloc failur\n");
                     exit(EXIT_FAILURE);
                 }
             }
 
             token = strtok(NULL, YA_TOK_DELIM);
         }
-    tokens[position] = NULL;
+        tokens[position] = NULL;
     }    
     return tokens;
 }
-
 
 /**
    @brief Loop getting input and executing it.
@@ -824,20 +883,20 @@ char **ya_split_line(char *line)
 void ya_loop(void)
 {
     char **args;
-    char *line = NULL;
-    ssize_t bufsize = 0; // have getline allocate a buffer for us  
+    char *line;
     int status;
 
     do {
-        fprintf(stdout,"> "); 
-        getline(&line, &bufsize, stdin);
+        fprintf(stdout,"> ");
+
+        line = ya_read_line();        
         args = ya_split_line(line);
+
         status = ya_execute(args);
-
+        
         free(line);
+        free(args);
     } while (status);
-
-    free(line);
 }
 
 
@@ -853,7 +912,7 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
-    set_system_time(1509454800 - UNIX_OFFSET);      /* Default time: November 1, 2017 AEST */
+    set_system_time(1509454800 - UNIX_OFFSET);      /* Initial time: November 1, 2017 AEST */
 
     fs = malloc(sizeof(FATFS));                     /* Get work area for the volume */
     dir = malloc(sizeof(DIR));                      /* Get work area for the directory */
