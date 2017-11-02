@@ -45,13 +45,13 @@ Each one of these items will need to be implemented.
 ### Phase 1 - Z88dk application support
 
 - [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far), [`_memset_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memset_far) functions
-- [ ] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex)
+- [x] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex)
 - [ ] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
-- [ ] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
+- [x] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
 - [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
 - [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
-- [ ] Integrate existing FatFs code for IDE interface on 82C55.
+- [x] Integrate existing FatFs code for IDE interface on 82C55.
 - [ ] I/O redirection for CP/M IOBYTE support
 
 ### Phase 2 - CP/M application support
