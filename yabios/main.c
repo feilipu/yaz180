@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include <arch.h>
+#include <arch/yaz180.h>
 #include <arch/yaz180/diskio.h>
 
 #include "ffconf.h"
@@ -20,6 +21,7 @@
 
 #define BUFFER_SIZE 1024	    // size of working buffer (on heap)
 #define LINE_SIZE 256			// size of a command line (on heap)
+#define PAGE0_SIZE 0x103        // size of a Page0 copy buffer (on heap)
 #define MAX_FILES 8             // number of files open at any time
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
@@ -147,7 +149,27 @@ uint8_t ya_num_builtins() {
  */
 int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
 {
-    (void *)args;
+    uint8_t * page0Template;
+
+    page0Template = (uint8_t *)malloc(PAGE0_SIZE * sizeof(uint8_t));       /* Get work area for the Page 0 */
+
+    if (page0Template != NULL && args[1] != NULL)
+    {
+        memcpy(&page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
+        // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
+        // existing RST jumps and INT0 code is correctly copied.
+        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
+        *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
+        // we might set other things for individual banks, before copying
+        
+        
+        // do the copy
+        memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
+        
+        // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+        lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
+    }
+    free(page0Template);
     return 1;
 }
 
@@ -159,8 +181,15 @@ int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
  */
 int8_t ya_mvb(char **args)    // move or clone the nominated bank
 {
-   (void *)args;
-   return 1;
+    if ( (args[2] != NULL) && (bank_get_abs((int8_t)atoi(args[1])) != 0) && (bank_get_abs((int8_t)atoi(args[2])) != 0) )   // the source and destination can never be BANK0
+    {
+        // do the copy
+        memcpy_far((void *)0x0000, (int8_t)atoi(args[2]), (void *)0x0000, (int8_t)atoi(args[1]), (__COMMON_AREA_1_BASE-0)); // copy it all
+        
+        // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
+        bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
+    }
+    return 1;
 } 
 
 
@@ -445,7 +474,7 @@ int8_t ya_pwd(char **args)     // show the current working directory
 
     (void *)args;    
     
-    line = malloc(sizeof(LINE_SIZE));       /* Get work area for the line buffer */
+    line = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));       /* Get work area for the line buffer */
     
     if (line != NULL)
     {
@@ -910,9 +939,9 @@ void main(int argc, char **argv)
     set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
     set_system_time(1509454800 - UNIX_OFFSET);      /* Initial time: November 1, 2017 AEST */
 
-    fs = malloc(sizeof(FATFS));                     /* Get work area for the volume */
-    dir = malloc(sizeof(DIR));                      /* Get work area for the directory */
-    buffer = malloc(BUFFER_SIZE * sizeof(char *));  /* Get working buffer space */
+    fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
+    dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
+    buffer = (char *)malloc(BUFFER_SIZE * sizeof(char *));  /* Get working buffer space */
 
     // Load config files, if any.
     
