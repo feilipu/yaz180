@@ -8,7 +8,7 @@ It is my attempt to create a perfect mix of "ancient" and  modern computing tech
 
 The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled applications.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, with APU, FatFs, and time libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and allows access to Z88dk libraries, with APU, FatFs, and time libraries, through the use of `RST+DEFB` or `RST+DEFW` short calls, and will include a `_call_far` capability to allow applications to grow beyond 60kB.
 
 ## Design Concept
 
@@ -34,7 +34,7 @@ The location of the `RST` short calls is defined within the YABIOS Page 0.
 </table>
 </div>
 
-As the YAZ180 has multiple BANK locations in which to run an application, one design goal is to minimise (remove) dependency on the application being loaded into a particular BANK. This will require the development of BANK relative addressing for `_far_call` and other system functionalities, if an application is to be larger than 60kB, or is to be independent of its initial BANK location.
+As the YAZ180 has multiple BANK locations in which to run an application, one design goal is to minimise (remove) dependency on the application being loaded into a particular BANK. This will require the development of BANK relative addressing for `_call_far` and other system functionalities, if an application is to be larger than 60kB, or is to be independent of its initial BANK location.
 
 ## Development Path
 
@@ -46,7 +46,7 @@ Each one of these items will need to be implemented.
 
 - [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far), [`_memset_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memset_far) functions
 - [x] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex)
-- [ ] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
+- [x] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [x] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
 - [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
@@ -75,8 +75,8 @@ Each one of these items will need to be implemented.
 
 ### Phase 5 - Multi-bank application support
 
-- [x] [`RST+DEFW+DEFB` `_far_call`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_far_call)
-- [x] [`RST` `_far_jp`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_far_jp)
+- [x] [`RST+DEFW+DEFB` `_call_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_call_far)
+- [x] [`RST` `_jp_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_jp_far)
 - [ ] finalise and test
 - [ ] to be added
 
@@ -421,7 +421,7 @@ When the user calls `_load_bin`, access to `BANK0` through `BANK15` will be prev
 
 ## User System Interfaces
 
-Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 60kB in size) is designed to be through the `RST10` `_far_call`. General management of the YAZ180 is to be done through the Command Line Interface.
+Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 60kB in size) is designed to be through the `RST10` `_call_far`. General management of the YAZ180 is to be done through the Command Line Interface.
 
 Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
 
@@ -492,7 +492,7 @@ Following execution of the System Call, the operation returns to the calling app
 
 The the contents of the alternate register set is modified during the internal bank switch with interrupts disabled, during a System Call. Interrupts are disabled only for a momentary situation. Normal operation is with interrupts enabled.  Therefore for YABIOS system functions that require the use of the alternate register set, some evaluation of the actual requirements will need to be completed.
 
-### `RST18` `_far_jp`
+### `RST18` `_jp_far`
 
 IN:
 
@@ -509,9 +509,9 @@ exx AFBCDEHL        modified  (check called System Function)
 
 Notes:
 
-YABIOS `_far_jp` call are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
+YABIOS `_jp_far` call are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
 
-The `_far_jp` call is generated by following example byte code:
+The `_jp_far` call is generated by following example byte code:
 
 ```
 LD E, -1                ; Destination BANK, for example one bank below
@@ -520,7 +520,7 @@ RST18
 ```
 The the contents of the alternate register set is modified during the internal bank switch with interrupts disabled, during a System Call. Interrupts are disabled only for a momentary situation. Normal operation is with interrupts enabled.
 
-### `RST10+DEFW+DEFB` `_far_call`
+### `RST10+DEFW+DEFB` `_call_far`
 
 IN:
 
@@ -538,9 +538,9 @@ exx AFBCDEHL        modified  (check called _user_function)
 ```
 Notes:
 
-YABIOS `_far_call` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
+YABIOS `_call_far` calls are provided to support an application in its own memory space. The location of the application `_user_function` is provided by a `far void *`.
 
-The called `_user_function` parameters are placed on the Stack or Registers, and the `_far_call` call is generated by following example byte code:
+The called `_user_function` parameters are placed on the Stack or Registers, and the `_call_far` call is generated by following example byte code:
 
 ```
 RST10
@@ -595,4 +595,45 @@ RST08:
 ```
 
 ### Command Line Interface
+
+The command line interface is implemented in C, with the underlying functions either in C or in assembly.
+
+#### Bank Functions
+- `mkb [bank]` - initialise the nominated bank (to warm state)
+- `mvb [src][dest]` - move or clone the nominated src bank
+- `rmb [bank]` - remove the nominated bank (to cold state)
+- `lsb` - list the usage of banks, and whether they are cold, warm, or hot
+- `initb [bank][origin]` - begin executing the nominated bank at nominated address
+- `loadh [bank]` - load the nominated bank with Intel Hex from ASCI0 / ASCI1 (ESA supported)
+- `loadb [path][bank][origin]` - load the nominated bank from origin with binary code
+- `saveb [bank][path]` - save the nominated bank from 0x0100 to 0xF000
+
+#### System Functions
+- `md [bank][origin]` - memory dump
+- `reset` - reset YAZ180 to cold start, clear all bank information
+- `help` - this is it
+- `exit` - exit and halt
+
+#### File System Functions
+- `ls [path]` - directory listing
+- `rm [path]` - delete a file
+- `mv [src][dest]` - copy a file
+- `cd [path]` - change the current working directory
+- `pwd` - show the current working directory
+- `mkdir [path]` - create a new directory
+- `chmod [path][attr][mask]` - change file or directory attributes
+- `mkfs [type][block size]` - create a FAT file system (excluded)
+- `mount [path][option]` - mount a FAT file system
+
+#### Disk Functions
+- `ds [drive]` - disk status
+- `dd [drive][sector]` - disk dump
+
+#### Time Functions
+- `clock [timestamp]` - set the time (UNIX epoch)
+- `tz [tz]` - set timezone (no daylight saving)
+- `diso` - local time ISO format: 2013-03-23 01:03:52
+- `date` - local time: Sun Mar 23 01:03:52 2013
+
+
 

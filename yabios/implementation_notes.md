@@ -75,9 +75,9 @@ These elements need to be either statically defined the `BANK0` RAM, or located 
 
 The boot monitor code will be the major program located in `BANK0` Flash, and this will be written in C.
 
-## Sadly, there can never be a `far_jp`
+## Sadly, there can never be a `jp_far`
 
-I modified the `far_call` code to make a `far_jp` using the `RSTx + DEFW + DEFC` mechanism, but forgot that a `jp` instruction doesn't push the `PC` onto the stack. Therefore there is no way to know from whence the program arrived, when it hits the `rst` instruction. Damn. It would have been so nice to just switch banks like that. I guess the only way to do it is off the stack (costing the ability to pass some parameters).
+I modified the `call_far` code to make a `jp_far` using the `RSTx + DEFW + DEFC` mechanism, but forgot that a `jp` instruction doesn't push the `PC` onto the stack. Therefore there is no way to know from whence the program arrived, when it hits the `rst` instruction. Damn. It would have been so nice to just switch banks like that. I guess the only way to do it is off the stack (costing the ability to pass some parameters).
 
 
 

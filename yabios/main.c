@@ -3,6 +3,8 @@
   @file         main.c
   @author       Phillip Stevens, inspired by Stephen Brennan
   @brief        YASH (Yet Another SHell)
+  
+  This programme was reached working state on Melbourne Cup Day, 2017.
 
 *******************************************************************************/
 
@@ -19,15 +21,15 @@
 #include <lib/yaz180/ff.h>
 #include <lib/yaz180/time.h>
 
-#define BUFFER_SIZE 1024	    // size of working buffer (on heap)
-#define LINE_SIZE 256			// size of a command line (on heap)
-#define PAGE0_SIZE 0x103        // size of a Page0 copy buffer (on heap)
+#define BUFFER_SIZE 1024        // size of working buffer (on heap)
+#define LINE_SIZE 256            // size of a command line (on heap)
+#define PAGE0_SIZE 0x102        // size of a Page0 copy buffer (on heap)
 #define MAX_FILES 8             // number of files open at any time
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 
-static uint8_t * buffer;        /* put working buffer on heap later */
-int32_t AccSize;				/* Working register for scan_files function */
+static void * buffer;           /* create a scratch buffer on heap later */
+int32_t AccSize;                /* Working register for scan_files function */
 int16_t AccFiles, AccDirs;
 
 static FATFS *fs;               /* Pointer to the filesystem object (on heap) */
@@ -52,6 +54,7 @@ int8_t ya_loadb(char **args);   // load the nominated bank and address with bina
 int8_t ya_saveb(char **args);   // save the nominated bank from 0x0100 to 0xF000 by default
 
 // system related functions
+int8_t ya_md(char **args);      // memory dump
 int8_t ya_reset(char **args);   // reset YAZ180 to cold start, clear all bank information
 int8_t ya_help(char **args);    // help
 int8_t ya_exit(char **args);    // exit and halt
@@ -101,10 +104,11 @@ struct Builtin builtins[] = {
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
     { "initb", &ya_initb, "[bank] [origin] - begin executing the nominated bank at nominated address"},
     { "loadh", &ya_loadh, "[bank] - load the nominated bank with intel hex"},
-    { "loadb", &ya_loadb, "[bank] [origin] - load the nominated bank from origin with binary code"},
+    { "loadb", &ya_loadb, "[path] [bank] [origin] - load the nominated bank from origin with binary code"},
     { "saveb", &ya_saveb, "[bank] [path] - save the nominated bank from 0x0100 to 0xF000"},
 
 // system related functions
+    { "md", &ya_md, "- [bank] [origin] - memory dump"},
     { "reset", &ya_reset, "- reset YAZ180 to cold start, clear all bank information"},
     { "help", &ya_help, "- this is it"},
     { "exit", &ya_exit, "- exit and halt"},
@@ -155,7 +159,7 @@ int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
 
     if (page0Template != NULL && args[1] != NULL)
     {
-        memcpy(&page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
+        memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
         // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
         // existing RST jumps and INT0 code is correctly copied.
         *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
@@ -168,10 +172,13 @@ int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
         
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
+
+        fprintf(stdout,"Initialised Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
     free(page0Template);
     return 1;
 }
+
 
 
 /**
@@ -188,6 +195,8 @@ int8_t ya_mvb(char **args)    // move or clone the nominated bank
         
         // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
+
+        fprintf(stdout,"Cloned Bank:%01X to Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
     }
     return 1;
 } 
@@ -200,7 +209,16 @@ int8_t ya_mvb(char **args)    // move or clone the nominated bank
  */
 int8_t ya_rmb(char **args)     // remove the nominated bank (to cold state)
 {
-   (void *)args;
+    if (args[1] == NULL) {
+        fprintf(stderr, "yash: expected 1 argument to \"rmb\"\n");
+    } else {
+        // set bank referenced from _bankLockBase, so the the bank is noted as cold.
+        bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
+        
+        memset_far((void *)0x0000, (int8_t)atoi(args[1]), 0x76, (__COMMON_AREA_1_BASE-0)); // copy HALT to our deleted BANK
+        
+        fprintf(stdout,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
+    }
    return 1;
 }
 
@@ -219,14 +237,27 @@ int8_t ya_lsb(char **args)     // list the usage of banks, and whether they are 
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "initb".  args[1] is the nominated bank.
-   @return Always returns 1, to continue executing.
+   @param args List of args.  args[0] is "initb".  args[1] is the nominated bank. args[2] is the nominated origin.
+   @return NEVER RETURNS.
  */
 int8_t ya_initb(char **args)  // jump to and begin executing the nominated bank at nominated address
 {
-    (void *)args;
-    return 1;
-} 
+    uint8_t * origin;
+    uint8_t bank;
+
+    if (args[1] == NULL && args[2] == NULL) {
+        fprintf(stderr, "yash: expected 2 arguments to \"initb\"\n");
+    } else {
+        if (args[2] == NULL) {
+            origin = (uint8_t *)0x100;
+        } else {
+            origin = (uint8_t *)(uint16_t)strtoul(args[2], NULL, 16);
+        }
+        bank = (int8_t)atoi(args[1]);
+        jp_far(origin, bank);
+    }
+    return;
+}
 
 
 /**
@@ -236,19 +267,89 @@ int8_t ya_initb(char **args)  // jump to and begin executing the nominated bank 
  */
 int8_t ya_loadh(char **args) // load the nominated bank with intel hex
 {
-    (void *)args;
+    if (args[1] == NULL) {
+        fprintf(stderr, "yash: expected 1 argument to \"loadh\"\n");
+    } else {
+        load_hex(bank_get_abs((int8_t)atoi(args[1])));
+    }
+    // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+    lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
+
+    fprintf(stdout,"Loaded Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
     return 1;
 }  
 
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "loadb".  args[1] is the nominated bank. args[2] is the origin address.
+   @param args List of args.  args[0] is "loadb".  args[1] is the path.
+        args[2] is the nominated bank. args[3] is the origin address.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_loadb(char **args)   // load the nominated bank and address with binary code
 {
-    (void *)args;
+    FRESULT res;
+    uint8_t * dest;
+    uint32_t p1;
+    uint16_t s1;
+
+    time_t startTime, finishTime;
+    uint8_t startTimeFraction, finishTimeFraction;
+
+    if (args[1] == NULL && args[2] == NULL) {
+        fprintf(stderr, "yash: expected 3 arguments to \"loadb\"\n");
+    } else {
+        if (args[3] == NULL) {
+            dest = (uint8_t *)0x0100;
+        } else {
+            dest = (uint8_t *)(uint16_t)strtoul(args[3], NULL, 16);
+        }
+        fprintf(stdout,"Opening \"%s\"", args[1]);
+        res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
+        fputc('\n', stdout);
+        if (res != FR_OK) {
+            put_rc(res);
+            return 1;
+        }
+        fprintf(stdout,"Loading \"%s\" to %01X:%04X...", args[1], bank_get_abs((int8_t)atoi(args[2])), (uint16_t)dest );
+
+        __critical
+        {
+            startTimeFraction = _system_time_fraction;
+            startTime = _system_time;
+        }
+        p1 = 0;
+        while ((uint16_t)dest < (__COMMON_AREA_1_BASE-0)) {
+            res = f_read(&File[0], buffer, sizeof(buffer), &s1);
+            if (res != FR_OK || s1 == 0) break;   /* error or eof */
+
+            if (s1 > (__COMMON_AREA_1_BASE-0) - (uint16_t)dest) {       // don't overwrite COMMON AREA 1
+                s1 = (__COMMON_AREA_1_BASE-0) - (uint16_t)dest;
+            }
+            memcpy_far((void *)dest, (int8_t)atoi(args[2]), buffer, 0, s1);     // write s1 bytes to ram
+            dest += s1;
+            p1 += s1;
+        }
+        __critical
+        {
+            finishTimeFraction = _system_time_fraction;
+            finishTime = _system_time;
+        }
+
+        f_close(&File[0]);
+
+        // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+        lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] );
+
+        if(finishTimeFraction < startTimeFraction) {
+            finishTime -= (startTime+1);
+            finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
+        } else {
+            finishTime -= startTime;
+            finishTimeFraction -= startTimeFraction;
+        }
+        fprintf(stdout, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+    }
     return 1;
 }
 
@@ -260,12 +361,105 @@ int8_t ya_loadb(char **args)   // load the nominated bank and address with binar
  */
 int8_t ya_saveb(char **args)   // save the nominated bank from 0x0100 to CBAR 0xF000 by default
 {
-    (void *)args;
+    FRESULT res;
+    uint8_t * origin;
+    uint32_t p1;
+    uint16_t s1, s2;
+
+    time_t startTime, finishTime;
+    uint8_t startTimeFraction, finishTimeFraction;
+
+    if (args[1] == NULL && args[2] == NULL) {
+        fprintf(stderr, "yash: expected 2 arguments to \"saveb\"\n");
+    } else {
+        origin = (uint8_t *)0x0100;
+
+        fprintf(stdout,"Creating \"%s\"...", args[2]);
+        res = f_open(&File[0], (const TCHAR *)args[2], FA_CREATE_ALWAYS | FA_WRITE);
+        fputc('\n', stdout);
+        if (res != FR_OK) {
+            put_rc(res);
+            return 1;
+        }
+        fprintf(stdout,"Saving Bank %01X to \"%s\"", bank_get_abs((int8_t)atoi(args[1])), args[2] );
+
+        __critical
+        {
+            startTimeFraction = _system_time_fraction;
+            startTime = _system_time;
+        }
+        p1 = 0;
+        while ((uint16_t)origin < (__COMMON_AREA_1_BASE-0)) {
+            memcpy_far(buffer, 0, (void *)origin, (uint8_t)atoi(args[1]), sizeof(buffer));   // read sizeof(buffer) bytes from ram
+
+            s1 = sizeof(buffer);
+
+            if (s1 > (__COMMON_AREA_1_BASE-0) - (uint16_t)origin) {       // don't overwrite COMMON AREA 1
+                s1 = (__COMMON_AREA_1_BASE-0) - (uint16_t)origin;
+            }
+
+            if ( s1 == 0) break;                /* end of BANK at (__COMMON_AREA_1_BASE-1) */
+            
+            res = f_write(&File[0], buffer, s1, &s2);
+            origin += s2;            
+            p1 += s2;
+            if (res != FR_OK || s2 < s1) break; /* error or disk full */
+        }
+        __critical
+        {
+            finishTimeFraction = _system_time_fraction;
+            finishTime = _system_time;
+        }
+
+        f_close(&File[0]);
+
+        // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+        lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] );
+
+        if(finishTimeFraction < startTimeFraction) {
+            finishTime -= (startTime+1);
+            finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
+        } else {
+            finishTime -= startTime;
+            finishTimeFraction -= startTimeFraction;
+        }
+        fprintf(stdout, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+    }
     return 1;
 }
 
 
 // system related functions
+
+/**
+   @brief Builtin command: 
+   @param args List of args.  args[0] is "md". args[1] is the nominated bank. args[2] is the origin address.
+   @return Always returns 1, to continue executing.
+ */
+int8_t ya_md(char **args)   // dump RAM contents from nominated bank from nominated origin.
+{  
+    static uint8_t * origin;
+    static uint8_t bank;
+    uint32_t ofs;
+    uint8_t * ptr;
+
+    if (args[1] != NULL && args[2] != NULL) {
+        bank = bank_get_abs((int8_t)atoi(args[1]));
+        origin = (uint8_t *)(uint16_t)strtoul(args[2], NULL, 16);
+    } else {
+        fprintf(stderr, "yash: expected 2 arguments to \"md\"\n");    
+    }
+
+    memcpy_far(buffer, 0, origin, (int8_t)bank, 0x100); // grab a page
+    fprintf(stdout, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
+    origin += 256;                                      // go to next page (next time)
+    
+    for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x100; ptr += 16, ofs += 16) {
+        put_dump(ptr, ofs, 16);
+    }
+    return 1;
+}
+
 
 /**
    @brief Builtin command: 
@@ -323,37 +517,37 @@ int8_t ya_exit(char **args)
 int8_t ya_ls(char **args)
 {
     FRESULT res;
-    int32_t p1;
-	uint16_t s1, s2;
+    uint32_t p1;
+    uint16_t s1, s2;
 
-	res = f_opendir(dir, (const TCHAR*)args[1]);
-	if (res != FR_OK) { put_rc(res); return 1; }
-	p1 = s1 = s2 = 0;
-	while(1) {
-		res = f_readdir(dir, &Finfo);
-		if ((res != FR_OK) || !Finfo.fname[0]) break;
-		if (Finfo.fattrib & AM_DIR) {
-			s2++;
-		} else {
-			s1++; p1 += Finfo.fsize;
-		}
-		fprintf(stdout, "%c%c%c%c%c %u/%02u/%02u %02u:%02u %9lu  %s\n",
-				(Finfo.fattrib & AM_DIR) ? 'D' : '-',
-				(Finfo.fattrib & AM_RDO) ? 'R' : '-',
-				(Finfo.fattrib & AM_HID) ? 'H' : '-',
-				(Finfo.fattrib & AM_SYS) ? 'S' : '-',
-				(Finfo.fattrib & AM_ARC) ? 'A' : '-',
-				(Finfo.fdate >> 9) + 1980, (Finfo.fdate >> 5) & 15, Finfo.fdate & 31,
-				(Finfo.ftime >> 11), (Finfo.ftime >> 5) & 63,
-				(DWORD)Finfo.fsize, Finfo.fname);
-	}
-	fprintf(stdout, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
-	res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
-	if (res == FR_OK)
-		fprintf(stdout, ", %10lu bytes free\n", p1 * fs->csize * 512);
-	else
-		put_rc(res);
-    
+    res = f_opendir(dir, (const TCHAR*)args[1]);
+    if (res != FR_OK) { put_rc(res); return 1; }
+    p1 = s1 = s2 = 0;
+    while(1) {
+        res = f_readdir(dir, &Finfo);
+        if ((res != FR_OK) || !Finfo.fname[0]) break;
+        if (Finfo.fattrib & AM_DIR) {
+            s2++;
+        } else {
+            s1++; p1 += Finfo.fsize;
+        }
+        fprintf(stdout, "%c%c%c%c%c %u/%02u/%02u %02u:%02u %9lu  %s\n",
+                (Finfo.fattrib & AM_DIR) ? 'D' : '-',
+                (Finfo.fattrib & AM_RDO) ? 'R' : '-',
+                (Finfo.fattrib & AM_HID) ? 'H' : '-',
+                (Finfo.fattrib & AM_SYS) ? 'S' : '-',
+                (Finfo.fattrib & AM_ARC) ? 'A' : '-',
+                (Finfo.fdate >> 9) + 1980, (Finfo.fdate >> 5) & 15, Finfo.fdate & 31,
+                (Finfo.ftime >> 11), (Finfo.ftime >> 5) & 63,
+                (DWORD)Finfo.fsize, Finfo.fname);
+    }
+    fprintf(stdout, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
+    res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
+    if (res == FR_OK) {
+        fprintf(stdout, ", %10lu bytes free\n", p1 * fs->csize * 512);
+    } else {
+        put_rc(res);
+    }
     return 1;
 }
 
@@ -382,8 +576,8 @@ int8_t ya_rm(char **args)      // delete a directory or file
 int8_t ya_mv(char **args)      // copy a file
 {
     FRESULT res;
-    int32_t p1;
-	uint16_t s1, s2;
+    uint32_t p1;
+    uint16_t s1, s2;
 
     time_t startTime, finishTime;
     uint8_t startTimeFraction, finishTimeFraction;
@@ -391,52 +585,49 @@ int8_t ya_mv(char **args)      // copy a file
     if (args[1] == NULL && args[2] == NULL) {
         fprintf(stderr, "yash: expected 2 arguments to \"mv\"\n");
     } else {
-	    fprintf(stdout,"Opening \"%s\"", args[1]);
-	    res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
-	    fputc('\n', stdout);
-	    if (res != FR_OK) {
-		    put_rc(res);
-		    return 1;
-	    }
-	    fprintf(stdout,"Creating \"%s\"", args[2]);
-	    res = f_open(&File[1], (const TCHAR*)args[2], FA_CREATE_ALWAYS | FA_WRITE);
-	    fputc('\n', stdout);
-	    if (res != FR_OK) {
-		    put_rc(res);
-		    f_close(&File[0]);
-		    return 1;
-	    }
-	    fprintf(stdout,"Copying file...");
+        fprintf(stdout,"Opening \"%s\"", args[1]);
+        res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
+        fputc('\n', stdout);
+        if (res != FR_OK) {
+            put_rc(res);
+            return 1;
+        }
+        fprintf(stdout,"Creating \"%s\"", args[2]);
+        res = f_open(&File[1], (const TCHAR*)args[2], FA_CREATE_ALWAYS | FA_WRITE);
+        fputc('\n', stdout);
+        if (res != FR_OK) {
+            put_rc(res);
+            f_close(&File[0]);
+            return 1;
+        }
+        fprintf(stdout,"Copying file...");
 
         __critical
         {
             startTimeFraction = _system_time_fraction;
             startTime = _system_time;
         }
-	    p1 = 0;
-	    while (1) {
-		    res = f_read(&File[0], buffer, sizeof(buffer), &s1);
-		    if (res != FR_OK || s1 == 0) break;   /* error or eof */
-		    res = f_write(&File[1], buffer, s1, &s2);
-		    p1 += s2;
-		    if (res != FR_OK || s2 < s1) break;   /* error or disk full */
-	    }
+        p1 = 0;
+        while (1) {
+            res = f_read(&File[0], buffer, sizeof(buffer), &s1);
+            if (res != FR_OK || s1 == 0) break;   /* error or eof */
+            res = f_write(&File[1], buffer, s1, &s2);
+            p1 += s2;
+            if (res != FR_OK || s2 < s1) break;   /* error or disk full */
+        }
         __critical
         {
             finishTimeFraction = _system_time_fraction;
             finishTime = _system_time;
         }
 
-	    f_close(&File[0]);
-	    f_close(&File[1]);
-	    
-	    if(finishTimeFraction < startTimeFraction)
-        {
+        f_close(&File[1]);
+        f_close(&File[0]);
+        
+        if(finishTimeFraction < startTimeFraction) {
             finishTime -= (startTime+1);
             finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
-        }
-        else
-        {
+        } else {
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
@@ -476,13 +667,13 @@ int8_t ya_pwd(char **args)     // show the current working directory
     
     line = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));       /* Get work area for the line buffer */
     
-    if (line != NULL)
-    {
+    if (line != NULL) {
         res = f_getcwd(line, sizeof(line));
-        if (res != FR_OK)
-	        put_rc(res);
-        else
-	        fprintf(stdout, "%s\n", line);
+        if (res != FR_OK) {
+            put_rc(res);
+        } else {
+            fprintf(stdout, "%s\n", line);
+        }
     }
     free(line);
     return 1;
@@ -587,33 +778,33 @@ int8_t ya_ds(char **args)      // disk status
     int32_t p2;
 #endif
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
-	
+    
     if (args[1] == NULL) {
         fprintf(stderr, "yash: expected 1 argument to \"ds\"\n");
     } else {
-	    res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
-	    if (res != FR_OK) { put_rc(res); return 1; }
-	    fprintf(stdout, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
-			    "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
-			    "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n\n",
-			    ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
-			    fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
-			    fs->volbase, fs->fatbase, fs->dirbase, fs->database);
+        res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
+        if (res != FR_OK) { put_rc(res); return 1; }
+        fprintf(stdout, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
+                "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
+                "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n\n",
+                ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
+                fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
+                fs->volbase, fs->fatbase, fs->dirbase, fs->database);
 #if FF_USE_LABEL
-	    res = f_getlabel((const TCHAR*)args[1], (char*)buffer, (DWORD*)&p2);
-	    if (res != FR_OK) { put_rc(res); return 1; }
-	    fprintf(stdout, buffer[0] ? "Volume name is %s\n" : "No volume label\n", (char*)buffer);
-	    fprintf(stdout, "Volume S/N is %04X-%04X\n", (DWORD)p2 >> 16, (DWORD)p2 & 0xFFFF);
+        res = f_getlabel((const TCHAR*)args[1], (char*)buffer, (DWORD*)&p2);
+        if (res != FR_OK) { put_rc(res); return 1; }
+        fprintf(stdout, buffer[0] ? "Volume name is %s\n" : "No volume label\n", (char*)buffer);
+        fprintf(stdout, "Volume S/N is %04X-%04X\n", (DWORD)p2 >> 16, (DWORD)p2 & 0xFFFF);
 #endif
-	    AccSize = AccFiles = AccDirs = 0;
-	    fprintf(stdout, "...");
-	    res = scan_files(args[1]);
-	    if (res != FR_OK) { put_rc(res); return 1; }
-	    fprintf(stdout, "\r%u files, %lu bytes.\n%u folders.\n"
-			    "%lu KiB total disk space.\n%lu KiB available.\n",
-			    AccFiles, AccSize, AccDirs,
-			    (fs->n_fatent - 2) * (fs->csize / 2), (DWORD)p1 * (fs->csize / 2) );
-	}
+        AccSize = AccFiles = AccDirs = 0;
+        fprintf(stdout, "...");
+        res = scan_files(args[1]);
+        if (res != FR_OK) { put_rc(res); return 1; }
+        fprintf(stdout, "\r%u files, %lu bytes.\n%u folders.\n"
+                "%lu KiB total disk space.\n%lu KiB available.\n",
+                AccFiles, AccSize, AccDirs,
+                (fs->n_fatent - 2) * (fs->csize / 2), (DWORD)p1 * (fs->csize / 2) );
+    }
     return 1;
 }
 
@@ -632,15 +823,15 @@ int8_t ya_dd(char **args)      // disk dump
     uint8_t * ptr;
 
     if (args[1] != NULL && args[2] != NULL) {
-        drv = atoi(args[1]);
-        sect = (uint32_t)atol(args[2]);
+        drv = (uint8_t)strtoul(args[1], NULL, 10);
+        sect = strtoul(args[2], NULL, 10);
     }
 
-	res = disk_read(drv, buffer, sect, 1);
-	if (res != FR_OK) { fprintf(stdout, "rc=%d\n", (WORD)res); return 1; }
-	fprintf(stdout, "PD#:%u LBA:%lu\n", drv, sect++);
-	for (ptr=(uint8_t*)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
-		put_dump(ptr, ofs, 16);
+    res = disk_read(drv, buffer, sect, 1);
+    if (res != FR_OK) { fprintf(stdout, "rc=%d\n", (WORD)res); return 1; }
+    fprintf(stdout, "PD#:%u LBA:%lu\n", drv, sect++);
+    for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
+        put_dump(ptr, ofs, 16);
     return 1;
 }
 
@@ -654,7 +845,7 @@ int8_t ya_dd(char **args)      // disk dump
  */
 int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
 {
-    set_system_time((uint32_t)atol(args[1]) - UNIX_OFFSET);
+    set_system_time(strtoul(args[1], NULL, 10) - UNIX_OFFSET);
     return 1;
 }
 
@@ -666,7 +857,7 @@ int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
  */
 int8_t ya_tz(char **args)      // set timezone (no daylight savings, so adjust manually)
 {
-    set_zone(atol(args[1]) * ONE_HOUR);
+    set_zone(strtoul(args[1], NULL, 10) * ONE_HOUR);
     return 1;
 }
 
@@ -679,7 +870,7 @@ int8_t ya_tz(char **args)      // set timezone (no daylight savings, so adjust m
 int8_t ya_diso(char **args)    // print the local time in ISO std: 2013-03-23 01:03:52
 {
     time_t theTime;    
-    struct tm CurrTimeDate; 			// set up an array for the RTC info.
+    struct tm CurrTimeDate;             // set up an array for the RTC info.
     char timeStore[26];
 
     (void *)args;
@@ -701,7 +892,7 @@ int8_t ya_diso(char **args)    // print the local time in ISO std: 2013-03-23 01
 int8_t ya_date(char **args)    // print the local time: Sun Mar 23 01:03:52 2013
 {
     time_t theTime;    
-    struct tm CurrTimeDate; 			// set up an array for the RTC info.
+    struct tm CurrTimeDate;             // set up an array for the RTC info.
     char timeStore[26];
 
     (void *)args;
@@ -720,63 +911,63 @@ int8_t ya_date(char **args)    // print the local time: Sun Mar 23 01:03:52 2013
 static
 void put_rc (FRESULT rc)
 {
-	const char *str =
-		"OK\0" "DISK_ERR\0" "INT_ERR\0" "NOT_READY\0" "NO_FILE\0" "NO_PATH\0"
-		"INVALID_NAME\0" "DENIED\0" "EXIST\0" "INVALID_OBJECT\0" "WRITE_PROTECTED\0"
-		"INVALID_DRIVE\0" "NOT_ENABLED\0" "NO_FILE_SYSTEM\0" "MKFS_ABORTED\0" "TIMEOUT\0"
-		"LOCKED\0" "NOT_ENOUGH_CORE\0" "TOO_MANY_OPEN_FILES\0" "INVALID_PARAMETER\0";
-	FRESULT i;
+    const char *str =
+        "OK\0" "DISK_ERR\0" "INT_ERR\0" "NOT_READY\0" "NO_FILE\0" "NO_PATH\0"
+        "INVALID_NAME\0" "DENIED\0" "EXIST\0" "INVALID_OBJECT\0" "WRITE_PROTECTED\0"
+        "INVALID_DRIVE\0" "NOT_ENABLED\0" "NO_FILE_SYSTEM\0" "MKFS_ABORTED\0" "TIMEOUT\0"
+        "LOCKED\0" "NOT_ENOUGH_CORE\0" "TOO_MANY_OPEN_FILES\0" "INVALID_PARAMETER\0";
+    FRESULT i;
 
-	for (i = 0; i != rc && *str; i++) {
-		while (*str++) ;
-	}
-	fprintf(stderr,"\nrc=%u FR_%s\n", (uint8_t)rc, str);
+    for (i = 0; i != rc && *str; i++) {
+        while (*str++) ;
+    }
+    fprintf(stderr,"\nrc=%u FR_%s\n", (uint8_t)rc, str);
 }
 
 
 static
 void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt)
 {
-	uint8_t i;
+    uint8_t i;
 
-	fprintf(stdout,"%08lX:", ofs);
+    fprintf(stdout,"%08lX:", ofs);
 
-	for(i = 0; i < cnt; i++)
-		fprintf(stdout," %02X", buff[i]);
-
-	fputc(' ', stdout);
-	for(i = 0; i < cnt; i++)
-		fputc((buff[i] >= ' ' && buff[i] <= '~') ? buff[i] : '.', stdout);
-
-	fputc('\n', stdout);
+    for(i = 0; i < cnt; i++) {
+        fprintf(stdout," %02X", buff[i]);
+    }
+    fputc(' ', stdout);
+    for(i = 0; i < cnt; i++) {
+        fputc((buff[i] >= ' ' && buff[i] <= '~') ? buff[i] : '.', stdout);
+    }
+    fputc('\n', stdout);
 }
 
 
 static
 FRESULT scan_files (
-	char* path		/* Pointer to the path name working buffer */
+    char* path        /* Pointer to the path name working buffer */
 )
 {
-	DIR dirs;
-	FRESULT res;
-	BYTE i;
+    DIR dirs;
+    FRESULT res;
+    BYTE i;
 
-	if ((res = f_opendir(&dirs, path)) == FR_OK) {
-		while (((res = f_readdir(&dirs, &Finfo)) == FR_OK) && Finfo.fname[0]) {
-			if (Finfo.fattrib & AM_DIR) {
-				AccDirs++;
-				i = strlen(path);
-				path[i] = '/'; strcpy(&path[i+1], Finfo.fname);
-				res = scan_files(path);
-				path[i] = '\0';
-				if (res != FR_OK) break;
-			} else {
-				AccFiles++;
-				AccSize += Finfo.fsize;
-			}
-		}
-	}
-	return res;
+    if ((res = f_opendir(&dirs, path)) == FR_OK) {
+        while (((res = f_readdir(&dirs, &Finfo)) == FR_OK) && Finfo.fname[0]) {
+            if (Finfo.fattrib & AM_DIR) {
+                AccDirs++;
+                i = strlen(path);
+                path[i] = '/'; strcpy(&path[i+1], Finfo.fname);
+                res = scan_files(path);
+                path[i] = '\0';
+                if (res != FR_OK) break;
+            } else {
+                AccFiles++;
+                AccSize += Finfo.fsize;
+            }
+        }
+    }
+    return res;
 }
 
 
@@ -858,6 +1049,7 @@ char *ya_read_line(void)
             }
         }
     }
+    return line_buffer;   // never reaches here, but keep compiler happy
 }
 
 #define YA_TOK_BUFSIZE 32
