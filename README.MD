@@ -29,7 +29,7 @@ It is my attempt to create a perfect mix of "ancient" and  modern computing tech
 
 The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled programs.
 
-The YAZ180 is fully open source. All documentation and design is available from this repository. I will be making the raw PCBs and completed YAZ180 boards available on [Tindie](https://www.tindie.com/stores/feilipu/), shortly.
+The YAZ180 is fully open source. All documentation and design is available from this repository. I have made the raw PCBs available on [Tindie](https://www.tindie.com/products/feilipu/yaz180-pcb-modern-single-board-z180-computer/). I will find a way to get finished YAZ180 computers available shortly.
 
 ## Concept
 
