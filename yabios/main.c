@@ -99,16 +99,16 @@ struct Builtin builtins[] = {
   
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
-    { "mvb", &ya_mvb, "[src] [dest] - move or clone the nominated bank"},
+    { "mvb", &ya_mvb, "[src][dest] - move or clone the nominated bank"},
     { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
-    { "initb", &ya_initb, "[bank] [origin] - begin executing the nominated bank at nominated address"},
+    { "initb", &ya_initb, "[bank][origin] - begin executing the nominated bank at nominated address"},
     { "loadh", &ya_loadh, "[bank] - load the nominated bank with intel hex"},
-    { "loadb", &ya_loadb, "[path] [bank] [origin] - load the nominated bank from origin with binary code"},
-    { "saveb", &ya_saveb, "[bank] [path] - save the nominated bank from 0x0100 to 0xF000"},
+    { "loadb", &ya_loadb, "[path][bank][origin] - load the nominated bank from origin with binary code"},
+    { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
 // system related functions
-    { "md", &ya_md, "- [bank] [origin] - memory dump"},
+    { "md", &ya_md, "- [bank][origin] - memory dump"},
     { "reset", &ya_reset, "- reset YAZ180 to cold start, clear all bank information"},
     { "help", &ya_help, "- this is it"},
     { "exit", &ya_exit, "- exit and halt"},
@@ -116,17 +116,17 @@ struct Builtin builtins[] = {
 // fat related functions
     { "ls", &ya_ls, "[path] - directory listing"},
     { "rm", &ya_rm, "[path] - delete a file"},
-    { "mv", &ya_mv, "[src] [dest] - copy a file"},
+    { "mv", &ya_mv, "[src][dest] - copy a file"},
     { "cd", &ya_cd, "[path] - change the current working directory"},
     { "pwd", &ya_pwd, "- show the current working directory"},
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
-    { "chmod", &ya_chmod, "[path] [attr] [mask] - change file or directory attributes"},
-    { "mkfs", &ya_mkfs, "[type] [block size] - create a FAT file system (excluded)"},
-    { "mount", &ya_mount, "[path] [option] - mount a FAT file system"},
+    { "chmod", &ya_chmod, "[path][attr][mask] - change file or directory attributes"},
+    { "mkfs", &ya_mkfs, "[type][block size] - create a FAT file system (excluded)"},
+    { "mount", &ya_mount, "[path][option] - mount a FAT file system"},
 
 // disk related functions
     { "ds", &ya_ds, "[drive] - disk status"},
-    { "dd", &ya_dd, "[drive] [sector] - disk dump"},
+    { "dd", &ya_dd, "[drive][sector] - disk dump"},
 
 // time related functions
     { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch)"},
@@ -196,7 +196,7 @@ int8_t ya_mvb(char **args)    // move or clone the nominated bank
         // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
 
-        fprintf(stdout,"Cloned Bank:%01X to Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
+        fprintf(stdout,"Cloned Bank:%01X into Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
     }
     return 1;
 } 

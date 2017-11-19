@@ -19,8 +19,6 @@ We have `$0600` bytes of aligned buffers, with the two ASCI and the APU. Put the
 
 So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x00` bytes later at `$FFE0`.
 
-We can use the `$20` bytes from `$FFC0` to `$FFDF` to record the local `SP` for each of the 15 `BANKnn`, and system SP for `BANK0`.
-
 That puts the initial system stack pointer at `$FFC0`, with two bytes available at `$FFC0` to enable the global SP to be stored, when local SP is switched over.
 
 ## Modifying the memory model
