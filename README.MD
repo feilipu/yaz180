@@ -31,8 +31,6 @@ The YAZ180 is supported by the Z88dk and it is designed to work with both tradit
 
 The YAZ180 is fully open source. All documentation and design is available from this repository. I have made the raw PCBs available on [Tindie](https://www.tindie.com/products/feilipu/yaz180-pcb-modern-single-board-z180-computer/). I will find a way to get finished YAZ180 computers available shortly.
 
-<a href="https://www.tindie.com/stores/feilipu/?ref=offsite_badges&utm_source=sellers_feilipu&utm_medium=badges&utm_campaign=badge_large"><img src="https://d2ss6ovg47m0r5.cloudfront.net/badges/tindie-larges.png" alt="I sell on Tindie" width="200" height="104"/></a>
-
 ## Concept
 
 The Z180 CPU is based on the Z80 CPU, but it includes a number of integrated peripherals including a basic Memory Management Unit (MMU), two serial interfaces (ASCI0 & ASCI1), two DMA controllers (DMAC0 & DMAC1), and two Programmable Reload Timers (PRT0 & PRT1).
@@ -90,6 +88,8 @@ This is the maximum size supported by the Eagle "Hobby Licence", which was used 
 </tbody>
 </table>
 </div>
+
+<a href="https://www.tindie.com/stores/feilipu/?ref=offsite_badges&utm_source=sellers_feilipu&utm_medium=badges&utm_campaign=badge_large"><img src="https://d2ss6ovg47m0r5.cloudfront.net/badges/tindie-larges.png" alt="I sell on Tindie" width="200" height="104"/></a>
 
 The YAZ180 requires 15V to 40V, 2A power supply, through a standard 2.1mm barrel jack.<br>
 If you are not equipping the Am9511A-1 APU, then the minimum required supply voltage drops to 7V.

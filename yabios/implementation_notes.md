@@ -77,5 +77,23 @@ The boot monitor code will be the major program located in `BANK0` Flash, and th
 
 I modified the `call_far` code to make a `jp_far` using the `RSTx + DEFW + DEFC` mechanism, but forgot that a `jp` instruction doesn't push the `PC` onto the stack. Therefore there is no way to know from whence the program arrived, when it hits the `rst` instruction. Damn. It would have been so nice to just switch banks like that. I guess the only way to do it is off the stack (costing the ability to pass some parameters).
 
+## Compilation Command Line
+
+First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
+
+```bash
+zcc +yaz180 -v -subtype=yabios -SO3 --list -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --max-allocs-per-node100000 main.c -gpf yabios.rex -o yabios -create-app
+```
+This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
+
+It also generates a `yabios.def` file containing the calling linkages for the particular compile. Note that this API will be quite unstable, because of the constant development in Z88dk, sdcc, and the resulting sizes of the `ff.lib` and `time.lib` system libraries. So once the YAZ180 flash is written, then the `yaz180.def` API will be needed for every application.
+
+## Loading Flash from outside yabios
+
+It is possible to load `BANK13`, `BANK14`, and `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` command and then executed using `initb` as normal.
+
+
+
+
 
 
