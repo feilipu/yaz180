@@ -86,7 +86,7 @@ zcc +yaz180 -v -subtype=yabios -SO3 --list -m -clib=sdcc_iy -llib/yaz180/ff -lli
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
-It also generates a `yabios.def` file containing the calling linkages for the particular compile. Note that this API will be quite unstable, because of the constant development in Z88dk, sdcc, and the resulting sizes of the `ff.lib` and `time.lib` system libraries. So once the YAZ180 flash is written, then the `yaz180.def` API will be needed for every application.
+It also generates a `yabios.def` file containing the calling linkages for the particular compile. Note that this API will be quite unstable, because of the constant development in Z88dk, sdcc, and the resulting sizes of the `ff.lib` and `time.lib` system libraries. So once the YAZ180 flash is written, then the `yaz180.def` (or possibly renamed to `yaz180.asm`) API will be needed for every application.
 
 ## Loading Flash from outside yabios
 
