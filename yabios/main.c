@@ -251,7 +251,7 @@ int8_t ya_initb(char **args)  // jump to and begin executing the nominated bank 
         if (args[2] == NULL) {
             origin = (uint8_t *)0x100;
         } else {
-            origin = (uint8_t *)(uint16_t)strtoul(args[2], NULL, 16);
+            origin = (uint8_t *)strtoul(args[2], NULL, 16);
         }
         bank = (int8_t)atoi(args[1]);
         jp_far(origin, bank);
@@ -302,7 +302,7 @@ int8_t ya_loadb(char **args)   // load the nominated bank and address with binar
         if (args[3] == NULL) {
             dest = (uint8_t *)0x0100;
         } else {
-            dest = (uint8_t *)(uint16_t)strtoul(args[3], NULL, 16);
+            dest = (uint8_t *)strtoul(args[3], NULL, 16);
         }
         fprintf(stdout,"Opening \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
@@ -443,17 +443,21 @@ int8_t ya_md(char **args)   // dump RAM contents from nominated bank from nomina
     uint32_t ofs;
     uint8_t * ptr;
 
-    if (args[1] != NULL && args[2] != NULL) {
-        bank = bank_get_abs((int8_t)atoi(args[1]));
-        origin = (uint8_t *)(uint16_t)strtoul(args[2], NULL, 16);
+    if (args[1] == NULL && args[2] == NULL) {
+        fprintf(stderr, "yash: expected 2 arguments to \"md\"\n");
     } else {
-        fprintf(stderr, "yash: expected 2 arguments to \"md\"\n");    
+        if (args[2] == NULL) {
+             origin = (uint8_t *)strtoul(args[1], NULL, 16);
+        } else {
+            bank = bank_get_abs((int8_t)atoi(args[1]));
+            origin = (uint8_t *)strtoul(args[2], NULL, 16);        
+        }
     }
 
-    memcpy_far(buffer, 0, origin, (int8_t)bank, 0x100); // grab a page
+    memcpy_far(buffer, 0, (void *)origin, (int8_t)bank, 0x100); // grab a page
     fprintf(stdout, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
-    origin += 256;                                      // go to next page (next time)
-    
+    origin += 0x100;                                    // go to next page (next time)
+
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x100; ptr += 16, ofs += 16) {
         put_dump(ptr, ofs, 16);
     }
@@ -823,8 +827,8 @@ int8_t ya_dd(char **args)      // disk dump
     uint8_t * ptr;
 
     if (args[1] != NULL && args[2] != NULL) {
-        drv = (uint8_t)strtoul(args[1], NULL, 10);
-        sect = strtoul(args[2], NULL, 10);
+        drv = (uint8_t)atoi(args[1]);
+        sect = atol(args[2]);
     }
 
     res = disk_read(drv, buffer, sect, 1);
@@ -845,7 +849,7 @@ int8_t ya_dd(char **args)      // disk dump
  */
 int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
 {
-    set_system_time(strtoul(args[1], NULL, 10) - UNIX_OFFSET);
+    set_system_time(atol(args[1]) - UNIX_OFFSET);
     return 1;
 }
 
@@ -857,7 +861,7 @@ int8_t ya_clock(char **args)   // set the time (using UNIX epoch)
  */
 int8_t ya_tz(char **args)      // set timezone (no daylight savings, so adjust manually)
 {
-    set_zone(strtoul(args[1], NULL, 10) * ONE_HOUR);
+    set_zone(atol(args[1]) * ONE_HOUR);
     return 1;
 }
 
