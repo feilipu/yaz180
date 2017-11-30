@@ -15,7 +15,9 @@ The CP/M BIOS functions will be below the YABIOS area, because they relate only 
 
 ## Calculating `COMMON1` addresses
 
-We have `$0600` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom, then unaligned data starts at `$F600`. That allows the code section to flow after, and makes copying on setup a single transfer.
+We have `$0500` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom, then unaligned data starts at `$F500`. That allows the code section to flow after, and makes copying on setup a single transfer.
+
+The ASCI Tx buffers share a single page, and are interleaved. This provides 127 bytes of Tx buffer and doesn't require manual buffer wrapping. Page alignment ensure that we only have to increment the low address byte to have the buffer wrap properly.
 
 So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x00` bytes later at `$FFE0`.
 

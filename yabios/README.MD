@@ -49,7 +49,7 @@ Each one of these items will need to be implemented.
 - [x] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [x] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
-- [ ] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
+- [x] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
 - [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [x] Integrate existing FatFs code for IDE interface on 82C55.
 - [ ] I/O redirection for CP/M IOBYTE support

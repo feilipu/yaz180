@@ -488,7 +488,7 @@ int8_t ya_help(char **args)
 
     (void *)args;
 
-    printf("YAZ180 - yabios v0.1\n");
+    printf("YAZ180 - yabios v0.2\n");
     printf("The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
