@@ -173,7 +173,7 @@ boot:       ;simplest case is to just perform parameter initialization
     LD      hl, _cpm_ccp_tfcb
     LD      d, h
     LD      e, l
-    inc     de
+    INC     de
     LD      bc, 0x20-1
     LDIR                    ;clear default FCB
 
@@ -199,15 +199,15 @@ load1:                      ;load one more sector
     CALL    setsec          ;set sector address from register C
     POP     bc              ;recall dma address to B, C
     PUSH    bc              ;replace on stack for later recall
-    call    setdma          ;set dma address from B, C
+    CALL    setdma          ;set dma address from B, C
 
             ;drive set to 0, track set, sector set, dma address set
-    call    read
+    CALL    read
     CP      00h             ;any errors?
     JP      NZ,wboot         ;retry the entire boot if an error occurs
 
             ;no error, move to next sector
-    pop     hl              ;recall dma address
+    POP     hl              ;recall dma address
     LD      de, 128         ;dma=dma+128
     ADD     hl,de           ;new dma address is in h, l
     pop     de              ;recall sector address
@@ -236,7 +236,7 @@ load1:                      ;load one more sector
     JP      load1           ;for another sector
 
 ;
-;    end of    load operation, set parameters and go to cp/m
+;    end of load operation, set parameters and go to cp/m
 gocpm:
     LD      a, 0c3h         ;c3 is a jmp instruction
     LD      (0),a           ;for jmp to wboot

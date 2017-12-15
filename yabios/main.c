@@ -129,7 +129,7 @@ struct Builtin builtins[] = {
     { "dd", &ya_dd, "[drive][sector] - disk dump"},
 
 // time related functions
-    { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch)"},
+    { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch) 'date +%s'"},
     { "tz", &ya_tz, "[tz] - set timezone (no daylight saving)"},
     { "diso", &ya_diso, "- local time ISO format: 2013-03-23 01:03:52"},
     { "date", &ya_date, "- local time: Sun Mar 23 01:03:52 2013" }
@@ -173,7 +173,7 @@ int8_t ya_mkb(char **args)   // initialise the nominated bank (to warm state)
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
 
-        fprintf(stdout,"Initialised Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
+        fprintf(stdout,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
     free(page0Template);
     return 1;
@@ -488,7 +488,7 @@ int8_t ya_help(char **args)
 
     (void *)args;
 
-    printf("YAZ180 - yabios v0.2\n");
+    printf("YAZ180 - yabios v0.3\n");
     printf("The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {

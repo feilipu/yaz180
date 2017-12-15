@@ -46,7 +46,7 @@
 /* This option switches fast seek function. (0:Disable or 1:Enable) */
 
 
-#define FF_USE_EXPAND    0
+#define FF_USE_EXPAND    1
 /* This option switches f_expand function. (0:Disable or 1:Enable) */
 
 
@@ -136,7 +136,7 @@
 /  on character encoding. When LFN is not enabled, these options have no effect. */
 
 
-#define FF_STRF_ENCODE    3
+#define FF_STRF_ENCODE    0
 /* When FF_LFN_UNICODE >= 1 with LFN enabled, string I/O functions, f_gets(),
 /  f_putc(), f_puts and f_printf() convert the character encoding in it.
 /  This option selects assumption of character encoding ON THE FILE to be

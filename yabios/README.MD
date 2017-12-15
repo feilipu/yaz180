@@ -50,7 +50,7 @@ Each one of these items will need to be implemented.
 - [x] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
 - [x] [`RST+DEFW` System Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst20defw-system-call)
 - [x] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
-- [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
+- [x] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [x] Integrate existing FatFs code for IDE interface on 82C55.
 - [x] I/O redirection for CP/M IOBYTE support
 
@@ -65,7 +65,8 @@ Each one of these items will need to be implemented.
 
 ### Phase 3 - Flash Snapshot support
 
-- [ ] add flash support into `_ memcpy_far` or similar
+- [x] add flash read support into `_ memcpy_far`.
+- [ ] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
 - [ ] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
@@ -630,7 +631,7 @@ The command line interface is implemented in C, with the underlying functions ei
 - `dd [drive][sector]` - disk dump
 
 #### Time Functions
-- `clock [timestamp]` - set the time (UNIX epoch)
+- `clock [timestamp]` - set the time (UNIX epoch) using `date +%s`
 - `tz [tz]` - set timezone (no daylight saving)
 - `diso` - local time ISO format: 2013-03-23 01:03:52
 - `date` - local time: Sun Mar 23 01:03:52 2013

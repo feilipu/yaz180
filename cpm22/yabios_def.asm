@@ -9,136 +9,139 @@ PUBLIC _bank_cpm_bdos_addr
 DEFC _bank_cpm_bdos_addr             = $0006
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $5812
+DEFC _f_mount                        = $568B
 
 PUBLIC _f_open
-DEFC _f_open                         = $587F
+DEFC _f_open                         = $570A
 
 PUBLIC _f_read
-DEFC _f_read                         = $5D9D
+DEFC _f_read                         = $5C28
 
 PUBLIC _f_write
-DEFC _f_write                        = $62DA
+DEFC _f_write                        = $616D
 
 PUBLIC _f_sync
-DEFC _f_sync                         = $68C5
+DEFC _f_sync                         = $675E
 
 PUBLIC _f_close
-DEFC _f_close                        = $6A28
+DEFC _f_close                        = $68B7
 
 PUBLIC _f_chdir
-DEFC _f_chdir                        = $6A5E
+DEFC _f_chdir                        = $68ED
 
 PUBLIC _f_getcwd
-DEFC _f_getcwd                       = $6B15
+DEFC _f_getcwd                       = $69A4
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $6D8D
+DEFC _f_lseek                        = $6C1C
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $7331
+DEFC _f_opendir                      = $71B6
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7428
+DEFC _f_closedir                     = $72AD
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $744E
+DEFC _f_readdir                      = $72D3
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $74BF
+DEFC _f_stat                         = $7344
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $752C
+DEFC _f_getfree                      = $73B1
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $77EF
+DEFC _f_truncate                     = $7674
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $7A15
+DEFC _f_unlink                       = $789A
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $7BB9
+DEFC _f_mkdir                        = $7A3E
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $7E1D
+DEFC _f_rename                       = $7CA2
 
 PUBLIC _f_chmod
-DEFC _f_chmod                        = $8139
+DEFC _f_chmod                        = $7FD2
 
 PUBLIC _f_utime
-DEFC _f_utime                        = $81E4
+DEFC _f_utime                        = $807D
+
+PUBLIC _f_expand
+DEFC _f_expand                       = $816A
 
 PUBLIC _f_gets
-DEFC _f_gets                         = $82AB
+DEFC _f_gets                         = $85D3
 
 PUBLIC _f_putc
-DEFC _f_putc                         = $84E1
+DEFC _f_putc                         = $8809
 
 PUBLIC _f_puts
-DEFC _f_puts                         = $8514
+DEFC _f_puts                         = $883C
 
 PUBLIC _f_printf
-DEFC _f_printf                       = $856C
+DEFC _f_printf                       = $8894
 
 PUBLIC _free_fastcall
-DEFC _free_fastcall                  = $0551
+DEFC _free_fastcall                  = $039A
 
 PUBLIC _malloc_fastcall
-DEFC _malloc_fastcall                = $059E
+DEFC _malloc_fastcall                = $03E7
 
 PUBLIC _realloc_callee
-DEFC _realloc_callee                 = $054A
+DEFC _realloc_callee                 = $0393
 
 PUBLIC __divsint_callee
-DEFC __divsint_callee                = $0BFB
+DEFC __divsint_callee                = $0A4C
 
 PUBLIC __divuint_callee
-DEFC __divuint_callee                = $0C02
+DEFC __divuint_callee                = $0A53
 
 PUBLIC __divulong_callee
-DEFC __divulong_callee               = $0C09
+DEFC __divulong_callee               = $0A5A
 
 PUBLIC __modsint_callee
-DEFC __modsint_callee                = $0C14
+DEFC __modsint_callee                = $0A65
 
 PUBLIC __moduint_callee
-DEFC __moduint_callee                = $0C1D
+DEFC __moduint_callee                = $0A6E
 
 PUBLIC __modulong_callee
-DEFC __modulong_callee               = $0C26
+DEFC __modulong_callee               = $0A77
 
 PUBLIC __mullong_callee
-DEFC __mullong_callee                = $0C42
+DEFC __mullong_callee                = $0A93
 
 PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $0DC8
+DEFC _fputc_callee                   = $0C19
 
 PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $1305
+DEFC _atoi_fastcall                  = $1156
 
 PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $1323
+DEFC _atol_fastcall                  = $1174
 
 PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $1344
+DEFC _exit_fastcall                  = $1195
 
 PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $12FD
+DEFC _strtoul_callee                 = $114E
 
 PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $145E
+DEFC _memcmp_callee                  = $12AF
 
 PUBLIC _memcpy_callee
-DEFC _memcpy_callee                  = $1466
+DEFC _memcpy_callee                  = $12B7
 
 PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $146E
+DEFC _strcmp_callee                  = $12BF
 
 PUBLIC _strlen_fastcall
-DEFC _strlen_fastcall                = $14EA
+DEFC _strlen_fastcall                = $133B
 
 PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $1474
+DEFC _strtok_callee                  = $12C5
 
 PUBLIC _bios_sp
 DEFC _bios_sp                        = $FFDE
@@ -251,14 +254,8 @@ DEFC _asci0_init                     = $FB31
 PUBLIC _asci0_flush_Rx_di
 DEFC _asci0_flush_Rx_di              = $FB40
 
-PUBLIC _asci0_flush_Rx
-DEFC _asci0_flush_Rx                 = $FB4F
-
 PUBLIC _asci0_flush_Tx_di
 DEFC _asci0_flush_Tx_di              = $FB5D
-
-PUBLIC _asci0_flush_Tx
-DEFC _asci0_flush_Tx                 = $FB6C
 
 PUBLIC _asci0_reset
 DEFC _asci0_reset                    = $FB7A
@@ -281,14 +278,8 @@ DEFC _asci1_init                     = $FC4C
 PUBLIC _asci1_flush_Rx_di
 DEFC _asci1_flush_Rx_di              = $FC5B
 
-PUBLIC _asci1_flush_Rx
-DEFC _asci1_flush_Rx                 = $FC6A
-
 PUBLIC _asci1_flush_Tx_di
 DEFC _asci1_flush_Tx_di              = $FC78
-
-PUBLIC _asci1_flush_Tx
-DEFC _asci1_flush_Tx                 = $FC87
 
 PUBLIC _asci1_reset
 DEFC _asci1_reset                    = $FC95
@@ -305,38 +296,47 @@ DEFC _asci1_pollc                    = $FCC3
 PUBLIC _asci1_putc
 DEFC _asci1_putc                     = $FCCB
 
+PUBLIC asm_disk_read
+DEFC asm_disk_read                   = $FE74
+
+PUBLIC asm_disk_write
+DEFC asm_disk_write                  = $FE93
+
 PUBLIC delay
-DEFC delay                           = $FD08
+DEFC delay                           = $FEA8
 
 PUBLIC rhexdwd
-DEFC rhexdwd                         = $FD11
+DEFC rhexdwd                         = $FEB1
 
 PUBLIC rhexwd
-DEFC rhexwd                          = $FD2C
+DEFC rhexwd                          = $FECC
 
 PUBLIC rhex
-DEFC rhex                            = $FD3B
+DEFC rhex                            = $FEDB
 
 PUBLIC phexdwd
-DEFC phexdwd                         = $FD6A
+DEFC phexdwd                         = $FF0A
 
 PUBLIC phexwd
-DEFC phexwd                          = $FD75
+DEFC phexwd                          = $FF15
 
 PUBLIC phex
-DEFC phex                            = $FD96
+DEFC phex                            = $FF36
 
 PUBLIC phexdwdreg
-DEFC phexdwdreg                      = $FD7F
+DEFC phexdwdreg                      = $FF1F
 
 PUBLIC phexwdreg
-DEFC phexwdreg                       = $FD8C
+DEFC phexwdreg                       = $FF2C
 
 PUBLIC pstring
-DEFC pstring                         = $FD55
+DEFC pstring                         = $FEF5
 
 PUBLIC pnewline
-DEFC pnewline                        = $FD5F
+DEFC pnewline                        = $FEFF
+
+PUBLIC _common1_phase_end
+DEFC _common1_phase_end              = $FF4D
 
 PUBLIC _disk_initialize_fastcall
 DEFC _disk_initialize_fastcall       = $021C
@@ -345,10 +345,19 @@ PUBLIC _disk_ioctl_callee
 DEFC _disk_ioctl_callee              = $01F7
 
 PUBLIC _disk_status_fastcall
-DEFC _disk_status_fastcall           = $0432
+DEFC _disk_status_fastcall           = $037C
 
 PUBLIC _disk_read_callee
 DEFC _disk_read_callee               = $01FE
 
 PUBLIC _disk_write_callee
 DEFC _disk_write_callee              = $020D
+
+PUBLIC asm_disk_initialize
+DEFC asm_disk_initialize             = $021C
+
+PUBLIC asm_disk_ioctl
+DEFC asm_disk_ioctl                  = $028C
+
+PUBLIC asm_disk_status
+DEFC asm_disk_status                 = $037C
