@@ -52,15 +52,15 @@ Each one of these items will need to be implemented.
 - [x] [`RST+DEFB` APU Call](https://github.com/feilipu/yaz180/tree/master/yabios#rst28defb-apu-call) convert existing code to pass values, rather than pointers
 - [ ] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [x] Integrate existing FatFs code for IDE interface on 82C55.
-- [ ] I/O redirection for CP/M IOBYTE support
+- [x] I/O redirection for CP/M IOBYTE support
 
 ### Phase 2 - CP/M application support
 
-- [ ] `conin`, `conout`, `const` calls
+- [x] `conin`, `conout`, `const` calls
 - [ ] link FatFS with CP/M Disk buffers
 - [ ] `setdma`, `seldsk`, `settrk`, `setsec` calls
 - [ ] `read`, `write`, `sectran` calls
-- [ ] integrate CP/M IOBYTE support
+- [x] integrate CP/M IOBYTE support
 - [ ] integrate CLI support
 
 ### Phase 3 - Flash Snapshot support
