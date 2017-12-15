@@ -281,11 +281,11 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 ## YABIOS
 
-Please see here for status of [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
+Please see here for status of yabios [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k), and within the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
+Currently the YAZ180 is initialised to load either [yabios v0.2](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and will be extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB. The intention is to support CP/M drives as simple Fat32 files.
 
 ## Z88dk
 
