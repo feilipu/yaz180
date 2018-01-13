@@ -45,7 +45,7 @@ static FIL File[MAX_FILES];     /* File object needed for each open file */
 
 // CP/M related functions
 int8_t ya_mkcpm(char **args);   // initialise CP/M bank with up to 4 drives
-int8_t ya_mkcpmfs(char **args); // create a CP/M file (drive)
+int8_t ya_mkfile(char **args);  // create a file for CP/M drive
 
 // bank related functions
 int8_t ya_mkb(char **args);     // initialise the nominated bank (to warm state)
