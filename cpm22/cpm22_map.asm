@@ -24,7 +24,7 @@ SECTION     cpm_page0   ;rewrite page 0 as needed
 ORG         0x0000
 
 SECTION     cpm_ccp     ;base of ccp
-ORG         0xD200
+ORG         0xCB00
 
 SECTION     cpm_ccp_data
 ORG         -1
@@ -36,7 +36,7 @@ SECTION     cpm_bdos_data
 ORG         -1
 
 SECTION     cpm_bios    ;base of bios
-ORG         0xE900
+ORG         0xE100
 
 
 SECTION     cpm_bios_data

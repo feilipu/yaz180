@@ -19,6 +19,8 @@
 
 + _apu_
 
++ ide_write_sector
++ ide_read_sector
 + asm_disk_
 
 + delay
