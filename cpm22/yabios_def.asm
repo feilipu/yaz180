@@ -9,79 +9,79 @@ PUBLIC _bank_cpm_bdos_addr
 DEFC _bank_cpm_bdos_addr             = $0006
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $59A7
+DEFC _f_mount                        = $5B7C
 
 PUBLIC _f_open
-DEFC _f_open                         = $5A26
+DEFC _f_open                         = $5BFB
 
 PUBLIC _f_read
-DEFC _f_read                         = $5F44
+DEFC _f_read                         = $6119
 
 PUBLIC _f_write
-DEFC _f_write                        = $6489
+DEFC _f_write                        = $665E
 
 PUBLIC _f_sync
-DEFC _f_sync                         = $6A7A
+DEFC _f_sync                         = $6C4F
 
 PUBLIC _f_close
-DEFC _f_close                        = $6BD3
+DEFC _f_close                        = $6DA8
 
 PUBLIC _f_chdir
-DEFC _f_chdir                        = $6C09
+DEFC _f_chdir                        = $6DDE
 
 PUBLIC _f_getcwd
-DEFC _f_getcwd                       = $6CC0
+DEFC _f_getcwd                       = $6E95
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $6F38
+DEFC _f_lseek                        = $710D
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $74D2
+DEFC _f_opendir                      = $76A7
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $75C9
+DEFC _f_closedir                     = $779E
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $75EF
+DEFC _f_readdir                      = $77C4
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7660
+DEFC _f_stat                         = $7835
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $76CD
+DEFC _f_getfree                      = $78A2
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7990
+DEFC _f_truncate                     = $7B65
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $7BB6
+DEFC _f_unlink                       = $7D8B
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $7D5A
+DEFC _f_mkdir                        = $7F2F
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $7FBE
+DEFC _f_rename                       = $8193
 
 PUBLIC _f_chmod
-DEFC _f_chmod                        = $82EE
+DEFC _f_chmod                        = $84C3
 
 PUBLIC _f_utime
-DEFC _f_utime                        = $8399
+DEFC _f_utime                        = $856E
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $8486
+DEFC _f_expand                       = $865B
 
 PUBLIC _f_gets
-DEFC _f_gets                         = $88EF
+DEFC _f_gets                         = $8AC4
 
 PUBLIC _f_putc
-DEFC _f_putc                         = $8B25
+DEFC _f_putc                         = $8CFA
 
 PUBLIC _f_puts
-DEFC _f_puts                         = $8B58
+DEFC _f_puts                         = $8D2D
 
 PUBLIC _f_printf
-DEFC _f_printf                       = $8BB0
+DEFC _f_printf                       = $8D85
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $039A

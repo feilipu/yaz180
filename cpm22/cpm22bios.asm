@@ -42,7 +42,8 @@ EXTERN  __cpm_bdos_head     ;base of bdos
 PUBLIC  _cpm_iobyte
 PUBLIC  _cpm_cdisk
 
-    jp wboot
+    jp boot                 ;first jump to boot, then it will do a wboot
+   ;jp wboot
 
 _cpm_iobyte:                ;intel I/O byte
     defb    $01             ;Console = CRT
@@ -77,7 +78,7 @@ DEFC    hstspt  =    63         ;host disk sectors/trk
 DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff
 
 DEFC    cpmbls  =    4096       ;CP/M allocation block size BLS
-DEFC    cpmdir  =    512        ;CP/M number of directory blocks
+DEFC    cpmdir  =    512        ;CP/M number of directory blocks (of 32 Bytes)
 DEFC    cpmspt  =    hstspt * hstblk    ;CP/M sectors/track
 
 DEFC    secmsk  =    hstblk-1   ;sector mask

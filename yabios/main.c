@@ -21,16 +21,13 @@
 #include <lib/yaz180/ff.h>
 #include <lib/yaz180/time.h>
 
+#define MAX_FILES 4             // number of files open at any time
 #define BUFFER_SIZE 1024        // size of working buffer (on heap)
 #define LINE_SIZE 256            // size of a command line (on heap)
-#define PAGE0_SIZE 0x102        // size of a Page0 copy buffer (on heap)
-#define MAX_FILES 8             // number of files open at any time
 
-#define UNUSED(expr) do { (void)(expr); } while (0)
+#define PAGE0_SIZE 0x102        // size of a Page0 copy buffer (on heap)
 
 static void * buffer;           /* create a scratch buffer on heap later */
-int32_t AccSize;                /* Working register for scan_files function */
-int16_t AccFiles, AccDirs;
 
 static FATFS *fs;               /* Pointer to the filesystem object (on heap) */
 static DIR *dir;                /* Pointer to the directory object (on heap) */
@@ -38,6 +35,9 @@ static DIR *dir;                /* Pointer to the directory object (on heap) */
 static FILINFO Finfo;           /* File Information */
 static FIL File[MAX_FILES];     /* File object needed for each open file */
 
+int32_t AccSize;                /* Working register for scan_files function */
+int16_t AccFiles;
+int16_t AccDirs;
 
 /*
   Function Declarations for builtin shell commands:
@@ -102,7 +102,7 @@ struct Builtin {
 struct Builtin builtins[] = {
   // CP/M related functions
     { "mkcpm", &ya_mkcpm, "[bank][file][file][file][file] - initialise CP/M bank with up to 4 drives"},
-    { "mkfile", &ya_mkfile, "[file][bytes] - create a file (for CP/M drive)"},
+    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a file for CP/M, dir entries, & bytes size"},
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
@@ -162,11 +162,12 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
 {
     FRESULT res;
     uint8_t * page0Template;
-    uint32_t driveLBAbase[4] = {0,0,0,0};
     uint8_t i = 0;
     
+    uint32_t driveLBAbase[4] = {0,0,0,0};
+    
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"mkcpm\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mkcpm\"\n");
     } else {
 
         page0Template = (uint8_t *)malloc(PAGE0_SIZE * sizeof(uint8_t));       /* Get work area for the Page 0 */
@@ -178,10 +179,8 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
             // existing RST jumps and INT0 code is correctly copied.
             *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
             *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
-            
-            
-            // set up up to 4 CPM drive LBA locations, before copying
-            
+
+            // set up (up to 4) CPM drive LBA locations, before copying
             while(args[i+2] != NULL) {
             
             
@@ -194,14 +193,14 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
                     return 1;
                 }
 
-                driveLBAbase[i] = (&File[0])->obj.fs->database + (&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2);
+                driveLBAbase[i] = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
                 f_close(&File[0]);
                 i++;                // go to next file            
             }
             
-            memcpy((volatile uint8_t*)(page0Template + 0x003B), (const uint8_t*)driveLBAbase, 16);  // copy 4x LBA base addresses
+            memcpy((volatile uint8_t*)(page0Template + 0x003B), (const uint8_t*)driveLBAbase, i*sizeof(uint32_t));  // copy up to 4x LBA base addresses into the Page 0 template
             
-            // do the Page 0 copy
+            // do the Page 0 copy from template to final destination bank
             memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
             
             // set bank referenced from _bankLockBase, so the the bank is noted as warm.
@@ -217,30 +216,53 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "mkfile".  args[1] is the nominated drive name.  args[2] is file size in bytes.
+   @param args List of args.  args[0] is "mkfile".  args[1] is the nominated drive name.
+                              args[2] is the number of directory entries,  args[3] is file size in bytes.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_mkfile(char **args)  // create a file for CP/M drive
 {
     FRESULT res;
+    uint16_t dirEntries, dirBytesWritten;
+    uint32_t lbaBase;
+    uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
+                                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"mkfile\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mkfile\"\n");
     } else {
         fprintf(stdout,"Creating \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_CREATE_ALWAYS | FA_WRITE);
-        fputc('\n', stdout);
         if (res != FR_OK) {
             put_rc(res);
             return 1;
         }
 
-        res = f_expand(&File[0], atol(args[2]), 1);
-        f_close(&File[0]);        
+        res = f_expand(&File[0], atol(args[3]), 1);
         if (res != FR_OK) {
             put_rc(res);
+            f_close(&File[0]); 
             return 1;
         } 
+        
+        dirEntries = atoi(args[2]);
+        
+        for (uint16_t i = 0; i < dirEntries; i++) {
+
+            // There are 512 directory entries per CPM disk, 4 entries per CPM sector
+            res = f_write ( &File[0], (const uint8_t *)directoryBlock, 32, &dirBytesWritten );
+            if (res != FR_OK || dirBytesWritten != 32) {
+                fprintf(stdout, "CP/M Directory incomplete\n");
+                put_rc(res);
+                f_close(&File[0]);   
+                return 1;
+            }
+        }
+
+        lbaBase = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
+        f_close(&File[0]);
+
+        fprintf(stdout," at base sector LBA %lu\nOk\n", lbaBase);
     }
     return 1;
 }
@@ -311,7 +333,7 @@ int8_t ya_mvb(char **args)      // move or clone the nominated bank
 int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"rmb\"\n");
+        fprintf(stdout, "yash: expected 1 argument to \"rmb\"\n");
     } else {
         // set bank referenced from _bankLockBase, so the the bank is noted as cold.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
@@ -347,7 +369,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
     uint8_t bank;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"initb\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"initb\"\n");
     } else {
         if (args[2] == NULL) {
             origin = (uint8_t *)0x100;
@@ -368,15 +390,20 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
  */
 int8_t ya_loadh(char **args)    // load the nominated bank with intel hex
 {
-    if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"loadh\"\n");
-    } else {
-        load_hex(bank_get_abs((int8_t)atoi(args[1])));
-    }
-    // set bank referenced from _bankLockBase, so the the bank is noted as warm.
-    lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
+    uint8_t initialBank;
 
-    fprintf(stdout,"Loaded Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
+    if (args[1] == NULL) {
+        fprintf(stdout, "yash: expected 1 argument to \"loadh\"\n");
+    } else {
+        initialBank = bank_get_abs((int8_t)atoi(args[1]));
+
+        load_hex( initialBank );
+
+        // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+        lock_give( &bankLockBase[ initialBank ] );
+
+        fprintf(stdout,"Loaded Bank: %01X", initialBank );
+    }    
     return 1;
 }  
 
@@ -398,7 +425,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 3 arguments to \"loadb\"\n");
+        fprintf(stdout, "yash: expected 3 arguments to \"loadb\"\n");
     } else {
         if (args[3] == NULL) {
             dest = (uint8_t *)0x0100;
@@ -471,7 +498,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"saveb\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"saveb\"\n");
     } else {
         origin = (uint8_t *)0x0100;
 
@@ -545,7 +572,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
     uint8_t * ptr;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"md\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"md\"\n");
     } else {
         if (args[2] == NULL) {
              origin = (uint8_t *)strtoul(args[1], NULL, 16);
@@ -665,7 +692,7 @@ int8_t ya_ls(char **args)
 int8_t ya_rm(char **args)       // delete a directory or file
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"rm\"\n");
+        fprintf(stdout, "yash: expected 1 argument to \"rm\"\n");
     } else {
         put_rc(f_unlink((const TCHAR*)args[1]));
     }
@@ -688,7 +715,7 @@ int8_t ya_mv(char **args)       // copy a file
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"mv\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mv\"\n");
     } else {
         fprintf(stdout,"Opening \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
@@ -750,7 +777,7 @@ int8_t ya_mv(char **args)       // copy a file
 int8_t ya_cd(char **args)
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"cd\"\n");
+        fprintf(stdout, "yash: expected 1 argument to \"cd\"\n");
     } else {
         put_rc(f_chdir((const TCHAR*)args[1]));
     }
@@ -793,7 +820,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
 int8_t ya_mkdir(char **args)    // create a new directory
 {
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"mkdir\"\n");
+        fprintf(stdout, "yash: expected 1 argument to \"mkdir\"\n");
     } else {
         put_rc(f_mkdir((const TCHAR*)args[1]));
     }
@@ -812,7 +839,7 @@ int8_t ya_chmod(char **args)    // change file or directory attributes
     (void *)args;
 #else
     if (args[1] == NULL && args[2] == NULL && args[3] == NULL) {
-        fprintf(stderr, "yash: expected 3 arguments to \"chmod\"\n");
+        fprintf(stdout, "yash: expected 3 arguments to \"chmod\"\n");
     } else {
         put_rc(f_chmod((const TCHAR*)args[1], atoi(args[2]), atoi(args[3])));
     }
@@ -835,7 +862,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
     ssize_t bufsize = 0;        // have getline allocate a buffer for us
     
     if (args[1] == NULL && args[2] == NULL ) {
-        fprintf(stderr, "yash: expected 2 arguments to \"mkfs\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mkfs\"\n");
     } else {
         fprintf(stdout, "The drive will be erased and formatted. Are you sure [y/N]\n");
         getline(&line, &bufsize, stdin);
@@ -856,7 +883,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
 int8_t ya_mount(char **args)    // mount a FAT file system
 {
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stderr, "yash: expected 2 arguments to \"mount\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mount\"\n");
     } else {
         if (args[2] == NULL) {
         put_rc(f_mount(fs, "", atoi(args[1])));
@@ -885,7 +912,7 @@ int8_t ya_ds(char **args)       // disk status
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
     
     if (args[1] == NULL) {
-        fprintf(stderr, "yash: expected 1 argument to \"ds\"\n");
+        fprintf(stdout, "yash: expected 1 argument to \"ds\"\n");
     } else {
         res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
         if (res != FR_OK) { put_rc(res); return 1; }
@@ -929,7 +956,7 @@ int8_t ya_dd(char **args)       // disk dump
 
     if (args[1] != NULL && args[2] != NULL) {
         drv = (uint8_t)atoi(args[1]);
-        sect = atol(args[2]);
+        sect = strtoul(args[2], NULL, 10);
     }
 
     res = disk_read(drv, buffer, sect, 1);
@@ -1147,7 +1174,7 @@ char *ya_read_line(void)
                 line_buffer_backup = line_buffer;
                 line_buffer = realloc(line_buffer, bufsize);
                 if (line_buffer == NULL) {
-                    fprintf(stderr, "yash: line_buffer realloc failure\n");
+                    fprintf(stdout, "yash: line_buffer realloc failure\n");
                     free(line_buffer_backup);
                     exit(EXIT_FAILURE);
                 }
@@ -1187,7 +1214,7 @@ char **ya_split_line(char *line)
                 tokens = (char **)realloc(tokens, bufsize * sizeof(char*));
                 if (tokens == NULL) {
                     free(tokens_backup);
-                    fprintf(stderr, "yash: tokens realloc failure\n");
+                    fprintf(stdout, "yash: tokens realloc failure\n");
                     exit(EXIT_FAILURE);
                 }
             }
