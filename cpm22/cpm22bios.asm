@@ -9,21 +9,17 @@ INCLUDE "config_yaz180_private.inc"
 EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
 EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
 
-EXTERN  delay                       ;FIXME just now for debug, remove later
-EXTERN  rhexwd, rhex
-EXTERN  phexwd, phex
-EXTERN  pstring, pnewline
-
 PUBLIC  _cpm_disks
-
-DEFC    _cpm_disks   =   04h        ;XXX DO NOT CHANGE number of disks
 
 PUBLIC  _cpm_dsk0_base
 PUBLIC  _cpm_ccp_tfcb
 PUBLIC  _cpm_ccp_tbuff
 PUBLIC  _cpm_ccp_tbase
 
-DEFC    _cpm_dsk0_base  =   $003B   ;base 32 bit LBA of host file for disk 0 (A:)
+DEFC    _cpm_disks      =   4       ;XXX DO NOT CHANGE number of disks
+
+DEFC    _cpm_dsk0_base  =   $0040   ;base 32 bit LBA of host file for disk 0 (A:) &
+                                    ;3 additional LBA for host files (B:, C:, D:)
 DEFC    _cpm_ccp_tfcb   =   $005C   ;default file control block
 DEFC    _cpm_ccp_tbuff  =   $0080   ;i/o buffer and command line storage
 DEFC    _cpm_ccp_tbase  =   $0100   ;transient program storage area
@@ -74,12 +70,12 @@ DEFC    nsects  =   (__cpm_bdos_data_tail - __cpm_ccp_head)/128 ;warm start sect
 
 DEFC    hstalb  =    4096       ;host number of drive allocation blocks
 DEFC    hstsiz  =    512        ;host disk sector size
-DEFC    hstspt  =    63         ;host disk sectors/trk
-DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff
+DEFC    hstspt  =    32         ;host disk sectors/trk
+DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff (4)
 
 DEFC    cpmbls  =    4096       ;CP/M allocation block size BLS
-DEFC    cpmdir  =    512        ;CP/M number of directory blocks (of 32 Bytes)
-DEFC    cpmspt  =    hstspt * hstblk    ;CP/M sectors/track
+DEFC    cpmdir  =    512        ;CP/M number of directory blocks (each of 32 Bytes)
+DEFC    cpmspt  =    hstspt * hstblk    ;CP/M sectors/track (128 = 32 * 512 / 128)
 
 DEFC    secmsk  =    hstblk-1   ;sector mask
 
@@ -718,9 +714,9 @@ readhst:
 ; The translation activity is to set the hstlbaX correctly, using the hstdsk, hstsec,
 ; and hsttrk information.
 ;
-; Since hstsec is maximum 63 sectors per track, we can use 6 bits for hstsec.
+; Since hstsec is 32 sectors per track, we can use 5 bits for hstsec.
 ; Also hsttrk can be any number of bits, but since we never have more than 32MB
-; of data then 10 bits is a sensible maximum.
+; of data then 11 bits is a sensible maximum.
 ;
 ; This also matches nicely with the calculation, where a 16 bit addition of the
 ; translation can be added to the base LBA to get the sector.
@@ -735,14 +731,19 @@ setLBAaddr:
     add hl,de           ; add the offset to the base address
     ex de,hl            ; DE contains address of active disk (file) LBA LSB
 
-    ld hl,(hsttrk)      ; get both bytes of the hsttrk (10 bits)
-    ld a,(hstsec)       ; prepare the hstsec (6 bits)
-    add a               ; shift hstsec left two bits
+    ld hl,(hsttrk)      ; get both bytes of the hsttrk (11 bits)
+    ld a,(hstsec)       ; prepare the hstsec (5 bits)
+    dec a               ; subtract 1 as LBA starts at 0 (CP/M starts with 1).
+    add a               ; shift hstsec left three bits
+    add a
     add a
 
-    srl h               ; shift HLA registers (24bits) down two bits
+    srl h               ; shift HLA registers (24bits) down three bits
     rr l                ; to get the required 16 bit CPM LBA
     rra                 ; to add to the file base LBA
+    srl h
+    rr l
+    rra
     srl h
     rr l
     rra
@@ -856,10 +857,10 @@ readop:     defs    1       ;1 if read operation
 wrtype:     defs    1       ;write operation type
 dmaadr:     defs    2       ;last direct memory address
 
-alv00:      defs    ((hstalb-1)/8)+1+1    ;allocation vector 0
-alv01:      defs    ((hstalb-1)/8)+1+1    ;allocation vector 1
-alv02:      defs    ((hstalb-1)/8)+1+1    ;allocation vector 2
-alv03:      defs    ((hstalb-1)/8)+1+1    ;allocation vector 3
+alv00:      defs    ((hstalb-1)/8)+1    ;allocation vector 0
+alv01:      defs    ((hstalb-1)/8)+1    ;allocation vector 1
+alv02:      defs    ((hstalb-1)/8)+1    ;allocation vector 2
+alv03:      defs    ((hstalb-1)/8)+1    ;allocation vector 3
 
 dirbf:      defs    128     ;scratch directory area
 hstbuf:     defs    hstsiz  ;buffer for host disk sector 

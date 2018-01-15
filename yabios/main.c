@@ -101,8 +101,8 @@ struct Builtin {
 
 struct Builtin builtins[] = {
   // CP/M related functions
-    { "mkcpm", &ya_mkcpm, "[bank][file][file][file][file] - initialise CP/M bank with up to 4 drives"},
-    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a file for CP/M, dir entries, & bytes size"},
+    { "mkcpm", &ya_mkcpm, "[bank][file][][][] - initialise bank for CP/M with up to 4 drive files"},
+    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a drive file for CP/M, dir entries, & bytes size"},
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
@@ -166,7 +166,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
     
     uint32_t driveLBAbase[4] = {0,0,0,0};
     
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(stdout, "yash: expected 2 arguments to \"mkcpm\"\n");
     } else {
 
@@ -180,7 +180,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
             *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
             *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
 
-            // set up (up to 4) CPM drive LBA locations, before copying
+            // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
             while(args[i+2] != NULL) {
             
             
@@ -198,9 +198,9 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
                 i++;                // go to next file            
             }
             
-            memcpy((volatile uint8_t*)(page0Template + 0x003B), (const uint8_t*)driveLBAbase, i*sizeof(uint32_t));  // copy up to 4x LBA base addresses into the Page 0 template
+            memcpy((volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, i*sizeof(uint32_t));  // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
             
-            // do the Page 0 copy from template to final destination bank
+            // do the Page 0 copy from template to final destination bank Page 0
             memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
             
             // set bank referenced from _bankLockBase, so the the bank is noted as warm.
@@ -228,8 +228,8 @@ int8_t ya_mkfile(char **args)  // create a file for CP/M drive
     uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mkfile\"\n");
+    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
+        fprintf(stdout, "yash: expected 3 arguments to \"mkfile\"\n");
     } else {
         fprintf(stdout,"Creating \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_CREATE_ALWAYS | FA_WRITE);
@@ -249,7 +249,7 @@ int8_t ya_mkfile(char **args)  // create a file for CP/M drive
         
         for (uint16_t i = 0; i < dirEntries; i++) {
 
-            // There are 512 directory entries per CPM disk, 4 entries per CPM sector
+            // There are 4 Directory Entries (Extents) per CPM sector
             res = f_write ( &File[0], (const uint8_t *)directoryBlock, 32, &dirBytesWritten );
             if (res != FR_OK || dirBytesWritten != 32) {
                 fprintf(stdout, "CP/M Directory incomplete\n");
@@ -368,7 +368,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
     uint8_t * origin;
     uint8_t bank;
 
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(stdout, "yash: expected 2 arguments to \"initb\"\n");
     } else {
         if (args[2] == NULL) {
@@ -402,7 +402,7 @@ int8_t ya_loadh(char **args)    // load the nominated bank with intel hex
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ initialBank ] );
 
-        fprintf(stdout,"Loaded Bank: %01X", initialBank );
+        fprintf(stdout,"Loaded Bank: %01X\n", initialBank );
     }    
     return 1;
 }  
@@ -424,7 +424,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
     time_t startTime, finishTime;
     uint8_t startTimeFraction, finishTimeFraction;
 
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(stdout, "yash: expected 3 arguments to \"loadb\"\n");
     } else {
         if (args[3] == NULL) {
@@ -497,7 +497,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
     time_t startTime, finishTime;
     uint8_t startTimeFraction, finishTimeFraction;
 
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(stdout, "yash: expected 2 arguments to \"saveb\"\n");
     } else {
         origin = (uint8_t *)0x0100;
@@ -571,7 +571,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
     uint32_t ofs;
     uint8_t * ptr;
 
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL) {
         fprintf(stdout, "yash: expected 2 arguments to \"md\"\n");
     } else {
         if (args[2] == NULL) {
