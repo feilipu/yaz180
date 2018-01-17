@@ -9,15 +9,17 @@ INCLUDE "config_yaz180_private.inc"
 EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
 EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
 
+EXTERN  _dmac0Lock
+
 PUBLIC  _cpm_disks
 
-PUBLIC  _cpm_dsk0_base
 PUBLIC  _cpm_ccp_tfcb
 PUBLIC  _cpm_ccp_tbuff
 PUBLIC  _cpm_ccp_tbase
 
 DEFC    _cpm_disks      =   4       ;XXX DO NOT CHANGE number of disks
 
+DEFC    _cpm_src_bank   =   $003B   ;source bank for CP/M CCP/BDOS for warm boot
 DEFC    _cpm_dsk0_base  =   $0040   ;base 32 bit LBA of host file for disk 0 (A:) &
                                     ;3 additional LBA for host files (B:, C:, D:)
 DEFC    _cpm_ccp_tfcb   =   $005C   ;default file control block
@@ -33,20 +35,30 @@ SECTION cpm_page0
 
 ; address = 0x0000
 
-EXTERN  __cpm_bdos_head     ;base of bdos
+EXTERN  __cpm_bdos_head         ;base of bdos
 
 PUBLIC  _cpm_iobyte
 PUBLIC  _cpm_cdisk
 
-    jp boot                 ;first jump to boot, then it will do a wboot
-   ;jp wboot
+   jp boot                      ;ROM boot is first, overwritten by jp wboot later
 
-_cpm_iobyte:                ;intel I/O byte
-    defb    $01             ;Console = CRT
-_cpm_cdisk:                 ;address of current disk number 0=a,... 15=p
+_cpm_iobyte:                    ;intel I/O byte
+    defb    $01                 ;Console = CRT
+_cpm_cdisk:                     ;address of current disk number 0=a,... 15=p
     defb    $00
 
     jp      __cpm_bdos_head
+
+;==============================================================================
+;
+;       CP/M TRANSITORY PROGRAM AREA
+;
+
+SECTION     cpm_tpa
+
+; address = 0x0100
+
+    jp wboot                    ;jump to wboot
 
 ;==============================================================================
 ;
@@ -58,8 +70,6 @@ SECTION cpm_bios                ;origin of the cpm bios
 EXTERN  __cpm_ccp_head          ;base of ccp
 EXTERN  __cpm_bdos_head         ;base of bdos
 EXTERN  __cpm_bdos_data_tail    ;end of bdos
-
-DEFC    nsects  =   (__cpm_bdos_data_tail - __cpm_ccp_head)/128 ;warm start sector count
 
 ;
 ;*****************************************************
@@ -149,61 +159,42 @@ boot:       ;simplest case is to just perform parameter initialization
 
     JP      gocpm           ;initialize and go to cp/m
 
-wboot:      ;simplest case is to read the disk until all sectors loaded
-    LD      sp, 80h         ;use space below buffer for stack
-    LD      c, 0            ;select disk 0
-    CALL    seldsk
-    CALL    home            ;go to track 00
-    LD      b, nsects       ;b counts * of sectors to load
-    LD      c, 0            ;c has the current track number
-    LD      d, 2            ;d has the next sector to read
-            ;note that we begin by reading track 0, sector 2 since sector 1
-            ;contains the cold start loader, which is skipped in a warm start
-    LD      hl, __cpm_ccp_head  ;base of cp/m (initial load point)
+wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
+    ld      a,_cpm_src_bank ;get CP/M CCP/BDOS/BIOS src bank
+    or      a               ;check it exists (non zero)
+    jp      Z,boot          ;jp to boot, if there's nothing to load
 
-load1:                      ;load one more sector
-    PUSH    bc              ;save sector count, current track
-    PUSH    de              ;save next sector to read
-    PUSH    hl              ;save dma address
-    LD      c, d            ;get sector address to register C
-    CALL    setsec          ;set sector address from register C
-    POP     bc              ;recall dma address to B, C
-    PUSH    bc              ;replace on stack for later recall
-    CALL    setdma          ;set dma address from B, C
+    ld      hl, _dmac0Lock
+    sra     (hl)            ;take the DMAC0 lock
+    jr      C, wboot
 
-            ;drive set to 0, track set, sector set, dma address set
-    CALL    read
-    CP      00h             ;any errors?
-    JR      NZ,wboot         ;retry the entire boot if an error occurs
+    out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
 
-            ;no error, move to next sector
-    POP     hl              ;recall dma address
-    LD      de, 128         ;dma=dma+128
-    ADD     hl,de           ;new dma address is in h, l
-    pop     de              ;recall sector address
-    pop     bc              ;recall number of sectors remaining, and current trk
-    DEC     b               ;sectors=sectors-1
-    JP      Z,gocpm         ;transfer to cp/m if all have been loaded
+    in0     a,(BBR)         ;get the current bank
+    rrca                    ;move the current bank to low nibble
+    rrca
+    rrca
+    rrca
+    out0    (DAR0B),a       ;set destination (our) bank
 
-            ;more sectors remain to load, check for track change
-    INC     d
-    LD      a,d             ;sector=27?, if so, change tracks
-    CP      27
-    JR      C,load1         ;carry generated if sector<27
+    ld      hl,__cpm_bdos_data_tail-__cpm_ccp_head
+    out0    (BCR0H),h       ;set up the transfer size
+    out0    (BCR0L),l
 
-            ;end of current track, go to next track
-    LD      d, 1            ;begin with first sector of next track
-    INC     c               ;track=track+1
+    ld      hl,__cpm_ccp_head
+    out0    (SAR0H),h       ;set up source and destination addresses
+    out0    (SAR0L),l
+    out0    (DAR0H),h
+    out0    (DAR0L),l
 
-            ;save register state, and change tracks
-    PUSH    bc
-    PUSH    de
-    PUSH    hl
-    call    settrk          ;track address set from register c
-    pop     hl
-    pop     de
-    pop     bc
-    JR      load1           ;for another sector
+    ld      hl,DMODE_MMOD*$100+DSTAT_DE0
+    out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
+    out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
+                            ;in burst mode the Z180 CPU stops until the DMA completes
+    ld a, $FE
+    ld (_dmac0Lock), a      ;give DMAC0 free
+
+    jp      gocpm           ;transfer to cp/m if all have been loaded
 
 ;=============================================================================
 ; Common code for cold and warm boot
@@ -233,7 +224,7 @@ diskok:
 ;=============================================================================
 ; Console I/O routines
 ;=============================================================================
-const:      ;console status, return 0ffh if character ready, 00h if not   
+const:      ;console status, return 0ffh if character ready, 00h if not
     LD      A,(_cpm_iobyte)
     AND     00001011b       ;Mask off console and high bit of reader
     CP      00001010b       ;redirected to asci1 TTY
@@ -277,7 +268,7 @@ conin1:
    and      7fh             ; strip parity bit
    ret
 
-reader:        
+reader:
     LD      A,(_cpm_iobyte)
     AND     00001100b
     CP      00000100b
@@ -364,7 +355,7 @@ seldsk:    ;select disk given by register c
     ld      (sekdsk),a
     ret
 
-chgdsk:    
+chgdsk:
     ld      (sekdsk),a
     rlca                    ;*2
     rlca                    ;*4
@@ -439,7 +430,7 @@ write:
 chkuna:
 ;           check for write to unallocated sector
     ld      a,(unacnt)      ;any unalloc remain?
-    or      a    
+    or      a
     jr      Z,alloc         ;skip if not
 
 ;           more unallocated records remain
@@ -553,7 +544,7 @@ match:
     and     secmsk          ;least significant bits FIXME not sure secmsk is calculated correctly
     ld      l,a             ;ready to shift
     ld      h,0             ;double count
-    
+
 ;    add     hl,hl          ;shift left 7
 ;    add     hl,hl
 ;    add     hl,hl
@@ -720,7 +711,7 @@ readhst:
 ;
 ; This also matches nicely with the calculation, where a 16 bit addition of the
 ; translation can be added to the base LBA to get the sector.
-; 
+;
 
 setLBAaddr:
     ld hl,(_cpm_dsk0_base)  ; get the base address for disk LBA address
@@ -752,11 +743,11 @@ setLBAaddr:
     ld l,a
     ex de,hl            ; HL contains address of active disk (file) base LBA LSB
                         ; DE contains the hsttrk+hstsec result
-    
+
     ld a,(hl)           ; get disk LBA LSB
     add a,e             ; prepare LSB
     ld (hstlba0),a      ; write LBA LSB put it in hstlba0
-    
+
     inc hl
     ld a,(hl)           ; get disk LBA 1SB
     adc a,d             ; prepare 1SB
@@ -772,7 +763,7 @@ setLBAaddr:
     adc a,(hl)          ; get disk LBA MSB, with carry
     ld (hstlba3),a      ; write LBA MSB put it in hstlba3
 
-    ret 
+    ret
 
 ;
 ;    the remainder of the cbios is reserved uninitialized
@@ -863,5 +854,5 @@ alv02:      defs    ((hstalb-1)/8)+1    ;allocation vector 2
 alv03:      defs    ((hstalb-1)/8)+1    ;allocation vector 3
 
 dirbf:      defs    128     ;scratch directory area
-hstbuf:     defs    hstsiz  ;buffer for host disk sector 
+hstbuf:     defs    hstsiz  ;buffer for host disk sector
 

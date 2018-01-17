@@ -23,6 +23,9 @@
 SECTION     cpm_page0   ;rewrite page 0 as needed
 ORG         0x0000
 
+SECTION     cpm_tpa     ;transitory program area
+ORG         0x0100
+
 SECTION     cpm_ccp     ;base of ccp
 ORG         0xCB00
 

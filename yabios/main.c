@@ -23,9 +23,9 @@
 
 #define MAX_FILES 4             // number of files open at any time
 #define BUFFER_SIZE 1024        // size of working buffer (on heap)
-#define LINE_SIZE 256            // size of a command line (on heap)
+#define LINE_SIZE 256           // size of a command line (on heap)
 
-#define PAGE0_SIZE 0x102        // size of a Page0 copy buffer (on heap)
+#define PAGE0_SIZE 0x0100       // size of a Page0 copy buffer (on heap)
 
 static void * buffer;           /* create a scratch buffer on heap later */
 
@@ -101,8 +101,8 @@ struct Builtin {
 
 struct Builtin builtins[] = {
   // CP/M related functions
-    { "mkcpm", &ya_mkcpm, "[bank][file][][][] - initialise bank for CP/M with up to 4 drive files"},
-    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a drive file for CP/M, dir entries, & bytes size"},
+    { "mkcpm", &ya_mkcpm, "[src][dest][file][][][] - initialise dest bank for CP/M from src, 4 drive files"},
+    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a drive file for CP/M, dir entries, of bytes size"},
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
@@ -133,7 +133,7 @@ struct Builtin builtins[] = {
 
 // disk related functions
     { "ds", &ya_ds, "[drive] - disk status"},
-    { "dd", &ya_dd, "[drive][sector] - disk dump"},
+    { "dd", &ya_dd, "[drive][sector] - disk dump, sector in hex"},
 
 // time related functions
     { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch) 'date +%s'"},
@@ -155,13 +155,16 @@ uint8_t ya_num_builtins() {
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "mkcpm".  args[1] is the nominated bank.  args[2][3][4][5] names of drive files.
+   @param args List of args.  args[0] is "mkcpm".  args[1] is the source bank.  args[2] is the CP/M destination bank.
+                              args[3][4][5][6] are names of drive files.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
 {
     FRESULT res;
     uint8_t * page0Template;
+    uint8_t srcBank;
+    uint8_t destBank;    
     uint8_t i = 0;
     
     uint32_t driveLBAbase[4] = {0,0,0,0};
@@ -170,43 +173,59 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
         fprintf(stdout, "yash: expected 2 arguments to \"mkcpm\"\n");
     } else {
 
-        page0Template = (uint8_t *)malloc(PAGE0_SIZE * sizeof(uint8_t));       /* Get work area for the Page 0 */
+        page0Template = (uint8_t *)malloc((PAGE0_SIZE+3) * sizeof(uint8_t));    /* Get work area for the Page 0 */
 
-        if (page0Template != NULL && args[1] != NULL)
+        if (page0Template != NULL && args[1] != NULL && args[2] != NULL)
         {
+            srcBank = bank_get_abs((int8_t)atoi(args[1]));
+            destBank = bank_get_abs((int8_t)atoi(args[2]));
+            
             memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
             // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
-            // existing RST jumps and INT0 code is correctly copied.
-            *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
-            *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
+
+            // set the new bank SP to point to top of BANKn
+            *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE;
 
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
-            while(args[i+2] != NULL) {
-            
-            
-                fprintf(stdout,"Opening \"%s\"", args[i+2]);
-                res = f_open(&File[0], (const TCHAR *)args[i+2], FA_OPEN_EXISTING | FA_READ);
+            while(args[i+3] != NULL)
+            {
+                fprintf(stdout,"Opening \"%s\"", args[i+3]);
+                res = f_open(&File[0], (const TCHAR *)args[i+3], FA_OPEN_EXISTING | FA_READ);
                 fputc('\n', stdout);
-                
                 if (res != FR_OK) {
                     put_rc(res);
                     return 1;
                 }
-
                 driveLBAbase[i] = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
                 f_close(&File[0]);
                 i++;                // go to next file            
             }
+            // copy the source bank for CP/M CCP/BDOS/BIOS to Page 0, for CP/M BIOS wboot usage
+            *(volatile uint8_t*)(page0Template + 0x003B) = srcBank;
             
-            memcpy((volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, i*sizeof(uint32_t));  // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
-            
-            // do the Page 0 copy from template to final destination bank Page 0
-            memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
-            
-            // set bank referenced from _bankLockBase, so the the bank is noted as warm.
-            lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
+            // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
+            memcpy((volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, 4*sizeof(uint32_t));
 
-            fprintf(stdout,"Initialised Bank: %01X, for CP/M", bank_get_abs((int8_t)atoi(args[1])) );
+            // copy over source bank CP/M CCP/BDOS/BIOS to dest bank, if it exists args[1] != 0
+            if ( srcBank != 0x00)
+            {
+                // do the copy from CP/M CCP/BDOS/BIOS src to final destination bank
+                memcpy_far( (void *)0x0100, (int8_t)destBank, (void *)0x0100, (int8_t)srcBank, (__COMMON_AREA_1_BASE - PAGE0_SIZE));
+                // do the Page 0 copy from template to final destination bank Page 0
+                memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE);
+            } else {
+                // we'll have to load CP/M using loadh later
+                *(volatile uint8_t*)(page0Template + 0x0100) = 0xC3; // jp wboot (at 0x0000)
+                *(volatile uint8_t*)(page0Template + 0x0101) = 0x00;
+                *(volatile uint8_t*)(page0Template + 0x0102) = 0x00;
+                // do the Page 0 copy from template to final destination bank Page 0, including jp 0x0000
+                memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, (PAGE0_SIZE+3));
+            }
+
+            // set bank referenced from _bankLockBase, so the the bank is noted as warm.
+            lock_give( &bankLockBase[ destBank ] );
+
+            fprintf(stdout,"Initialised Bank: %01X, for CP/M", destBank);
         }
         free(page0Template);
     }
@@ -223,7 +242,8 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
 int8_t ya_mkfile(char **args)  // create a file for CP/M drive
 {
     FRESULT res;
-    uint16_t dirEntries, dirBytesWritten;
+    int16_t dirEntries;
+    int16_t dirBytesWritten;
     uint32_t lbaBase;
     uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -252,7 +272,7 @@ int8_t ya_mkfile(char **args)  // create a file for CP/M drive
             // There are 4 Directory Entries (Extents) per CPM sector
             res = f_write ( &File[0], (const uint8_t *)directoryBlock, 32, &dirBytesWritten );
             if (res != FR_OK || dirBytesWritten != 32) {
-                fprintf(stdout, "CP/M Directory incomplete\n");
+                fprintf(stdout, "\nCP/M Directory incomplete");
                 put_rc(res);
                 f_close(&File[0]);   
                 return 1;
@@ -262,7 +282,7 @@ int8_t ya_mkfile(char **args)  // create a file for CP/M drive
         lbaBase = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
         f_close(&File[0]);
 
-        fprintf(stdout," at base sector LBA %lu\nOk\n", lbaBase);
+        fprintf(stdout," at base sector LBA %lu", lbaBase);
     }
     return 1;
 }
@@ -402,7 +422,7 @@ int8_t ya_loadh(char **args)    // load the nominated bank with intel hex
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ initialBank ] );
 
-        fprintf(stdout,"Loaded Bank: %01X\n", initialBank );
+        fprintf(stdout,"Loaded Bank: %01X", initialBank );
     }    
     return 1;
 }  
@@ -476,7 +496,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+        fprintf(stdout, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -551,7 +571,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+        fprintf(stdout, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -763,7 +783,7 @@ int8_t ya_mv(char **args)       // copy a file
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds\n", p1, finishTime, finishTimeFraction);
+        fprintf(stdout, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -804,7 +824,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
         if (res != FR_OK) {
             put_rc(res);
         } else {
-            fprintf(stdout, "%s\n", line);
+            fprintf(stdout, "%s", line);
         }
     }
     free(line);
@@ -943,7 +963,7 @@ int8_t ya_ds(char **args)       // disk status
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector.
+   @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector hex.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_dd(char **args)       // disk dump
@@ -956,7 +976,7 @@ int8_t ya_dd(char **args)       // disk dump
 
     if (args[1] != NULL && args[2] != NULL) {
         drv = (uint8_t)atoi(args[1]);
-        sect = strtoul(args[2], NULL, 10);
+        sect = strtoul(args[2], NULL, 16);
     }
 
     res = disk_read(drv, buffer, sect, 1);
