@@ -19,16 +19,16 @@ PUBLIC  _cpm_ccp_tbase
 
 DEFC    _cpm_disks      =   4       ;XXX DO NOT CHANGE number of disks
 
-DEFC    _cpm_src_bank   =   $003B   ;source bank for CP/M CCP/BDOS for warm boot
 DEFC    _cpm_dsk0_base  =   $0040   ;base 32 bit LBA of host file for disk 0 (A:) &
                                     ;3 additional LBA for host files (B:, C:, D:)
+DEFC    _cpm_src_bank   =   $0050   ;source bank for cp/M CCP/BDOS for warm boot
 DEFC    _cpm_ccp_tfcb   =   $005C   ;default file control block
 DEFC    _cpm_ccp_tbuff  =   $0080   ;i/o buffer and command line storage
 DEFC    _cpm_ccp_tbase  =   $0100   ;transient program storage area
 
 ;==============================================================================
 ;
-;       CP/M PAGE 0
+;       cp/M PAGE 0
 ;
 
 SECTION cpm_page0
@@ -51,18 +51,18 @@ _cpm_cdisk:                     ;address of current disk number 0=a,... 15=p
 
 ;==============================================================================
 ;
-;       CP/M TRANSITORY PROGRAM AREA
+;       cp/M TRANSITORY PROGRAM AREA
 ;
 
 SECTION     cpm_tpa
 
 ; address = 0x0100
 
-    jp wboot                    ;jump to wboot
+    jp      $0000               ;jump to boot/wboot
 
 ;==============================================================================
 ;
-;           cbios for CP/M 2.2 alteration
+;           cbios for cp/M 2.2 alteration
 ;
 
 SECTION cpm_bios                ;origin of the cpm bios
@@ -74,18 +74,18 @@ EXTERN  __cpm_bdos_data_tail    ;end of bdos
 ;
 ;*****************************************************
 ;*                                                   *
-;*           CP/M to host disk constants             *
+;*           cp/M to host disk constants             *
 ;*                                                   *
 ;*****************************************************
 
 DEFC    hstalb  =    4096       ;host number of drive allocation blocks
 DEFC    hstsiz  =    512        ;host disk sector size
 DEFC    hstspt  =    32         ;host disk sectors/trk
-DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff (4)
+DEFC    hstblk  =    hstsiz/128 ;cp/M sects/host buff (4)
 
-DEFC    cpmbls  =    4096       ;CP/M allocation block size BLS
-DEFC    cpmdir  =    512        ;CP/M number of directory blocks (each of 32 Bytes)
-DEFC    cpmspt  =    hstspt * hstblk    ;CP/M sectors/track (128 = 32 * 512 / 128)
+DEFC    cpmbls  =    4096       ;cp/M allocation block size BLS
+DEFC    cpmdir  =    512        ;cp/M number of directory blocks (each of 32 Bytes)
+DEFC    cpmspt  =    hstspt * hstblk    ;cp/M sectors/track (128 = 32 * 512 / 128)
 
 DEFC    secmsk  =    hstblk-1   ;sector mask
 
@@ -122,45 +122,45 @@ PUBLIC    write     ;write disk
 PUBLIC    listst    ;return list status
 PUBLIC    sectran   ;sector translate
 
-    JP    boot      ;cold start
+    jp    boot      ;cold start
 wboote:
-    JP    wboot     ;warm start
-    JP    const     ;console status
-    JP    conin     ;console character in
-    JP    conout    ;console character out
-    JP    list      ;list character out
-    JP    punch     ;punch character out
-    JP    reader    ;reader character out
-    JP    home      ;move head to home position
-    JP    seldsk    ;select disk
-    JP    settrk    ;set track number
-    JP    setsec    ;set sector number
-    JP    setdma    ;set dma address
-    JP    read      ;read disk
-    JP    write     ;write disk
-    JP    listst    ;return list status
-    JP    sectran   ;sector translate
+    jp    wboot     ;warm start
+    jp    const     ;console status
+    jp    conin     ;console character in
+    jp    conout    ;console character out
+    jp    list      ;list character out
+    jp    punch     ;punch character out
+    jp    reader    ;reader character out
+    jp    home      ;move head to home position
+    jp    seldsk    ;select disk
+    jp    settrk    ;set track number
+    jp    setsec    ;set sector number
+    jp    setdma    ;set dma address
+    jp    read      ;read disk
+    jp    write     ;write disk
+    jp    listst    ;return list status
+    jp    sectran   ;sector translate
 
 ;    individual subroutines to perform each function
 
 boot:       ;simplest case is to just perform parameter initialization
-    XOR     a               ;zero in the accum
-    LD      hl, _cpm_iobyte ;set iobyte to 00000001b
-    LD      (hl), 00000001b
-    LD      (_cpm_cdisk), a ;select disk zero
+    xor     a               ;zero in the accum
+    ld      hl, _cpm_iobyte ;set iobyte to 00000001b
+    ld      (hl), 00000001b
+    ld      (_cpm_cdisk), a ;select disk zero
 
-    LD      (_cpm_ccp_tfcb), a
-    LD      hl, _cpm_ccp_tfcb
-    LD      d, h
-    LD      e, l
-    INC     de
-    LD      bc, 0x20-1
-    LDIR                    ;clear default FCB
+    ld      (_cpm_ccp_tfcb), a
+    ld      hl, _cpm_ccp_tfcb
+    ld      d, h
+    ld      e, l
+    inc     de
+    ld      bc, 0x20-1
+    ldir                    ;clear default FCB
 
-    JP      gocpm           ;initialize and go to cp/m
+    jp      gocpm           ;initialize and go to cp/m
 
-wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
-    ld      a,_cpm_src_bank ;get CP/M CCP/BDOS/BIOS src bank
+wboot:      ;copy the source bank cp/M CCP/BDOS info and then go to normal start.
+    ld      a,_cpm_src_bank ;get cp/M CCP/BDOS/BIOS src bank
     or      a               ;check it exists (non zero)
     jp      Z,boot          ;jp to boot, if there's nothing to load
 
@@ -168,7 +168,7 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     sra     (hl)            ;take the DMAC0 lock
     jr      C, wboot
 
-    out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
+    out0    (SAR0B),a       ;set source bank for cp/M CCP/BDOS loading
 
     in0     a,(BBR)         ;get the current bank
     rrca                    ;move the current bank to low nibble
@@ -191,8 +191,8 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
     out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
                             ;in burst mode the Z180 CPU stops until the DMA completes
-    ld a, $FE
-    ld (_dmac0Lock), a      ;give DMAC0 free
+    ld      a,$FE
+    ld      (_dmac0Lock), a ;give DMAC0 free
 
     jp      gocpm           ;transfer to cp/m if all have been loaded
 
@@ -200,117 +200,117 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
 ; Common code for cold and warm boot
 ;=============================================================================
 gocpm:
-    LD      a, 0c3h         ;c3 is a jmp instruction
-    LD      (0),a           ;for jmp to wboot
-    LD      hl, wboote      ;wboot entry point
-    LD      (1),hl          ;set address field for jmp at 0
+    ld      a,$C3           ;c3 is a jmp instruction
+    ld      ($0000),a       ;for jmp to wboot
+    ld      hl, wboote      ;wboot entry point
+    ld      ($0001),hl      ;set address field for jmp at 0 to wboote
 
-    LD      (5),a           ;for jmp to bdos
-    LD      hl, __cpm_bdos_head  ;bdos entry point
-    LD      (6),hl          ;address field of Jump at 5 to bdos
+    ld      ($0005),a       ;for jmp to bdos
+    ld      hl, __cpm_bdos_head  ;bdos entry point
+    ld      ($0006),hl      ;set address field of Jump at 5 to bdos
 
-    LD      bc, 80h         ;default dma address is 80h
+    ld      bc,$80          ;default dma address is 0x80
     call    setdma
 
-    LD      a,(_cpm_cdisk)  ;get current disk number
+    ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskok        ;disk valid, go to ccp
     ld      a,0             ;invalid disk, change to disk 0
 
 diskok:
-    LD      c, a            ;send to the ccp
-    JP      __cpm_ccp_head  ;go to cp/m for further processing
+    ld      c, a            ;send disk number to the ccp
+    jp      __cpm_ccp_head  ;go to cp/m for further processing
 
 ;=============================================================================
 ; Console I/O routines
 ;=============================================================================
 const:      ;console status, return 0ffh if character ready, 00h if not
-    LD      A,(_cpm_iobyte)
-    AND     00001011b       ;Mask off console and high bit of reader
-    CP      00001010b       ;redirected to asci1 TTY
-    JR      Z,const1
-    CP      00000010b       ;redirected to asci1 TTY
-    JR      Z,const1
+    ld      A,(_cpm_iobyte)
+    and     00001011b       ;mask off console and high bit of reader
+    cp      00001010b       ;redirected to asci1 TTY
+    jr      Z,const1
+    cp      00000010b       ;redirected to asci1 TTY
+    jr      Z,const1
 
-    AND     00000011b       ; remove the reader from the mask - only console bits then remain
-    CP      00000001b
-    JR      NZ,const1
+    and     00000011b       ;remove the reader from the mask - only console bits then remain
+    cp      00000001b
+    jr      NZ,const1
 const0:
-    CALL    _asci0_pollc    ; check whether any characters are in CRT Rx0 buffer
-    JR      NC, dataEmpty
+    call    _asci0_pollc    ;check whether any characters are in CRT Rx0 buffer
+    jr      NC, dataEmpty
 dataReady:
-    LD      A,0FFH
-    RET
+    ld      A,$FF
+    ret
 
 const1:
-    CALL    _asci1_pollc    ; check whether any characters are in TTY Rx1 buffer
-    JR      C, dataReady
+    call    _asci1_pollc    ;check whether any characters are in TTY Rx1 buffer
+    jr      C, dataReady
 dataEmpty:
-    XOR     A
-    RET
+    xor     A
+    ret
 
 conin:    ;console character into register a
-    LD      A,(_cpm_iobyte)
-    AND     00000011b
-    CP      00000010b
-    JR      Z,reader        ; "BAT:" redirect
-    CP      00000001b
-    JR      NZ,conin1
+    ld      A,(_cpm_iobyte)
+    and     00000011b
+    cp      00000010b
+    jr      Z,reader        ;"BAT:" redirect
+    cp      00000001b
+    jr      NZ,conin1
 conin0:
-   call     _asci0_getc     ; check whether any characters are in CRT Rx0 buffer
-   jr       NC, conin0      ; if Rx buffer is empty
-   and      7fh             ; strip parity bit
+   call     _asci0_getc     ;check whether any characters are in CRT Rx0 buffer
+   jr       NC, conin0      ;if Rx buffer is empty
+   and      $7F             ;strip parity bit
    ret
 
 conin1:
-   call     _asci1_getc     ; check whether any characters are in TTY Rx1 buffer
-   jr       NC, conin1      ; if Rx buffer is empty
-   and      7fh             ; strip parity bit
+   call     _asci1_getc     ;check whether any characters are in TTY Rx1 buffer
+   jr       NC, conin1      ;if Rx buffer is empty
+   and      $7F             ;strip parity bit
    ret
 
 reader:
-    LD      A,(_cpm_iobyte)
-    AND     00001100b
-    CP      00000100b
-    JR      Z, conin0
-    CP      00000000b
-    JR      Z, conin1
-    LD      A,$1A           ; CTRL-Z if not asci0 or asci1
-    RET
+    ld      A,(_cpm_iobyte)
+    and     00001100b
+    cp      00000100b
+    jr      Z, conin0
+    cp      00000000b
+    jr      Z, conin1
+    ld      A,$1A           ;CTRL-Z if not asci0 or asci1
+    ret
 
 conout:    ;console character output from register c
-    LD      l, c            ; Store character
-    LD      A,(_cpm_iobyte)
-    AND     00000011b
-    CP      00000010b
-    JR      Z,list          ; "BAT:" redirect
-    CP      00000001b
-    JP      NZ,_asci1_putc
-    JP      _asci0_putc
+    ld      l, c            ;Store character
+    ld      A,(_cpm_iobyte)
+    and     00000011b
+    cp      00000010b
+    jr      Z,list          ;"BAT:" redirect
+    cp      00000001b
+    jp      NZ,_asci1_putc
+    jp      _asci0_putc
 
 list:
-    LD      l, c            ; Store character
-    LD      A,(_cpm_iobyte)
-    AND     11000000b
-    CP      01000000b
-    JP      Z,_asci0_putc
-    CP      00000000b
-    JP      Z,_asci1_putc
-    RET
+    ld      l, c            ;Store character
+    ld      A,(_cpm_iobyte)
+    and     11000000b
+    cp      01000000b
+    jp      Z,_asci0_putc
+    cp      00000000b
+    jp      Z,_asci1_putc
+    ret
 
 punch:
-    LD      l, c            ; Store character
-    LD      A,(_cpm_iobyte)
-    AND     00110000b
-    CP      00010000b
-    JP      Z,_asci0_putc
-    CP      00000000b
-    JP      Z,_asci1_putc
-    RET
+    ld      l, c            ;Store character
+    ld      A,(_cpm_iobyte)
+    and     00110000b
+    cp      00010000b
+    jp      Z,_asci0_putc
+    cp      00000000b
+    jp      Z,_asci1_putc
+    ret
 
 listst:     ;return list status
-    LD      A,$FF           ; Return list status of 0xFF (ready).
-    RET
+    ld      A,$FF           ;Return list status of 0xFF (ready).
+    ret
 
 ;=============================================================================
 ; Disk processing entry points
@@ -322,7 +322,7 @@ home:       ;move to the track 00 position of current drive
     jr      nz,homed
     ld      (hstact),a      ;clear host active flag
 homed:
-    ld      bc,0000h
+    ld      bc,$0000
 
 settrk:     ;set track passed from BDOS in register BC.
     ld      (sektrk),bc
@@ -342,7 +342,7 @@ setdma:     ;set dma address given by registers BC
     ret
 
 seldsk:    ;select disk given by register c
-    ld      hl,0000h        ;error return code
+    ld      hl,$0000        ;error return code
     ld      a, c
     ld      (sekdsk),a
     cp      _cpm_disks      ;must be between 0 and 3
@@ -375,14 +375,14 @@ chgdsk:
 ;*                                                   *
 ;*****************************************************
 
-;Read one CP/M sector from disk.
+;Read one cp/M sector from disk.
 ;Return a 00h in register a if the operation completes properly, and 01h if an error occurs during the read.
 ;Disk number in 'sekdsk'
 ;Track number in 'track'
 ;Sector number in 'sector'
 ;Dma address in 'dmaadr' (0-65535)
 
-;read the selected CP/M sector
+;read the selected cp/M sector
 read:
     xor     a
     ld      (unacnt),a
@@ -401,14 +401,14 @@ read:
 ;*                                                   *
 ;*****************************************************
 
-;Write one CP/M sector to disk.
+;Write one cp/M sector to disk.
 ;Return a 00h in register a if the operation completes properly, and 0lh if an error occurs during the read or write
 ;Disk number in 'sekdsk'
 ;Track number in 'track'
 ;Sector number in 'sector'
 ;Dma address in 'dmaadr' (0-65535)
 
-;write the selected CP/M sector
+;write the selected cp/M sector
 write:
     xor     a               ;0 to accumulator
     ld      (readop),a      ;not a read operation
@@ -455,7 +455,7 @@ chkuna:
 ;           match, move to next sector for future ref
     inc     (hl)            ;unasec = unasec+1
     ld      a,(hl)          ;end of track?
-    cp      cpmspt          ;count CP/M sectors
+    cp      cpmspt          ;count cp/M sectors
     jr      C,noovf         ;skip if no overflow
 
 ;           overflow to next track
@@ -473,7 +473,7 @@ noovf:
 alloc:
 ;           not an unallocated record, requires pre-read
     xor     a               ;0 to accum
-    ld      (unacnt),a  ;unacnt = 0
+    ld      (unacnt),a      ;unacnt = 0
     inc     a               ;1 to accum
     ld      (rsflag),a      ;rsflag = 1
 
@@ -541,7 +541,7 @@ filhst:
 match:
 ;           copy data to or from buffer
     ld      a,(seksec)      ;mask buffer number
-    and     secmsk          ;least significant bits FIXME not sure secmsk is calculated correctly
+    and     secmsk          ;least significant bits
     ld      l,a             ;ready to shift
     ld      h,0             ;double count
 
@@ -564,7 +564,7 @@ match:
     ld      de,hstbuf
     add     hl,de           ;hl = host address
     ex      de,hl           ;now in DE
-    ld      hl,(dmaadr)     ;get/put CP/M data
+    ld      hl,(dmaadr)     ;get/put cp/M data
     ld      c,128           ;length of move
     ld      a,(readop)      ;which way?
     or      a
@@ -575,7 +575,7 @@ match:
     ld      (hstwrt),a      ;hstwrt = 1
     ex      de,hl           ;source/dest swap
 
-rwmove:                     ; FIXME use LDIR / DMAC
+rwmove:                     ;FIXME use LDIR or DMAC
 ;           C initially 128, DE is source, HL is dest
     ld      a,(de)          ;source character
     inc     de
@@ -633,8 +633,8 @@ EXTERN ide_read_sector
 
 writehst:
     ;hstdsk = host disk #,
-    ;hsttrk = host track #,
-    ;hstsec = host sect #.
+    ;hsttrk = host track #, 2048 tracks = 11 bits
+    ;hstsec = host sect #. 32 sectors = 5 bits
     ;write "hstsiz" bytes
     ;from hstbuf and return error flag in erflag.
     ;return erflag non-zero if error
@@ -651,21 +651,21 @@ writehst:
 
     ld hl,hstbuf            ;get hstbuf into HL
 
-    ; write a sector
-    ; specified by the 4 bytes in BCDE
-    ; the address of the origin buffer is in HL
-    ; HL is left incremented by 512 bytes
-    ; return carry on success, no carry for an error
+    ;write a sector
+    ;specified by the 4 bytes in BCDE
+    ;the address of the origin buffer is in HL
+    ;HL is left incremented by 512 bytes
+    ;return carry on success, no carry for an error
     call ide_write_sector
     ret C
-    ld a,01h
+    ld a,$01
     ld (erflag),a
     ret
 
 readhst:
     ;hstdsk = host disk #,
-    ;hsttrk = host track #, 1024 tracks = 10 bits
-    ;hstsec = host sect #. 63 sectors = 6 bits
+    ;hsttrk = host track #, 2048 tracks = 11 bits
+    ;hstsec = host sect #. 32 sectors = 5 bits
     ;read "hstsiz" bytes
     ;into hstbuf and return error flag in erflag.
 
@@ -681,14 +681,14 @@ readhst:
 
     ld hl,hstbuf            ;get hstbuf into HL
 
-    ; read a sector
-    ; LBA specified by the 4 bytes in BCDE
-    ; the address of the buffer to fill is in HL
-    ; HL is left incremented by 512 bytes
-    ; return carry on success, no carry for an error
+    ;read a sector
+    ;LBA specified by the 4 bytes in BCDE
+    ;the address of the buffer to fill is in HL
+    ;HL is left incremented by 512 bytes
+    ;return carry on success, no carry for an error
     call ide_read_sector
     ret C
-    ld a,01h
+    ld a,$01
     ld (erflag),a
     ret
 
@@ -714,24 +714,24 @@ readhst:
 ;
 
 setLBAaddr:
-    ld hl,(_cpm_dsk0_base)  ; get the base address for disk LBA address
-    ld d, 04h           ; byte off-set for each disk (file) LBA address
-    ld a,(hstdsk)       ; get disk number (0,1,2,3)
+    ld hl,(_cpm_dsk0_base)  ;get the base address for disk LBA address
+    ld d,$04            ;byte off-set for each disk (file) LBA address
+    ld a,(hstdsk)       ;get disk number (0,1,2,3)
     ld e,a
-    mlt de              ; multiply offset by disk number
-    add hl,de           ; add the offset to the base address
-    ex de,hl            ; DE contains address of active disk (file) LBA LSB
+    mlt de              ;multiply offset by disk number
+    add hl,de           ;add the offset to the base address
+    ex de,hl            ;DE contains address of active disk (file) LBA LSB
 
-    ld hl,(hsttrk)      ; get both bytes of the hsttrk (11 bits)
-    ld a,(hstsec)       ; prepare the hstsec (5 bits)
-    dec a               ; subtract 1 as LBA starts at 0 (CP/M starts with 1).
-    add a               ; shift hstsec left three bits
-    add a
-    add a
+    ld hl,(hsttrk)      ;get both bytes of the hsttrk (11 bits)
+    ld a,(hstsec)       ;prepare the hstsec (5 bits)
+    dec a               ;subtract 1 as LBA starts at 0 (cp/M starts with 1).
+    add a,a             ;shift hstsec left three bits
+    add a,a
+    add a,a
 
-    srl h               ; shift HLA registers (24bits) down three bits
-    rr l                ; to get the required 16 bit CPM LBA
-    rra                 ; to add to the file base LBA
+    srl h               ;shift HLA registers (24bits) down three bits
+    rr l                ;to get the required 16 bit CPM LBA
+    rra                 ;to add to the file base LBA
     srl h
     rr l
     rra
@@ -739,29 +739,30 @@ setLBAaddr:
     rr l
     rra
 
-    ld h,l              ; move LBA offset back to the 16 bit pair
+    ld h,l              ;move LBA offset back to the 16 bit pair
     ld l,a
-    ex de,hl            ; HL contains address of active disk (file) base LBA LSB
-                        ; DE contains the hsttrk+hstsec result
+    ex de,hl            ;HL contains address of active disk (file) base LBA LSB
+                        ;DE contains the hsttrk+hstsec result
 
-    ld a,(hl)           ; get disk LBA LSB
-    add a,e             ; prepare LSB
-    ld (hstlba0),a      ; write LBA LSB put it in hstlba0
-
-    inc hl
-    ld a,(hl)           ; get disk LBA 1SB
-    adc a,d             ; prepare 1SB
-    ld (hstlba1),a      ; write LBA 1SB put it in hstlba1
+    ld a,(hl)           ;get disk LBA LSB
+    add a,e             ;prepare LSB
+    ld (hstlba0),a      ;write LBA LSB put it in hstlba0
 
     inc hl
-    ld a, 00h
-    adc a,(hl)          ; get disk LBA 2SB, with carry
-    ld (hstlba2),a      ; write LBA 2SB put it in hstlba2
+    ld a,(hl)           ;get disk LBA 1SB
+    adc a,d             ;prepare 1SB
+    ld (hstlba1),a      ;write LBA 1SB put it in hstlba1
 
     inc hl
-    ld a, 00h
-    adc a,(hl)          ; get disk LBA MSB, with carry
-    ld (hstlba3),a      ; write LBA MSB put it in hstlba3
+    ld a,$00
+    adc a,(hl)          ;get disk LBA 2SB, with carry
+    ld (hstlba2),a      ;write LBA 2SB put it in hstlba2
+
+    inc hl
+    ld a,$00
+    adc a,(hl)          ;get disk LBA MSB, with carry
+    and a,$0F           ;set top 4 bits to zero for LBA 28 bits.
+    ld (hstlba3),a      ;write LBA MSB put it in hstlba3
 
     ret
 
@@ -808,8 +809,8 @@ dpblk:
     defb    1           ;EXM - Extent mask
     defw    hstalb-1    ;DSM - Storage size (blocks - 1) 16MB disks
     defw    cpmdir-1    ;DRM - Number of directory entries - 1
-    defb    0f0h        ;AL0 - 1 bit set per directory block
-    defb    000h        ;AL1 -            "
+    defb    $F0         ;AL0 - 1 bit set per directory block
+    defb    $00         ;AL1 -            "
     defw    0           ;CKS - DIR check vector size (DRM+1)/4 (0=fixed disk)
     defw    0           ;OFF - Reserved tracks
 ;
