@@ -183,7 +183,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
             memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
             // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
 
-            // set the new bank SP to point to top of BANKn
+            // set the new bank SP to point to top of BANKn for _jp_far(), _bank_sp = 0x003B
             *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE;
 
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
@@ -200,11 +200,12 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
                 f_close(&File[0]);
                 i++;                // go to next file            
             }
-            // copy the source bank for CP/M CCP/BDOS/BIOS to Page 0, for CP/M BIOS wboot usage
-            *(volatile uint8_t*)(page0Template + 0x003B) = srcBank;
-            
+           
             // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
             memcpy((volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, 4*sizeof(uint32_t));
+
+            // copy the source bank for CP/M CCP/BDOS/BIOS for CP/M BIOS wboot usage to Page 0 at 0x0050
+            *(volatile uint8_t*)(page0Template + 0x0050) = srcBank;
 
             // copy over source bank CP/M CCP/BDOS/BIOS to dest bank, if it exists args[1] != 0
             if ( srcBank != 0x00)
@@ -215,7 +216,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
                 memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE);
             } else {
                 // we'll have to load CP/M using loadh later
-                *(volatile uint8_t*)(page0Template + 0x0100) = 0xC3; // jp wboot (at 0x0000)
+                *(volatile uint8_t*)(page0Template + 0x0100) = 0xC3; // jp boot (at 0x0000)
                 *(volatile uint8_t*)(page0Template + 0x0101) = 0x00;
                 *(volatile uint8_t*)(page0Template + 0x0102) = 0x00;
                 // do the Page 0 copy from template to final destination bank Page 0, including jp 0x0000
