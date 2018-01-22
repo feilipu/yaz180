@@ -8,6 +8,7 @@ INCLUDE "config_yaz180_private.inc"
 
 EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
 EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
+EXTERN  _asci0_flush_Rx_di, _asci1_flush_Rx_di
 
 EXTERN  _dmac0Lock
 
@@ -21,14 +22,14 @@ DEFC    _cpm_disks      =   4       ;XXX DO NOT CHANGE number of disks
 
 DEFC    _cpm_dsk0_base  =   $0040   ;base 32 bit LBA of host file for disk 0 (A:) &
                                     ;3 additional LBA for host files (B:, C:, D:)
-DEFC    _cpm_src_bank   =   $0050   ;source bank for cp/M CCP/BDOS for warm boot
+DEFC    _cpm_src_bank   =   $0050   ;source bank for CP/M CCP/BDOS for warm boot
 DEFC    _cpm_ccp_tfcb   =   $005C   ;default file control block
 DEFC    _cpm_ccp_tbuff  =   $0080   ;i/o buffer and command line storage
 DEFC    _cpm_ccp_tbase  =   $0100   ;transient program storage area
 
 ;==============================================================================
 ;
-;       cp/M PAGE 0
+;       CP/M PAGE 0
 ;
 
 SECTION cpm_page0
@@ -51,7 +52,7 @@ _cpm_cdisk:                     ;address of current disk number 0=a,... 15=p
 
 ;==============================================================================
 ;
-;       cp/M TRANSITORY PROGRAM AREA
+;       CP/M TRANSITORY PROGRAM AREA
 ;
 
 SECTION     cpm_tpa
@@ -62,7 +63,7 @@ SECTION     cpm_tpa
 
 ;==============================================================================
 ;
-;           cbios for cp/M 2.2 alteration
+;           cbios for CP/M 2.2 alteration
 ;
 
 SECTION cpm_bios                ;origin of the cpm bios
@@ -74,18 +75,18 @@ EXTERN  __cpm_bdos_data_tail    ;end of bdos
 ;
 ;*****************************************************
 ;*                                                   *
-;*           cp/M to host disk constants             *
+;*           CP/M to host disk constants             *
 ;*                                                   *
 ;*****************************************************
 
 DEFC    hstalb  =    4096       ;host number of drive allocation blocks
 DEFC    hstsiz  =    512        ;host disk sector size
 DEFC    hstspt  =    32         ;host disk sectors/trk
-DEFC    hstblk  =    hstsiz/128 ;cp/M sects/host buff (4)
+DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff (4)
 
-DEFC    cpmbls  =    4096       ;cp/M allocation block size BLS
-DEFC    cpmdir  =    512        ;cp/M number of directory blocks (each of 32 Bytes)
-DEFC    cpmspt  =    hstspt * hstblk    ;cp/M sectors/track (128 = 32 * 512 / 128)
+DEFC    cpmbls  =    4096       ;CP/M allocation block size BLS
+DEFC    cpmdir  =    512        ;CP/M number of directory blocks (each of 32 Bytes)
+DEFC    cpmspt  =    hstspt * hstblk    ;CP/M sectors/track (128 = 32 * 512 / 128)
 
 DEFC    secmsk  =    hstblk-1   ;sector mask
 
@@ -159,8 +160,8 @@ boot:       ;simplest case is to just perform parameter initialization
 
     jp      gocpm           ;initialize and go to cp/m
 
-wboot:      ;copy the source bank cp/M CCP/BDOS info and then go to normal start.
-    ld      a,_cpm_src_bank ;get cp/M CCP/BDOS/BIOS src bank
+wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
+    ld      a,_cpm_src_bank ;get CP/M CCP/BDOS/BIOS src bank
     or      a               ;check it exists (non zero)
     jp      Z,boot          ;jp to boot, if there's nothing to load
 
@@ -168,7 +169,7 @@ wboot:      ;copy the source bank cp/M CCP/BDOS info and then go to normal start
     sra     (hl)            ;take the DMAC0 lock
     jr      C, wboot
 
-    out0    (SAR0B),a       ;set source bank for cp/M CCP/BDOS loading
+    out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
 
     in0     a,(BBR)         ;get the current bank
     rrca                    ;move the current bank to low nibble
@@ -218,6 +219,8 @@ gocpm:
     ld      a,0             ;invalid disk, change to disk 0
 
 diskok:
+    call    _asci0_flush_Rx_di
+    call    _asci1_flush_Rx_di
     ld      c, a            ;send disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m for further processing
 
@@ -375,14 +378,14 @@ chgdsk:
 ;*                                                   *
 ;*****************************************************
 
-;Read one cp/M sector from disk.
+;Read one CP/M sector from disk.
 ;Return a 00h in register a if the operation completes properly, and 01h if an error occurs during the read.
 ;Disk number in 'sekdsk'
 ;Track number in 'track'
 ;Sector number in 'sector'
 ;Dma address in 'dmaadr' (0-65535)
 
-;read the selected cp/M sector
+;read the selected CP/M sector
 read:
     xor     a
     ld      (unacnt),a
@@ -401,14 +404,14 @@ read:
 ;*                                                   *
 ;*****************************************************
 
-;Write one cp/M sector to disk.
+;Write one CP/M sector to disk.
 ;Return a 00h in register a if the operation completes properly, and 0lh if an error occurs during the read or write
 ;Disk number in 'sekdsk'
 ;Track number in 'track'
 ;Sector number in 'sector'
 ;Dma address in 'dmaadr' (0-65535)
 
-;write the selected cp/M sector
+;write the selected CP/M sector
 write:
     xor     a               ;0 to accumulator
     ld      (readop),a      ;not a read operation
@@ -455,7 +458,7 @@ chkuna:
 ;           match, move to next sector for future ref
     inc     (hl)            ;unasec = unasec+1
     ld      a,(hl)          ;end of track?
-    cp      cpmspt          ;count cp/M sectors
+    cp      cpmspt          ;count CP/M sectors
     jr      C,noovf         ;skip if no overflow
 
 ;           overflow to next track
@@ -564,7 +567,7 @@ match:
     ld      de,hstbuf
     add     hl,de           ;hl = host address
     ex      de,hl           ;now in DE
-    ld      hl,(dmaadr)     ;get/put cp/M data
+    ld      hl,(dmaadr)     ;get/put CP/M data
     ld      c,128           ;length of move
     ld      a,(readop)      ;which way?
     or      a
@@ -633,7 +636,7 @@ EXTERN ide_read_sector
 
 writehst:
     ;hstdsk = host disk #,
-    ;hsttrk = host track #, 2048 tracks = 11 bits
+    ;hsttrk = host track #, maximum 2048 tracks = 11 bits
     ;hstsec = host sect #. 32 sectors = 5 bits
     ;write "hstsiz" bytes
     ;from hstbuf and return error flag in erflag.
@@ -664,7 +667,7 @@ writehst:
 
 readhst:
     ;hstdsk = host disk #,
-    ;hsttrk = host track #, 2048 tracks = 11 bits
+    ;hsttrk = host track #, maximum 2048 tracks = 11 bits
     ;hstsec = host sect #. 32 sectors = 5 bits
     ;read "hstsiz" bytes
     ;into hstbuf and return error flag in erflag.
@@ -697,7 +700,7 @@ readhst:
 ;=============================================================================
 ;
 ; The yabios provides us with the LBA base location for each of 4 files,
-; together with extent of each file, starting from 0x003B _cpm_dsk0_base in Page 0.
+; together with extent of each file, starting from 0x0040 _cpm_dsk0_base in Page 0.
 ;
 ; Each LBA is 4 bytes, total 16 bytes, followed by 16 bit extents (measured in LBA)
 ; sectors, total of 8 bytes.
@@ -714,24 +717,26 @@ readhst:
 ;
 
 setLBAaddr:
-    ld hl,(_cpm_dsk0_base)  ;get the base address for disk LBA address
-    ld d,$04            ;byte off-set for each disk (file) LBA address
     ld a,(hstdsk)       ;get disk number (0,1,2,3)
-    ld e,a
+    ld d,a
+    ld e,$04            ;uint32_t off-set for each disk (file) LBA base address    
     mlt de              ;multiply offset by disk number
+
+    ld hl,_cpm_dsk0_base    ;get the address for disk LBA base address
     add hl,de           ;add the offset to the base address
     ex de,hl            ;DE contains address of active disk (file) LBA LSB
 
-    ld hl,(hsttrk)      ;get both bytes of the hsttrk (11 bits)
     ld a,(hstsec)       ;prepare the hstsec (5 bits)
-    dec a               ;subtract 1 as LBA starts at 0 (cp/M starts with 1).
-    add a,a             ;shift hstsec left three bits
+    dec a               ;subtract 1 as LBA starts at 0 (CP/M starts with 1).
+    add a,a             ;shift hstsec left three bits to remove irrelevant MSBs
     add a,a
     add a,a
 
-    srl h               ;shift HLA registers (24bits) down three bits
-    rr l                ;to get the required 16 bit CPM LBA
-    rra                 ;to add to the file base LBA
+    ld hl,(hsttrk)      ;get both bytes of the hsttrk (maximum 11 bits)
+
+    srl h               ;shift HL&A registers (24bits) down three bits
+    rr l                ;to get the required 16 bits of CPM LBA
+    rra                 ;to add to the file base LBA 28 bits
     srl h
     rr l
     rra
@@ -739,30 +744,30 @@ setLBAaddr:
     rr l
     rra
 
-    ld h,l              ;move LBA offset back to the 16 bit pair
+    ld h,l              ;move LBA offset back to the 16 (11 + 5) bit pair
     ld l,a
+
     ex de,hl            ;HL contains address of active disk (file) base LBA LSB
                         ;DE contains the hsttrk+hstsec result
 
     ld a,(hl)           ;get disk LBA LSB
-    add a,e             ;prepare LSB
-    ld (hstlba0),a      ;write LBA LSB put it in hstlba0
+    add a,e             ;add hsttrk+hstsec LSB
+    ld (hstlba0),a      ;write LBA LSB, put it in hstlba0
 
     inc hl
     ld a,(hl)           ;get disk LBA 1SB
-    adc a,d             ;prepare 1SB
-    ld (hstlba1),a      ;write LBA 1SB put it in hstlba1
+    adc a,d             ;add hsttrk+hstsec 1SB, with carry
+    ld (hstlba1),a      ;write LBA 1SB, put it in hstlba1
 
     inc hl
-    ld a,$00
-    adc a,(hl)          ;get disk LBA 2SB, with carry
-    ld (hstlba2),a      ;write LBA 2SB put it in hstlba2
+    ld a,(hl)           ;get disk LBA 2SB
+    adc a,$00           ;get disk LBA 2SB, with carry
+    ld (hstlba2),a      ;write LBA 2SB, put it in hstlba2
 
     inc hl
-    ld a,$00
-    adc a,(hl)          ;get disk LBA MSB, with carry
-    and a,$0F           ;set top 4 bits to zero for LBA 28 bits.
-    ld (hstlba3),a      ;write LBA MSB put it in hstlba3
+    ld a,(hl)           ;get disk LBA MSB
+    adc a,$00           ;get disk LBA MSB, with carry
+    ld (hstlba3),a      ;write LBA MSB, put it in hstlba3
 
     ret
 

@@ -398,7 +398,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
             origin = (uint8_t *)strtoul(args[2], NULL, 16);
         }
         bank = (int8_t)atoi(args[1]);
-        jp_far(origin, bank);
+        jp_far(origin, bank);   // manages the stack swap from _bios_sp to _bank_sp
     }
     return;
 }

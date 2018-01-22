@@ -315,19 +315,19 @@ PUBLIC rhex
 DEFC rhex                            = $FEA7
 
 PUBLIC phexdwd
-DEFC phexdwd                         = $FED6
+DEFC phexdwd                         = $FED8
 
 PUBLIC phexwd
-DEFC phexwd                          = $FEE1
+DEFC phexwd                          = $FEE3
 
 PUBLIC phex
-DEFC phex                            = $FF02
+DEFC phex                            = $FF04
 
 PUBLIC phexdwdreg
-DEFC phexdwdreg                      = $FEEB
+DEFC phexdwdreg                      = $FEED
 
 PUBLIC phexwdreg
-DEFC phexwdreg                       = $FEF8
+DEFC phexwdreg                       = $FEFA
 
 PUBLIC pstring
 DEFC pstring                         = $FEC1
@@ -336,7 +336,7 @@ PUBLIC pnewline
 DEFC pnewline                        = $FECB
 
 PUBLIC _common1_phase_end
-DEFC _common1_phase_end              = $FF19
+DEFC _common1_phase_end              = $FF1B
 
 PUBLIC _disk_initialize_fastcall
 DEFC _disk_initialize_fastcall       = $021C
