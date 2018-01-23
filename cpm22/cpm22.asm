@@ -1445,7 +1445,6 @@ FBASE1:
     LD    A,C        ;get function number.
     CP    NFUNCTS        ;valid function number?
     RET    NC
- 
     LD    C,E        ;keep single register function here.   
     LD    HL,FUNCTNS    ;now look thru the function table.
     LD    E,A
@@ -4129,7 +4128,7 @@ CKSUMTBL:   DEFS    16,0
 ;
 ;   Extra space ?
 ;
-            DEFS    4,0
+;           DEFS    4,0
 ;
 ;**************************************************************
 ;*

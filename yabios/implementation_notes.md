@@ -84,7 +84,7 @@ I modified the `call_far` code to make a `jp_far` using the `RSTx + DEFW + DEFC`
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
 
 ```bash
-zcc +yaz180 -v -subtype=yabios -SO3 --list -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --max-allocs-per-node200000 main.c -gpf yabios.rex -o yabios -create-app
+> zcc +yaz180 -v -subtype=yabios -SO3 --list -m --c-code-in-asm -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --max-allocs-per-node200000 main.c -gpf yabios.rex -o yabios -create-app
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
@@ -99,11 +99,60 @@ It is possible to load `BANK13`, `BANK14`, and `BANK15` with application code ei
 The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT and ASCI1 being the TTY. The CCP/BDOS is now running, but the disk interface needs to be completed. The work is to finalise the best way of getting CP/M disks to appear in a FATFs file system as simple files.
 
 ```bash
-zcc +yaz180 --no-crt -m --list @cpm22.lst -o cpm22; appmake +glue -b cpm22 --ihex --clean
-cat > /dev/ttyUSB0 < cpm22__.ihx 
+> zcc +yaz180 --no-crt -m --list @cpm22.lst -o cpm22; appmake +glue -b cpm22 --ihex --clean
+> cat > /dev/ttyUSB0 < cpm22__.ihx 
 ```
 
 I've added the `_f_expand()` into the FATFs implementation, as this will allow the YABIOS command line to create a correctly sized CP/M drive, which can then be added / or exchanged for other drives simply by renaming it. Formatting and other CP/M "disk" management will be done from within CP/M, using the YABIOS tools.
+
+## CP/M TOOLS Usage
+
+The CP/M TOOLS package v2.20 is available from debian Sid repository.
+
+Check the disk image, `ls` a CP/M image, copy a file (in this case `bbcbasic.com`).
+
+```bash
+> fsed.cpm -f yaz180-16MB a.cpm
+> cpmls -f yaz180-16MB a.cpm
+> cpmcp -f yaz180-16MB a.cpm ~/Desktop/CPM/bbcbasic.com 0:BBCBASIC.COM
+```
+
+The contents of the `/etc/cpmtools/diskdefs` file specific to the YAZ180.
+
+```
+diskdef yaz180-32MB
+  seclen 512
+  tracks 2048
+  sectrk 32
+  blocksize 4096
+  maxdir 512
+  skew 0
+  boottrk -
+  os 2.2
+end
+
+diskdef yaz180-16MB
+  seclen 512
+  tracks 1024
+  sectrk 32
+  blocksize 4096
+  maxdir 512
+  skew 0
+  boottrk -
+  os 2.2
+end
+
+diskdef yaz180-8MB
+  seclen 512
+  tracks 512
+  sectrk 32
+  blocksize 4096
+  maxdir 512
+  skew 0
+  boottrk -
+  os 2.2
+end
+```
 
 
 

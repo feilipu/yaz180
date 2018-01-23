@@ -445,7 +445,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
     time_t startTime, finishTime;
     uint8_t startTimeFraction, finishTimeFraction;
 
-    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(stdout, "yash: expected 3 arguments to \"loadb\"\n");
     } else {
         if (args[3] == NULL) {

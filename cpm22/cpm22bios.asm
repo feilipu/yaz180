@@ -213,14 +213,15 @@ gocpm:
     ld      bc,$80          ;default dma address is 0x80
     call    setdma
 
+    call    _asci0_flush_Rx_di
+    call    _asci1_flush_Rx_di
+
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskok        ;disk valid, go to ccp
     ld      a,0             ;invalid disk, change to disk 0
 
 diskok:
-    call    _asci0_flush_Rx_di
-    call    _asci1_flush_Rx_di
     ld      c, a            ;send disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m for further processing
 
@@ -373,8 +374,8 @@ chgdsk:
 ;
 ;*****************************************************
 ;*                                                   *
-;*      The READ entry point takes the place of        *
-;*      the previous BIOS defintion for READ.          *
+;*      The READ entry point takes the place of      *
+;*      the previous BIOS defintion for READ.        *
 ;*                                                   *
 ;*****************************************************
 
@@ -400,7 +401,7 @@ read:
 ;*****************************************************
 ;*                                                   *
 ;*    The WRITE entry point takes the place of       *
-;*      the previous BIOS defintion for WRITE.         *
+;*      the previous BIOS defintion for WRITE.       *
 ;*                                                   *
 ;*****************************************************
 
