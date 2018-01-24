@@ -162,7 +162,7 @@ boot:       ;simplest case is to just perform parameter initialization
 
 wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
     ld      a,_cpm_src_bank ;get CP/M CCP/BDOS/BIOS src bank
-    or      a               ;check it exists (non zero)
+    or      a               ;check ROM version exists (src bank non zero)
     jp      Z,boot          ;jp to boot, if there's nothing to load
 
     ld      hl, _dmac0Lock
@@ -323,7 +323,7 @@ listst:     ;return list status
 home:       ;move to the track 00 position of current drive
     ld      a,(hstwrt)      ;check for pending write
     or      a
-    jr      nz,homed
+    jr      NZ,homed
     ld      (hstact),a      ;clear host active flag
 homed:
     ld      bc,$0000
@@ -492,10 +492,9 @@ rwoper:
     xor     a               ;zero to accum
     ld      (erflag),a      ;no errors (yet)
     ld      a,(seksec)      ;compute host sector
-    or      a               ;carry = 0
-    rra                     ;shift right
-    or      a               ;carry = 0
-    rra                     ;shift right
+                            ;assuming 4 CP/M sectors per host sector
+    srl     a               ;shift right
+    srl     a               ;shift right
     ld      (sekhst),a      ;host sector to seek
 
 ;           active host sector?
@@ -514,7 +513,7 @@ rwoper:
 ;           same disk, same track?
     ld      hl,hsttrk
     call    sektrkcmp       ;sektrk = hsttrk?
-    jr      nz,nomatch
+    jr      NZ,nomatch
 
 ;           same disk, same track, same buffer?
     ld      a,(sekhst)
@@ -545,19 +544,11 @@ filhst:
 match:
 ;           copy data to or from buffer
     ld      a,(seksec)      ;mask buffer number
-    and     secmsk          ;least significant bits
+    and     secmsk          ;least significant bits, shifted off in sekhst calculation
+    ld      h,0             ;double count    
     ld      l,a             ;ready to shift
-    ld      h,0             ;double count
 
-;    add     hl,hl          ;shift left 7
-;    add     hl,hl
-;    add     hl,hl
-;    add     hl,hl
-;    add     hl,hl
-;    add     hl,hl
-;    add     hl,hl
-
-    xor     a               ;faster shift left 7
+    xor     a               ;shift left 7, for 128 bytes x seksec LSBs
     srl     h
     rr      l
     rra
@@ -569,24 +560,19 @@ match:
     add     hl,de           ;hl = host address
     ex      de,hl           ;now in DE
     ld      hl,(dmaadr)     ;get/put CP/M data
-    ld      c,128           ;length of move
+    ld      bc,128          ;length of move
+    ex      de,hl           ;source in HL, destination in DE
     ld      a,(readop)      ;which way?
     or      a
-    jr      nz,rwmove       ;skip if read
+    jr      NZ,rwmove       ;skip if read
 
 ;           write operation, mark and switch direction
     ld      a,1
     ld      (hstwrt),a      ;hstwrt = 1
     ex      de,hl           ;source/dest swap
 
-rwmove:                     ;FIXME use LDIR or DMAC
-;           C initially 128, DE is source, HL is dest
-    ld      a,(de)          ;source character
-    inc     de
-    ld      (hl),a          ;to dest
-    inc     hl
-    dec     c               ;loop 128 times
-    jr      nz,rwmove
+rwmove:
+    ldir
 
 ;           data has been moved to/from host buffer
     ld      a,(wrtype)      ;write type
@@ -615,7 +601,7 @@ sektrkcmp:
     ld      hl,sektrk
     ld      a,(de)          ;low byte compare
     cp      (HL)            ;same?
-    ret     nz              ;return if not
+    ret     NZ              ;return if not
 ;           low bytes equal, test high 1s
     inc     de
     inc     hl
@@ -638,62 +624,62 @@ EXTERN ide_read_sector
 writehst:
     ;hstdsk = host disk #,
     ;hsttrk = host track #, maximum 2048 tracks = 11 bits
-    ;hstsec = host sect #. 32 sectors = 5 bits
+    ;hstsec = host sect #. 32 sectors per track = 5 bits
     ;write "hstsiz" bytes
     ;from hstbuf and return error flag in erflag.
     ;return erflag non-zero if error
 
-    call setLBAaddr
-    ld hl,hstlba0           ;get the LBA into BCDE
-    ld e,(hl)
-    inc hl
-    ld d,(hl)
-    inc hl
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
+    call    setLBAaddr
+    ld      hl,hstlba0      ;get the LBA into BCDE
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)
+    inc     hl
+    ld      c,(hl)
+    inc     hl
+    ld      b,(hl)
 
-    ld hl,hstbuf            ;get hstbuf into HL
+    ld      hl,hstbuf       ;get hstbuf into HL
 
     ;write a sector
     ;specified by the 4 bytes in BCDE
     ;the address of the origin buffer is in HL
     ;HL is left incremented by 512 bytes
     ;return carry on success, no carry for an error
-    call ide_write_sector
-    ret C
-    ld a,$01
-    ld (erflag),a
+    call    ide_write_sector
+    ret     C
+    ld      a,$01
+    ld      (erflag),a
     ret
 
 readhst:
     ;hstdsk = host disk #,
     ;hsttrk = host track #, maximum 2048 tracks = 11 bits
-    ;hstsec = host sect #. 32 sectors = 5 bits
+    ;hstsec = host sect #. 32 sectors per track = 5 bits
     ;read "hstsiz" bytes
     ;into hstbuf and return error flag in erflag.
 
-    call setLBAaddr
-    ld hl,hstlba0           ;get the LBA into BCDE
-    ld e,(hl)
-    inc hl
-    ld d,(hl)
-    inc hl
-    ld c,(hl)
-    inc hl
-    ld b,(hl)
+    call    setLBAaddr
+    ld      hl,hstlba0      ;get the LBA into BCDE
+    ld      e,(hl)
+    inc     hl
+    ld      d,(hl)
+    inc     hl
+    ld      c,(hl)
+    inc     hl
+    ld      b,(hl)
 
-    ld hl,hstbuf            ;get hstbuf into HL
+    ld      hl,hstbuf       ;get hstbuf into HL
 
     ;read a sector
     ;LBA specified by the 4 bytes in BCDE
     ;the address of the buffer to fill is in HL
     ;HL is left incremented by 512 bytes
     ;return carry on success, no carry for an error
-    call ide_read_sector
-    ret C
-    ld a,$01
-    ld (erflag),a
+    call    ide_read_sector
+    ret     C
+    ld      a,$01
+    ld      (erflag),a
     ret
 
 ;=============================================================================
@@ -718,57 +704,58 @@ readhst:
 ;
 
 setLBAaddr:
-    ld a,(hstdsk)       ;get disk number (0,1,2,3)
-    ld d,a
-    ld e,$04            ;uint32_t off-set for each disk (file) LBA base address    
-    mlt de              ;multiply offset by disk number
+    ld      a,(hstdsk)      ;get disk number (0,1,2,3)
+    add     a,a             ;uint32_t off-set for each disk (file) LBA base address
+    add     a,a             ;so left shift 2 (x4), to create offset to disk base address
 
-    ld hl,_cpm_dsk0_base    ;get the address for disk LBA base address
-    add hl,de           ;add the offset to the base address
-    ex de,hl            ;DE contains address of active disk (file) LBA LSB
+    ld      hl,_cpm_dsk0_base;get the address for disk LBA base address
+    ld      d,0
+    ld      e,a
+    add     hl,de           ;add the offset to the base address
 
-    ld a,(hstsec)       ;prepare the hstsec (5 bits)
-    dec a               ;subtract 1 as LBA starts at 0 (CP/M starts with 1).
-    add a,a             ;shift hstsec left three bits to remove irrelevant MSBs
-    add a,a
-    add a,a
+    ex      de,hl           ;DE contains address of active disk (file) LBA LSB
 
-    ld hl,(hsttrk)      ;get both bytes of the hsttrk (maximum 11 bits)
+    ld      a,(hstsec)      ;prepare the hstsec (5 bits, 32 sectors per track)
+    rlca                    ;rotate hstsec left three bits to remove irrelevant MSBs
+    rlca
+    rlca
 
-    srl h               ;shift HL&A registers (24bits) down three bits
-    rr l                ;to get the required 16 bits of CPM LBA
-    rra                 ;to add to the file base LBA 28 bits
-    srl h
-    rr l
+    ld      hl,(hsttrk)     ;get both bytes of the hsttrk (maximum 11 bits)
+
+    srl     h               ;shift HL&A registers (24bits) down three bits
+    rr      l               ;to get the required 16 bits of CPM LBA
+    rra                     ;to add to the file base LBA 28 bits
+    srl     h
+    rr      l
     rra
-    srl h
-    rr l
+    srl     h
+    rr      l
     rra
 
-    ld h,l              ;move LBA offset back to the 16 (11 + 5) bit pair
-    ld l,a
+    ld      h,l             ;move LBA offset back to the 16 (11 + 5) bit pair
+    ld      l,a
 
-    ex de,hl            ;HL contains address of active disk (file) base LBA LSB
-                        ;DE contains the hsttrk+hstsec result
+    ex      de,hl           ;HL contains address of active disk (file) base LBA LSB
+                            ;DE contains the hsttrk+hstsec result
 
-    ld a,(hl)           ;get disk LBA LSB
-    add a,e             ;add hsttrk+hstsec LSB
-    ld (hstlba0),a      ;write LBA LSB, put it in hstlba0
+    ld      a,(hl)          ;get disk LBA LSB
+    add     a,e             ;add hsttrk+hstsec LSB
+    ld      (hstlba0),a     ;write LBA LSB, put it in hstlba0
 
-    inc hl
-    ld a,(hl)           ;get disk LBA 1SB
-    adc a,d             ;add hsttrk+hstsec 1SB, with carry
-    ld (hstlba1),a      ;write LBA 1SB, put it in hstlba1
+    inc     hl
+    ld      a,(hl)          ;get disk LBA 1SB
+    adc     a,d             ;add hsttrk+hstsec 1SB, with carry
+    ld      (hstlba1),a     ;write LBA 1SB, put it in hstlba1
 
-    inc hl
-    ld a,(hl)           ;get disk LBA 2SB
-    adc a,$00           ;get disk LBA 2SB, with carry
-    ld (hstlba2),a      ;write LBA 2SB, put it in hstlba2
+    inc     hl
+    ld      a,(hl)          ;get disk LBA 2SB
+    adc     a,$00           ;get disk LBA 2SB, with carry
+    ld      (hstlba2),a     ;write LBA 2SB, put it in hstlba2
 
-    inc hl
-    ld a,(hl)           ;get disk LBA MSB
-    adc a,$00           ;get disk LBA MSB, with carry
-    ld (hstlba3),a      ;write LBA MSB, put it in hstlba3
+    inc     hl
+    ld      a,(hl)          ;get disk LBA MSB
+    adc     a,$00           ;get disk LBA MSB, with carry
+    ld      (hstlba3),a     ;write LBA MSB, put it in hstlba3
 
     ret
 
