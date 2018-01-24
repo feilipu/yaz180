@@ -687,15 +687,13 @@ readhst:
 ;=============================================================================
 ;
 ; The yabios provides us with the LBA base location for each of 4 files,
-; together with extent of each file, starting from 0x0040 _cpm_dsk0_base in Page 0.
-;
-; Each LBA is 4 bytes, total 16 bytes, followed by 16 bit extents (measured in LBA)
-; sectors, total of 8 bytes.
+; starting from 0x0040 _cpm_dsk0_base in Page 0.
+; Each LBA is 4 bytes, total 16 bytes
 ;
 ; The translation activity is to set the hstlbaX correctly, using the hstdsk, hstsec,
 ; and hsttrk information.
 ;
-; Since hstsec is 32 sectors per track, we can use 5 bits for hstsec.
+; Since hstsec is 32 sectors per track, we need to use 5 bits for hstsec.
 ; Also hsttrk can be any number of bits, but since we never have more than 32MB
 ; of data then 11 bits is a sensible maximum.
 ;

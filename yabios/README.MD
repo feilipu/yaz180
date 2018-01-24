@@ -57,17 +57,18 @@ Each one of these items will need to be implemented.
 ### Phase 2 - CP/M application support
 
 - [x] `conin`, `conout`, `const` calls
-- [ ] link FatFS with CP/M Disk buffers
-- [ ] `setdma`, `seldsk`, `settrk`, `setsec` calls
-- [ ] `read`, `write`, `sectran` calls
+- [x] link FatFS with CP/M Disk buffers
+- [x] `setdma`, `seldsk`, `settrk`, `setsec` calls
+- [x] `read`, `write`, `sectran` calls
 - [x] integrate CP/M IOBYTE support
-- [ ] integrate CLI support
+- [x] integrate CLI support
 
 ### Phase 3 - Flash Snapshot support
 
 - [x] add flash read support into `_ memcpy_far`.
 - [ ] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
-- [ ] integrate CLI support
+- [ ] support CP/M to warm boot from flash
+- [x] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
 
@@ -598,6 +599,10 @@ RST08:
 ### Command Line Interface
 
 The command line interface is implemented in C, with the underlying functions either in C or in assembly.
+
+#### CP/M Functions
+- `mkcpm [src][dest][file][][][]` - initialise dest bank for CP/M from src, 4 drive files
+- `mkfile [file][dir][bytes]` - create a drive file for CP/M, dir entries, of bytes size
 
 #### Bank Functions
 - `mkb [bank]` - initialise the nominated bank (to warm state)
