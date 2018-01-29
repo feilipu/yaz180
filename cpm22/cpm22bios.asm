@@ -216,10 +216,14 @@ gocpm:
     call    _asci0_flush_Rx_di
     call    _asci1_flush_Rx_di
 
+	xor     a		        ;0 accumulator
+	LD	    (hstact),a		;host buffer inactive
+	LD	    (unacnt),a		;clear unalloc count
+
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskok        ;disk valid, go to ccp
-    ld      a,0             ;invalid disk, change to disk 0
+    xor     a               ;invalid disk, change to disk 0
 
 diskok:
     ld      c, a            ;send disk number to the ccp
@@ -332,8 +336,9 @@ settrk:     ;set track passed from BDOS in register BC.
     ld      (sektrk),bc
     ret
 
-setsec:     ;set sector passed from BDOS given by register BC
-    ld      (seksec),bc
+setsec:     ;set sector passed from BDOS given by register C
+    ld      a,c
+    ld      (seksec),a
     ret
 
 sectran:    ;translate passed from BDOS sector number BC
@@ -347,7 +352,7 @@ setdma:     ;set dma address given by registers BC
 
 seldsk:    ;select disk given by register c
     ld      hl,$0000        ;error return code
-    ld      a, c
+    ld      a,c
     ld      (sekdsk),a
     cp      _cpm_disks      ;must be between 0 and 3
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
@@ -382,8 +387,8 @@ chgdsk:
 ;Read one CP/M sector from disk.
 ;Return a 00h in register a if the operation completes properly, and 01h if an error occurs during the read.
 ;Disk number in 'sekdsk'
-;Track number in 'track'
-;Sector number in 'sector'
+;Track number in 'sektrk'
+;Sector number in 'seksec'
 ;Dma address in 'dmaadr' (0-65535)
 
 ;read the selected CP/M sector
@@ -408,8 +413,8 @@ read:
 ;Write one CP/M sector to disk.
 ;Return a 00h in register a if the operation completes properly, and 0lh if an error occurs during the read or write
 ;Disk number in 'sekdsk'
-;Track number in 'track'
-;Sector number in 'sector'
+;Track number in 'sektrk'
+;Sector number in 'seksec'
 ;Dma address in 'dmaadr' (0-65535)
 
 ;write the selected CP/M sector
@@ -555,9 +560,9 @@ match:
     ld      h,l
     ld      l,a
 
-;           hl has relative host buffer address
+;           HL has relative host buffer address
     ld      de,hstbuf
-    add     hl,de           ;hl = host address
+    add     hl,de           ;HL = host address
     ex      de,hl           ;now in DE
     ld      hl,(dmaadr)     ;get/put CP/M data
     ld      bc,128          ;length of move
@@ -600,7 +605,7 @@ sektrkcmp:
     ex      de,hl
     ld      hl,sektrk
     ld      a,(de)          ;low byte compare
-    cp      (HL)            ;same?
+    cp      (hl)            ;same?
     ret     NZ              ;return if not
 ;           low bytes equal, test high 1s
     inc     de
@@ -629,17 +634,8 @@ writehst:
     ;from hstbuf and return error flag in erflag.
     ;return erflag non-zero if error
 
-    call    setLBAaddr
-    ld      hl,hstlba0      ;get the LBA into BCDE
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)
-    inc     hl
-    ld      c,(hl)
-    inc     hl
-    ld      b,(hl)
-
-    ld      hl,hstbuf       ;get hstbuf into HL
+    call    setLBAaddr      ;get the required LBA into BCDE
+    ld      hl,hstbuf       ;get hstbuf address into HL
 
     ;write a sector
     ;specified by the 4 bytes in BCDE
@@ -659,17 +655,8 @@ readhst:
     ;read "hstsiz" bytes
     ;into hstbuf and return error flag in erflag.
 
-    call    setLBAaddr
-    ld      hl,hstlba0      ;get the LBA into BCDE
-    ld      e,(hl)
-    inc     hl
-    ld      d,(hl)
-    inc     hl
-    ld      c,(hl)
-    inc     hl
-    ld      b,(hl)
-
-    ld      hl,hstbuf       ;get hstbuf into HL
+    call    setLBAaddr      ;get the required LBA into BCDE
+    ld      hl,hstbuf       ;get hstbuf address into HL
 
     ;read a sector
     ;LBA specified by the 4 bytes in BCDE
@@ -690,7 +677,7 @@ readhst:
 ; starting from 0x0040 _cpm_dsk0_base in Page 0.
 ; Each LBA is 4 bytes, total 16 bytes
 ;
-; The translation activity is to set the hstlbaX correctly, using the hstdsk, hstsec,
+; The translation activity is to set the LBA correctly, using the hstdsk, hstsec,
 ; and hsttrk information.
 ;
 ; Since hstsec is 32 sectors per track, we need to use 5 bits for hstsec.
@@ -707,8 +694,8 @@ setLBAaddr:
     add     a,a             ;so left shift 2 (x4), to create offset to disk base address
 
     ld      hl,_cpm_dsk0_base;get the address for disk LBA base address
-    ld      d,0
-    ld      e,a
+    ld      e,a    
+    ld      d,$00
     add     hl,de           ;add the offset to the base address
 
     ex      de,hl           ;DE contains address of active disk (file) LBA LSB
@@ -732,28 +719,28 @@ setLBAaddr:
 
     ld      h,l             ;move LBA offset back to the 16 (11 + 5) bit pair
     ld      l,a
-
+               
     ex      de,hl           ;HL contains address of active disk (file) base LBA LSB
-                            ;DE contains the hsttrk+hstsec result
+                            ;DE contains the hsttrk:hstsec result
 
     ld      a,(hl)          ;get disk LBA LSB
-    add     a,e             ;add hsttrk+hstsec LSB
-    ld      (hstlba0),a     ;write LBA LSB, put it in hstlba0
+    add     a,e             ;add hsttrk:hstsec LSB
+    ld      e,a             ;write LBA LSB, put it in E
 
     inc     hl
     ld      a,(hl)          ;get disk LBA 1SB
-    adc     a,d             ;add hsttrk+hstsec 1SB, with carry
-    ld      (hstlba1),a     ;write LBA 1SB, put it in hstlba1
+    adc     a,d             ;add hsttrk:hstsec 1SB, with carry
+    ld      d,a             ;write LBA 1SB, put it in D
 
     inc     hl
     ld      a,(hl)          ;get disk LBA 2SB
     adc     a,$00           ;get disk LBA 2SB, with carry
-    ld      (hstlba2),a     ;write LBA 2SB, put it in hstlba2
+    ld      c,a             ;write LBA 2SB, put it in C
 
     inc     hl
     ld      a,(hl)          ;get disk LBA MSB
     adc     a,$00           ;get disk LBA MSB, with carry
-    ld      (hstlba3),a     ;write LBA MSB, put it in hstlba3
+    ld      b,a             ;write LBA MSB, put it in B
 
     ret
 
@@ -798,12 +785,12 @@ dpblk:
     defb    5           ;BSH - block shift factor from BLS
     defb    31          ;BLM - block mask from BLS
     defb    1           ;EXM - Extent mask
-    defw    hstalb-1    ;DSM - Storage size (blocks - 1) 16MB disks
+    defw    hstalb-1    ;DSM - Storage size (blocks - 1)
     defw    cpmdir-1    ;DRM - Number of directory entries - 1
-    defb    $F0         ;AL0 - 1 bit set per directory block
-    defb    $00         ;AL1 -            "
-    defw    0           ;CKS - DIR check vector size (DRM+1)/4 (0=fixed disk)
-    defw    0           ;OFF - Reserved tracks
+    defb    $F0         ;AL0 - 1 bit set per directory block (ALLOC0)
+    defb    $00         ;AL1 - 1 bit set per directory block (ALLOC0)
+    defw    0           ;CKS - DIR check vector size (DRM+1)/4 (0=fixed disk) (ALLOC1)
+    defw    0           ;OFF - Reserved tracks offset
 ;
 ;    end of fixed tables
 ;
@@ -819,11 +806,6 @@ seksec:     defs    1       ;seek sector number
 hstdsk:     defs    1       ;host disk number
 hsttrk:     defs    2       ;host track number
 hstsec:     defs    1       ;host sector number
-
-hstlba0:    defs    1       ;host LBA
-hstlba1:    defs    1
-hstlba2:    defs    1
-hstlba3:    defs    1
 
 sekhst:     defs    1       ;seek shr secshf
 hstact:     defs    1       ;host active flag

@@ -1427,36 +1427,36 @@ ROFILE:     DEFW    ERROR4      ;file is read only
 ; function number desired is in register (C).
 ;
 FBASE1:
-    EX    DE,HL        ;save the (DE) parameters.
-    LD    (PARAMS),HL
-    EX    DE,HL
-    LD    A,E        ;and save register (E) in particular.
-    LD    (EPARAM),A
-    LD    HL,0
-    LD    (STATUS),HL    ;clear return status.
-    ADD    HL,SP
-    LD    (USRSTACK),HL    ;save users stack pointer.
-    LD    SP,STKAREA    ;and set our own.
-    XOR    A        ;clear auto select storage space.
-    LD    (AUTOFLAG),A
-    LD    (AUTO),A
-    LD    HL,GOBACK    ;set return address.
+    EX      DE,HL        ;save the (DE) parameters.
+    LD      (PARAMS),HL
+    EX      DE,HL
+    LD      A,E        ;and save register (E) in particular.
+    LD      (EPARAM),A
+    LD      HL,0
+    LD      (STATUS),HL    ;clear return status.
+    ADD     HL,SP
+    LD      (USRSTACK),HL    ;save users stack pointer.
+    LD      SP,STKAREA    ;and set our own.
+    XOR     A        ;clear auto select storage space.
+    LD      (AUTOFLAG),A
+    LD      (AUTO),A
+    LD      HL,GOBACK    ;set return address.
     PUSH    HL
-    LD    A,C        ;get function number.
-    CP    NFUNCTS        ;valid function number?
-    RET    NC
-    LD    C,E        ;keep single register function here.   
-    LD    HL,FUNCTNS    ;now look thru the function table.
-    LD    E,A
-    LD    D,0        ;(DE)=function number.
-    ADD    HL,DE
-    ADD    HL,DE        ;(HL)=(start of table)+2*(function number).
-    LD    E,(HL)
-    INC    HL
-    LD    D,(HL)        ;now (DE)=address for this function.
-    LD    HL,(PARAMS)    ;retrieve parameters.
-    EX    DE,HL        ;now (DE) has the original parameters.
-    JP    (HL)        ;execute desired function.
+    LD      A,C        ;get function number.
+    CP      NFUNCTS        ;valid function number?
+    RET     NC
+    LD      C,E        ;keep single register function here.   
+    LD      HL,FUNCTNS    ;now look thru the function table.
+    LD      E,A
+    LD      D,0        ;(DE)=function number.
+    ADD     HL,DE
+    ADD     HL,DE        ;(HL)=(start of table)+2*(function number).
+    LD      E,(HL)
+    INC     HL
+    LD      D,(HL)        ;now (DE)=address for this function.
+    LD      HL,(PARAMS)    ;retrieve parameters.
+    EX      DE,HL        ;now (DE) has the original parameters.
+    JP      (HL)        ;execute desired function.
 ;
 ;   BDOS function jump table.
 ;
@@ -1925,7 +1925,7 @@ CHARBUF:    DEFB    0       ;single input character buffer.
 ;
 USRSTACK:   DEFW    0       ;save users stack pointer here.
             DEFS    48,0
-STKAREA:                    ;end of stack area.
+STKAREA:                    ;top of stack area.
 ;
 USERNO:     DEFB    0       ;current user number.
 ACTIVE:     DEFB    0       ;currently active drive.
@@ -2043,7 +2043,7 @@ IORET:
 ;
 TRKSEC:
     LD    HL,(FILEPOS)    ;get position of last accessed file
-    LD    C,2        ;in directory and compute sector #.
+    LD    C,2           ;in directory and compute sector #.
     CALL    SHIFTR        ;sector #=file-position/4.
     LD    (BLKNMBR),HL    ;save this as the block number of interest.
     LD    (CKSUMTBL),HL    ;what's it doing here too?
@@ -2582,22 +2582,22 @@ NXENTRY:
     LD    HL,(FILEPOS)    ;get current count.
     INC    HL        ;go on to the next one.
     LD    (FILEPOS),HL
-    CALL    SUBHL        ;(HL)=(DIRSIZE)-(FILEPOS)
-    JP    NC,NXENT1    ;is there more room left?
-    JP    STFILPOS    ;no. Set this flag and return.
+    CALL    SUBHL       ;(HL)=(DIRSIZE)-(FILEPOS)
+    JP    NC,NXENT1     ;is there more room left?
+    JP    STFILPOS      ;no. Set this flag and return.
 NXENT1:
-    LD    A,(FILEPOS)    ;get file position within directory.
-    AND    03H        ;only look within this sector (only 4 entries fit).
-    LD    B,5        ;convert to relative position (32 bytes each).
-NXENT2:
-    ADD    A,A        ;note that this is not efficient code.
-    DEC    B        ;5 'ADD A's would be better.
-    JP    NZ,NXENT2
+    LD    A,(FILEPOS)   ;get file position within directory.
+    AND    03H          ;only look within this sector (only 4 entries fit).
+    ADD    A,A          ;convert to relative position (32 bytes each).
+    ADD    A,A
+    ADD    A,A
+    ADD    A,A
+    ADD    A,A
     LD    (FCBPOS),A    ;save it as position of fcb.
     OR    A
-    RET    NZ        ;return if we are within buffer.
+    RET    NZ           ;return if we are within buffer.
     PUSH    BC
-    CALL    TRKSEC        ;we need the next directory sector.
+    CALL    TRKSEC      ;we need the next directory sector.
     CALL    DIRREAD
     POP    BC
     JP    CHECKDIR
@@ -2630,7 +2630,7 @@ CKBITMAP:
     ADD    A,A
     ADD    A,A
     OR    C        ;and add in (C).
-    LD    C,A        ;ok, (C) ha been completed.
+    LD    C,A        ;ok, (C) has been completed.
     LD    A,B        ;is there a better way of doing this?
     RRCA    
     RRCA    
@@ -2734,7 +2734,7 @@ BITMAP:
 ;   Initialize the bitmap for this drive. Right now, the first
 ; two bytes are specified by the disk parameter block. However
 ; a patch could be entered here if it were necessary to setup
-; this table in a special mannor. For example, the bios could
+; this table in a special manner. For example, the bios could
 ; determine locations of 'bad blocks' and set them as already
 ; 'used' in the map.
 ;
@@ -3787,9 +3787,9 @@ SETDSK:
     LD    (HL),A        ;yes it does, log it in.
     JP    LOGINDRV
 ;
-;   This is the 'auto disk select' routine. The firsst byte
+;   This is the 'auto disk select' routine. The first byte
 ; of the fcb is examined for a drive specification. If non
-; zero then the drive will be selected and loged in.
+; zero then the drive will be selected and logged in.
 ;
 AUTOSEL:
     LD    A,0FFH        ;say 'auto-select activated'.
@@ -4035,7 +4035,7 @@ GOBACK:
     LD    (HL),A        ;yes, reset first byte properly.
     LD    A,(OLDDRV)    ;and get the old drive and select it.
     LD    (EPARAM),A
-    CALL    SETDSK
+    CALL  SETDSK
 GOBACK1:
     LD    HL,(USRSTACK)    ;reset the users stack pointer.
     LD    SP,HL
@@ -4052,12 +4052,12 @@ GOBACK1:
 ; written over.
 ;
 WTSPECL:
-    CALL    AUTOSEL        ;select proper drive.
-    LD    A,2        ;use special write mode.
+    CALL  AUTOSEL       ;select proper drive.
+    LD    A,2           ;use special write mode.
     LD    (MODE),A
-    LD    C,0        ;set write indicator.
-    CALL    POSITN1        ;position the file.
-    CALL    Z,WTSEQ1    ;and write (if no errors).
+    LD    C,0           ;set write indicator.
+    CALL  POSITN1       ;position the file.
+    CALL  Z,WTSEQ1      ;and write (if no errors).
     RET    
 ;
 ;**************************************************************
@@ -4098,8 +4098,8 @@ DIRSIZE:    DEFW    0       ;directory size.
 ALLOC0:     DEFW    0       ;storage for first bytes of bit map (dir space used).
 ALLOC1:     DEFW    0
 OFFSET:     DEFW    0       ;first usable track number.
-XLATE:      DEFW    0       ;sector translation table address.
 ;
+XLATE:      DEFW    0       ;sector translation table address.
 ;
 CLOSEFLG:   DEFB    0       ;close flag (=0ffh is extent written ok).
 RDWRTFLG:   DEFB    0       ;read/write flag (0ffh=read, 0=write).
@@ -4125,10 +4125,7 @@ FILEPOS:    DEFW    0       ;files position within directory (0 to max entries -
 ; 16 possible drives.
 ;
 CKSUMTBL:   DEFS    16,0
-;
-;   Extra space ?
-;
-;           DEFS    4,0
+
 ;
 ;**************************************************************
 ;*
