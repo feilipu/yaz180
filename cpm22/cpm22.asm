@@ -61,7 +61,7 @@ CBASE:
 
 ;
 ;   Standard cp/m ccp input buffer. Format is (max length),
-; (actual length), (char #1), (char #2), (char #3), etc.
+;   (actual length), (char #1), (char #2), (char #3), etc.
 ;
 INBUFF:
     DEFB    127         ;length of input buffer.
@@ -91,7 +91,7 @@ PRINTB:
     RET
 ;
 ;   Routine to send a carriage return, line feed combination
-; to the console.
+;   to the console.
 ;
 CRLF:   
     LD      A,CR
@@ -106,7 +106,7 @@ SPACE:
     JP      PRINTB
 ;
 ;   Routine to print character string pointed to be (BC) on the
-; console. It must terminate with a null byte.
+;   console. It must terminate with a null byte.
 ;
 PLINE:
     PUSH    BC
@@ -136,7 +136,7 @@ DSKSEL:
     JP    ENTRY
 ;
 ;   Routine to call bdos and save the return code. The zero
-; flag is set on a return of 0ffh.
+;   flag is set on a return of 0ffh.
 ;
 ENTRY1:
     CALL    ENTRY
@@ -165,7 +165,7 @@ CLOSE:
     JP    ENTRY1
 ;
 ;   Routine to search for the first file with ambiguous name
-; (DE).
+;   (DE).
 ;
 SRCHFST:
     LD    C,17
@@ -190,7 +190,7 @@ DELETE:
     JP    ENTRY
 ;
 ;   Routine to call the bdos and set the zero flag if a zero
-; status is returned.
+;   status is returned.
 ;
 ENTRY2:
     CALL    ENTRY
@@ -198,7 +198,7 @@ ENTRY2:
     RET    
 ;
 ;   Routine to read the next record from a sequential file.
-; (DE) points to the FCB.
+;   (DE) points to the FCB.
 ;
 RDREC:
     LD    C,20
@@ -211,7 +211,7 @@ READFCB:
     JP    RDREC
 ;
 ;   Routine to write the next record of a sequential file.
-; (DE) points to the FCB.
+;   (DE) points to the FCB.
 ;
 WRTREC:
     LD    C,21
@@ -224,7 +224,7 @@ CREATE:
     JP    ENTRY1
 ;
 ;   Routine to rename the file pointed to by (DE). Note that
-; the new name starts at (DE+16).
+;   the new name starts at (DE+16).
 ;
 RENAM:
     LD    C,23
@@ -236,7 +236,7 @@ GETUSR:
     LD    E,0FFH
 ;
 ;   Routne to get or set the current user code.
-; If (E) is FF then this is a GET, else it is a SET.
+;   If (E) is FF then this is a GET, else it is a SET.
 ;
 GETSETUC:
     LD    C,32
@@ -263,7 +263,7 @@ MOVECD:
     RET    
 ;
 ;   Routine to convert (A) into upper case ascii. Only letters
-; are affected.
+;   are affected.
 ;
 UPPER:
     CP    'a'        ;check for letters in the range of 'a' to 'z'.
@@ -274,8 +274,8 @@ UPPER:
     RET    
 ;
 ;   Routine to get a line of input. We must check to see if the
-; user is in (BATCH) mode. If so, then read the input from file
-; ($$$.SUB). At the end, reset to console input.
+;   user is in (BATCH) mode. If so, then read the input from file
+;   ($$$.SUB). At the end, reset to console input.
 ;
 GETINP:
     LD    A,(BATCH)    ;if =0, then use console input.
@@ -283,8 +283,8 @@ GETINP:
     JP    Z,GETINP1
 ;
 ;   Use the submit file ($$$.sub) which is prepared by a
-; SUBMIT run. It must be on drive (A) and it will be deleted
-; if and error occures (like eof).
+;   SUBMIT run. It must be on drive (A) and it will be deleted
+;   if and error occures (like eof).
 ;
     LD    A,(CDRIVE)    ;select drive 0 if need be.
     OR    A
@@ -325,14 +325,14 @@ GETINP:
     JP    Z,GETINP2    ;jump if no key is pressed.
 ;
 ;   Terminate the submit job on any keyboard input. Delete this
-; file such that it is not re-started and jump to normal keyboard
-; input section.
+;   file such that it is not re-started and jump to normal keyboard
+;   input section.
 ;
     CALL    DELBATCH    ;delete the batch file.
     JP    CMMND1        ;and restart command input.
 ;
 ;   Get here for normal keyboard input. Delete the submit file
-; in case there was one.
+;   in case there was one.
 ;
 GETINP1:
     CALL    DELBATCH    ;delete file ($$$.sub).
@@ -364,7 +364,7 @@ GETINP4:
     RET    
 ;
 ;   Routine to check the console for a key pressed. The zero
-; flag is set is none, else the character is returned in (A).
+;   flag is set is none, else the character is returned in (A).
 ;
 CHKCON:
     LD    C,11        ;check console.
@@ -409,7 +409,7 @@ DELBATCH:
     JP    DSKSEL
 ;
 ;   Check to two strings at (PATTRN1) and (PATTRN2). They must be
-; the same or we halt....
+;   the same or we halt....
 ;
 VERIFY:
     LD    DE,PATTRN1    ;these are the serial number bytes.
@@ -449,7 +449,7 @@ SYNERR2:
     JP    CMMND1        ;and restart from console input.
 ;
 ;   Check character at (DE) for legal command input. Note that the
-; zero flag is set if the character is a delimiter.
+;   zero flag is set if the character is a delimiter.
 ;
 CHECK:
     LD    A,(DE)
@@ -500,8 +500,8 @@ CONVFST:
     LD    A,0
 ;
 ;   Format a file name (convert * to '?', etc.). On return,
-; (A)=0 is an unambiguous name was specified. Enter with (A) equal to
-; the position within the fcb for the name (either 0 or 16).
+;   (A)=0 is an unambiguous name was specified. Enter with (A) equal to
+;   the position within the fcb for the name (either 0 or 16).
 ;
 CONVERT:
     LD    HL,FCB
@@ -609,7 +609,7 @@ GETEXT7:
     POP    HL
 ;
 ;   Check to see if this is an ambiguous file name specification.
-; Set the (A) register to non zero if it is.
+;   Set the (A) register to non zero if it is.
 ;
     LD    BC,11        ;set name length.
 GETEXT8:
@@ -637,16 +637,16 @@ CMDTBL:
     DEFM    "USER"
 ;
 ;   The following six bytes must agree with those at (PATTRN2)
-; or cp/m will HALT. Why?
+;   or cp/m will HALT. Why?
 ;
 PATTRN1:
     DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
 ;
 ;   Search the command table for a match with what has just
-; been entered. If a match is found, then we jump to the
-; proper section. Else jump to (UNKNOWN).
-; On return, the (C) register is set to the command number
-; that matched (or NUMCMDS+1 if no match).
+;   been entered. If a match is found, then we jump to the
+;   proper section. Else jump to (UNKNOWN).
+;   On return, the (C) register is set to the command number
+;   that matched (or NUMCMDS+1 if no match).
 ;
 SEARCH:
     LD    HL,CMDTBL
@@ -679,7 +679,7 @@ SEARCH4:
     JP    SEARCH1
 ;
 ;   Set the input buffer to empty and then start the command
-; processor (ccp).
+;   processor (ccp).
 ;
 CLEARBUF:
     XOR    A
@@ -736,13 +736,13 @@ CMMND2:
     CALL    CONVFST        ;convert name typed in.
     CALL    NZ,SYNERR    ;wild cards are not allowed.
     LD    A,(CHGDRV)    ;if a change in drives was indicated,
-    OR    A        ;then treat this as an unknown command
+    OR    A                 ;then treat this as an unknown command
     JP    NZ,UNKNOWN    ;which gets executed.
     CALL    SEARCH        ;else search command table for a match.
 ;
 ;   Note that an unknown command returns
-; with (A) pointing to the last address
-; in our table which is (UNKNOWN).
+;   with (A) pointing to the last address
+;   in our table which is (UNKNOWN).
 ;
     LD    HL,CMDADR    ;now, look thru our address table for command (A).
     LD    E,A        ;set (DE) to command number.
@@ -788,9 +788,9 @@ NOFILE:
     DEFM    "No file",0
 ;
 ;   Decode a command of the form 'A>filename number{ filename}.
-; Note that a drive specifier is not allowed on the first file
-; name. On return, the number is in register (A). Any error
-; causes 'filename?' to be printed and the command is aborted.
+;   Note that a drive specifier is not allowed on the first file
+;   name. On return, the number is in register (A). Any error
+;   causes 'filename?' to be printed and the command is aborted.
 ;
 DECODE:
     CALL    CONVFST        ;convert filename.
@@ -838,7 +838,7 @@ DECODE4:
     RET    
 ;
 ;   Move 3 bytes from (HL) to (DE). Note that there is only
-; one reference to this at (A2D5h).
+;   one reference to this at (A2D5h).
 ;
 MOVE3:
     LD    B,3
@@ -863,9 +863,9 @@ EXTRACT:
     LD    A,(HL)
     RET    
 ;
-;  Check drive specified. If it means a change, then the new
-; drive will be selected. In any case, the drive byte of the
-; fcb will be set to null (means use current drive).
+;   Check drive specified. If it means a change, then the new
+;   drive will be selected. In any case, the drive byte of the
+;   fcb will be set to null (means use current drive).
 ;
 DSELECT:
     XOR    A        ;null out first byte of fcb.
@@ -880,7 +880,7 @@ DSELECT:
     JP    DSKSEL        ;no. Select it then.
 ;
 ;   Check the drive selection and reset it to the previous
-; drive if it was changed for the preceeding command.
+;   drive if it was changed for the preceeding command.
 ;
 RESETDR:
     LD    A,(CHGDRV)    ;drive change indicated?
@@ -1356,8 +1356,8 @@ COMFILE:
     DEFM    "COM"        ;command file extension.
 ;
 ;   Get here to return to command level. We will reset the
-; previous active drive and then either return to command
-; level directly or print error message and then return.
+;   previous active drive and then either return to command
+;   level directly or print error message and then return.
 ;
 GETBACK:
     CALL    RESETDR        ;reset previous drive.
@@ -1373,10 +1373,15 @@ GETBACK1:
 SECTION cpm_ccp_data
 
 ;
+;   Room for expansion.
+;
+            DEFS    12,0
+
+;
 ;   ccp stack area.
 ;
             DEFS    16,0
-CCPSTACK:                   ;end of ccp stack area.
+CCPSTACK:                   ;top of ccp stack area.
 
 ;
 ;   Batch (or SUBMIT) processing information storage.
@@ -1392,13 +1397,10 @@ RTNCODE:    DEFB    0        ;status returned from bdos call.
 CDRIVE:     DEFB    0        ;currently active drive.
 CHGDRV:     DEFB    0        ;change in drives flag (0=no change).
 NBYTES:     DEFW    0        ;byte counter used by TYPE.
-;
-;   Room for expansion?
-;
-            DEFS    12,0
+
 ;
 ;   Note that the following six bytes must match those at
-; (PATTRN1) or cp/m will HALT. Why?
+;   (PATTRN1) or cp/m will HALT. Why?
 ;
 PATTRN2:    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
 
@@ -1424,7 +1426,7 @@ ROFILE:     DEFW    ERROR4      ;file is read only
 
 ;
 ;   Entry into bdos. (DE) or (E) are the parameters passed. The
-; function number desired is in register (C).
+;   function number desired is in register (C).
 ;
 FBASE1:
     EX      DE,HL        ;save the (DE) parameters.
@@ -1515,7 +1517,7 @@ PRTERR:
     CALL    PRTMESG
 ;
 ;   Get an input character. We will check our 1 character
-; buffer first. This may be set by the console status routine.
+;   buffer first. This may be set by the console status routine.
 ;
 GETCHAR:
     LD    HL,CHARBUF    ;check character buffer.
@@ -1538,8 +1540,8 @@ GETECHO:
     RET    
 ;
 ;   Check character in (A). Set the zero flag on a carriage
-; control character and the carry flag on any other control
-; character.
+;   control character and the carry flag on any other control
+;   character.
 ;
 CHKCHAR:
     CP    CR        ;check for carriage return, line feed, backspace,
@@ -1554,9 +1556,9 @@ CHKCHAR:
     RET    
 ;
 ;   Check the console during output. Halt on a control-s, then
-; reboot on a control-c. If anything else is ready, clear the
-; zero flag and return (the calling routine may want to do
-; something).
+;   reboot on a control-c. If anything else is ready, clear the
+;   zero flag and return (the calling routine may want to do
+;   something).
 ;
 CKCONSOL:
     LD    A,(CHARBUF)    ;check buffer.
@@ -1580,8 +1582,8 @@ CKCON2:
     RET    
 ;
 ;   Output (C) to the screen. If the printer flip-flop flag
-; is set, we will send character to printer also. The console
-; will be checked in the process.
+;   is set, we will send character to printer also. The console
+;   will be checked in the process.
 ;
 OUTCHAR:
     LD    A,(OUTFLAG)    ;check output flag.
@@ -1622,7 +1624,7 @@ OUTCHR2:
     RET    
 ;
 ;   Output (A) to the screen. If it is a control character
-; (other than carriage control), use ^x format.
+;   (other than carriage control), use ^x format.
 ;
 SHOWIT:
     LD    A,C
@@ -1636,7 +1638,7 @@ SHOWIT:
     LD    C,A
 ;
 ;   Function to output (C) to the console device and expand tabs
-; if necessary.
+;   if necessary.
 ;
 OUTCON:
     LD    A,C
@@ -1652,7 +1654,7 @@ OUTCON1:
     RET    
 ;
 ;   Echo a backspace character. Erase the prevoius character
-; on the screen.
+;   on the screen.
 ;
 BACKUP:
     CALL    BACKUP1        ;backup the screen 1 place.
@@ -1663,7 +1665,7 @@ BACKUP1:
     JP    CONOUT
 ;
 ;   Signal a deleted line. Print a '#' at the end and start
-; over.
+;   over.
 ;
 NEWLINE:
     LD    C,'#'
@@ -1855,9 +1857,9 @@ GETRDR:
     CALL    READER        ;get a character from reader, set status and return.
     JP    SETSTAT
 ;
-;  Function to perform direct console i/o. If (C) contains (FF)
-; then this is an input request. If (C) contains (FE) then
-; this is a status request. Otherwise we are to output (C).
+;   Function to perform direct console i/o. If (C) contains (FF)
+;   then this is an input request. If (C) contains (FE) then
+;   this is a status request. Otherwise we are to output (C).
 ;
 DIRCIO:
     LD    A,C        ;test for (FF).
@@ -1888,7 +1890,7 @@ SETIOB:
     RET    
 ;
 ;   Function to print the character string pointed to by (DE)
-; on the console device. The string ends with a '$'.
+;   on the console device. The string ends with a '$'.
 ;
 PRTSTR:
     EX    DE,HL
@@ -1902,7 +1904,7 @@ GETCSTS:
     CALL    CKCONSOL
 ;
 ;   Get here to set the status and return to the cleanup
-; section. Then back to the user.
+;   section. Then back to the user.
 ;
 SETSTAT:
     LD    (STATUS),A
@@ -1970,7 +1972,7 @@ SELECT:
     RET    Z        ;return if not.
 ;
 ;   Here, the BIOS returned the address of the parameter block
-; in (HL). We will extract the necessary pointers and save them.
+;   in (HL). We will extract the necessary pointers and save them.
 ;
     LD    E,(HL)        ;yes, get address of translation table into (DE).
     INC    HL
@@ -2039,7 +2041,7 @@ IORET:
     JP      JUMPHL
 ;
 ;   Routine to select the track and sector that the desired
-; block number falls in.
+;   block number falls in.
 ;
 TRKSEC:
     LD    HL,(FILEPOS)    ;get position of last accessed file
@@ -2048,8 +2050,8 @@ TRKSEC:
     LD    (BLKNMBR),HL    ;save this as the block number of interest.
     LD    (CKSUMTBL),HL    ;what's it doing here too?
 ;
-;   if the sector number has already been set (BLKNMBR), enter
-; at this point.
+;   If the sector number has already been set (BLKNMBR), enter
+;   at this point.
 ;
 TRKSEC1:
     LD    HL,BLKNMBR
@@ -2097,8 +2099,8 @@ TRKSEC3:
     INC    HL
     JP    TRKSEC3
 ;
-;   here we have determined the track number that contains the
-; desired sector.
+;   Here we have determined the track number that contains the
+;   desired sector.
 ;
 TRKSEC4:
     POP    HL        ;get track number (HL).
@@ -2136,7 +2138,7 @@ TRKSEC4:
     JP    SETSEC        ;and select it.
 ;
 ;   Compute block number from record number (SAVNREC) and
-; extent number (SAVEXT).
+;   extent number (SAVEXT).
 ;
 GETBLOCK:
     LD    HL,BLKSHFT    ;get logical to physical conversion.
@@ -2163,9 +2165,9 @@ GETBLK3:
     RET    
 ;
 ;   Routine to extract the (BC) block byte from the fcb pointed
-; to by (PARAMS). If this is a big-disk, then these are 16 bit
-; block numbers, else they are 8 bit numbers.
-; Number is returned in (HL).
+;   to by (PARAMS). If this is a big-disk, then these are 16 bit
+;   block numbers, else they are 8 bit numbers.
+;   Number is returned in (HL).
 ;
 EXTBLK:
     LD    HL,(PARAMS)    ;get fcb address.
@@ -2205,10 +2207,10 @@ CHKBLK:
     RET    
 ;
 ;   Adjust physical block (BLKNMBR) and convert to logical
-; sector (LOGSECT). This is the starting sector of this block.
-; The actual sector of interest is then added to this and the
-; resulting sector number is stored back in (BLKNMBR). This
-; will still have to be adjusted for the track number.
+;   sector (LOGSECT). This is the starting sector of this block.
+;   The actual sector of interest is then added to this and the
+;   resulting sector number is stored back in (BLKNMBR). This
+;   will still have to be adjusted for the track number.
 ;
 LOGICAL:
     LD    A,(BLKSHFT)    ;get log2(physical/logical sectors).
@@ -2236,7 +2238,7 @@ SETEXT:
     RET    
 ;
 ;   Set (HL) to point to record count byte in fcb and (DE) to
-; next record number byte.
+;   next record number byte.
 ;
 SETHLDE:
     LD    HL,(PARAMS)
@@ -2263,8 +2265,8 @@ STRDATA:
     RET    
 ;
 ;   Set the next record to access. If (MODE) is set to 2, then
-; the last record byte (SAVNREC) has the correct number to access.
-; For sequential access, (MODE) will be equal to 1.
+;   the last record byte (SAVNREC) has the correct number to access.
+;   For sequential access, (MODE) will be equal to 1.
 ;
 SETNREC:
     CALL    SETHLDE
@@ -2299,7 +2301,7 @@ SHIFTR1:
     JP    SHIFTR1
 ;
 ;   Compute the check-sum for the directory buffer. Return
-; integer sum in (A).
+;   integer sum in (A).
 ;
 CHECKSUM:
     LD    C,128        ;length of buffer.
@@ -2323,7 +2325,7 @@ SHIFTL1:
     JP    SHIFTL1
 ;
 ;   Routine to set a bit in a 16 bit value contained in (BC).
-; The bit set depends on the current drive selection.
+;   The bit set depends on the current drive selection.
 ;
 SETBIT:
     PUSH    BC        ;save 16 bit word.
@@ -2341,7 +2343,7 @@ SETBIT:
     RET    
 ;
 ;   Extract the write protect status bit for the current drive.
-; The result is returned in (A), bit 0.
+;   The result is returned in (A), bit 0.
 ;
 GETWPRT:
     LD    HL,(WRTPRT)    ;get status bytes.
@@ -2392,7 +2394,7 @@ CHKWPRT:
     JP    JUMPHL
 ;
 ;   Routine to set (HL) pointing to the proper entry in the
-; directory buffer.
+;   directory buffer.
 ;
 FCB2HL:
     LD    HL,(DIRBUF)    ;get address of buffer.
@@ -2408,7 +2410,7 @@ ADDA2HL:
     RET    
 ;
 ;   Routine to get the 's2' byte from the fcb supplied in
-; the initial parameter specification.
+;   the initial parameter specification.
 ;
 GETS2:
     LD    HL,(PARAMS)    ;get address of fcb.
@@ -2433,9 +2435,9 @@ SETS2B7:
     RET    
 ;
 ;   Compare (FILEPOS) with (SCRATCH1) and set flags based on
-; the difference. This checks to see if there are more file
-; names in the directory. We are at (FILEPOS) and there are
-; (SCRATCH1) of them to check.
+;   the difference. This checks to see if there are more file
+;   names in the directory. We are at (FILEPOS) and there are
+;   (SCRATCH1) of them to check.
 ;
 MOREFLS:
     LD    HL,(FILEPOS)    ;we are here.
@@ -2449,7 +2451,7 @@ MOREFLS:
     RET    
 ;
 ;   Call this routine to prevent (SCRATCH1) from being greater
-; than (FILEPOS).
+;   than (FILEPOS).
 ;
 CHKNMBR:
     CALL    MOREFLS        ;SCRATCH1 too big?
@@ -2477,9 +2479,9 @@ SETDIR:
     LD    C,0FFH
 ;
 ;   Routine to set or compare the directory checksum byte. If
-; (C)=0ffh, then this will set the checksum byte. Else the byte
-; will be checked. If the check fails (the disk has been changed),
-; then this disk will be write protected.
+;   (C)=0ffh, then this will set the checksum byte. Else the byte
+;   will be checked. If the check fails (the disk has been changed),
+;   then this disk will be write protected.
 ;
 CHECKDIR:
     LD    HL,(CKSUMTBL)
@@ -2533,7 +2535,7 @@ DIRDMA:
     LD    HL,DIRBUF
 ;
 ;   Set the dma address. On entry, (HL) points to
-; word containing the desired dma address.
+;   word containing the desired dma address.
 ;
 DIRDMA1:
     LD    C,(HL)
@@ -2569,12 +2571,12 @@ STFILPOS:
     RET    
 ;
 ;   Move on to the next file position within the current
-; directory buffer. If no more exist, set pointer to 0ffffh
-; and the calling routine will check for this. Enter with (C)
-; equal to 0ffh to cause the checksum byte to be set, else we
-; will check this disk and set write protect if checksums are
-; not the same (applies only if another directory sector must
-; be read).
+;   directory buffer. If no more exist, set pointer to 0ffffh
+;   and the calling routine will check for this. Enter with (C)
+;   equal to 0ffh to cause the checksum byte to be set, else we
+;   will check this disk and set write protect if checksums are
+;   not the same (applies only if another directory sector must
+;   be read).
 ;
 NXENTRY:
     LD    HL,(DIRSIZE)    ;get directory entry size limit.
@@ -2603,10 +2605,10 @@ NXENT1:
     JP    CHECKDIR
 ;
 ;   Routine to to get a bit from the disk space allocation
-; map. It is returned in (A), bit position 0. On entry to here,
-; set (BC) to the block number on the disk to check.
-; On return, (D) will contain the original bit position for
-; this block number and (HL) will point to the address for it.
+;   map. It is returned in (A), bit position 0. On entry to here,
+;   set (BC) to the block number on the disk to check.
+;   On return, (D) will contain the original bit position for
+;   this block number and (HL) will point to the address for it.
 ;
 CKBITMAP:
     LD    A,C        ;determine bit number of interest.
@@ -2615,7 +2617,7 @@ CKBITMAP:
     LD    E,A        ;save particular bit number.
     LD    D,A
 ;
-;   compute (BC)=(BC)/8.
+;   Compute (BC)=(BC)/8.
 ;
     LD    A,C
     RRCA            ;now shift right 3 bits.
@@ -2638,8 +2640,8 @@ CKBITMAP:
     AND    1FH
     LD    B,A        ;and now (B) is completed.
 ;
-;   use this as an offset into the disk space allocation
-; table.
+;   Use this as an offset into the disk space allocation
+;   table.
 ;
     LD    HL,(ALOCVECT)
     ADD    HL,BC
@@ -2651,8 +2653,8 @@ CKBMAP1:
     RET    
 ;
 ;   Set or clear the bit map such that block number (BC) will be marked
-; as used. On entry, if (E)=0 then this bit will be cleared, if it equals
-; 1 then it will be set (don't use anyother values).
+;   as used. On entry, if (E)=0 then this bit will be cleared, if it equals
+;   1 then it will be set (don't use anyother values).
 ;
 STBITMAP:
     PUSH    DE
@@ -2661,10 +2663,10 @@ STBITMAP:
     POP    BC
     OR    C        ;and now set it acording to (C).
 ;
-;  entry to restore the original bit position and then store
-; in table. (A) contains the value, (D) contains the bit
-; position (1-8), and (HL) points to the address within the
-; space allocation table for this byte.
+;   Entry to restore the original bit position and then store
+;   in table. (A) contains the value, (D) contains the bit
+;   position (1-8), and (HL) points to the address within the
+;   space allocation table for this byte.
 ;
 STBMAP1:
     RRCA            ;restore original bit position.
@@ -2674,7 +2676,7 @@ STBMAP1:
     RET    
 ;
 ;   Set/clear space used bits in allocation map for this file.
-; On entry, (C)=1 to set the map and (C)=0 to clear it.
+;   On entry, (C)=1 to set the map and (C)=0 to clear it.
 ;
 SETFILE:
     CALL    FCB2HL        ;get address of fcb
@@ -2719,9 +2721,9 @@ SETFL4:
     JP    SETFL1
 ;
 ;   Construct the space used allocation bit map for the active
-; drive. If a file name starts with '$' and it is under the
-; current user number, then (STATUS) is set to minus 1. Otherwise
-; it is not set at all.
+;   drive. If a file name starts with '$' and it is under the
+;   current user number, then (STATUS) is set to minus 1. Otherwise
+;   it is not set at all.
 ;
 BITMAP:
     LD    HL,(DSKSIZE)    ;compute size of allocation table.
@@ -2732,11 +2734,11 @@ BITMAP:
     LD    C,L        ;set (BC) to the allocation table length.
 ;
 ;   Initialize the bitmap for this drive. Right now, the first
-; two bytes are specified by the disk parameter block. However
-; a patch could be entered here if it were necessary to setup
-; this table in a special manner. For example, the bios could
-; determine locations of 'bad blocks' and set them as already
-; 'used' in the map.
+;   two bytes are specified by the disk parameter block. However
+;   a patch could be entered here if it were necessary to setup
+;   this table in a special manner. For example, the bios could
+;   determine locations of 'bad blocks' and set them as already
+;   'used' in the map.
 ;
     LD    HL,(ALOCVECT)    ;now zero out the table now.
 BITMAP1:
@@ -2792,9 +2794,9 @@ STSTATUS:
     JP    SETSTAT
 ;
 ;   Check extents in (A) and (C). Set the zero flag if they
-; are the same. The number of 16k chunks of disk space that
-; the directory extent covers is expressad is (EXTMASK+1).
-; No registers are modified.
+;   are the same. The number of 16k chunks of disk space that
+;   the directory extent covers is expressad is (EXTMASK+1).
+;   No registers are modified.
 ;
 SAMEXT:
     PUSH    BC
@@ -2813,8 +2815,8 @@ SAMEXT:
     RET            ;restore (BC) and return.
 ;
 ;   Search for the first occurence of a file name. On entry,
-; register (C) should contain the number of bytes of the fcb
-; that must match.
+;   register (C) should contain the number of bytes of the fcb
+;   that must match.
 ;
 FINDFST:
     LD    A,0FFH
@@ -2827,8 +2829,8 @@ FINDFST:
     CALL    HOMEDRV        ;home the drive.
 ;
 ;   Entry to locate the next occurence of a filename within the
-; directory. The disk is not expected to have been changed. If
-; it was, then it will be write protected.
+;   directory. The disk is not expected to have been changed. If
+;   it was, then it will be write protected.
 ;
 FINDNXT:
     LD    C,0        ;write protect the disk if changed.
@@ -2874,7 +2876,7 @@ FNDNXT3:
     JP    NZ,FINDNXT    ;not the same, look some more.
 ;
 ;   So far the names compare. Bump pointers to the next byte
-; and continue until all (C) characters have been checked.
+;   and continue until all (C) characters have been checked.
 ;
 FNDNXT4:
     INC    DE        ;bump pointers.
@@ -2902,7 +2904,7 @@ FNDNXT6:
     JP    SETSTAT
 ;
 ;   Erase files from the directory. Only the first byte of the
-; fcb will be affected. It is set to (E5).
+;   fcb will be affected. It is set to (E5).
 ;
 ERAFILE:
     CALL    CHKWPRT        ;is disk write protected?
@@ -2921,24 +2923,24 @@ ERAFIL1:
     JP    ERAFIL1        ;and repeat process.
 ;
 ;   Look through the space allocation map (bit map) for the
-; next available block. Start searching at block number (BC-1).
-; The search procedure is to look for an empty block that is
-; before the starting block. If not empty, look at a later
-; block number. In this way, we return the closest empty block
-; on either side of the 'target' block number. This will speed
-; access on random devices. For serial devices, this should be
-; changed to look in the forward direction first and then start
-; at the front and search some more.
+;   next available block. Start searching at block number (BC-1).
+;   The search procedure is to look for an empty block that is
+;   before the starting block. If not empty, look at a later
+;   block number. In this way, we return the closest empty block
+;   on either side of the 'target' block number. This will speed
+;   access on random devices. For serial devices, this should be
+;   changed to look in the forward direction first and then start
+;   at the front and search some more.
 ;
 ;   On return, (DE)= block number that is empty and (HL) =0
-; if no empry block was found.
+;   if no empry block was found.
 ;
 FNDSPACE:
     LD    D,B        ;set (DE) as the block that is checked.
     LD    E,C
 ;
 ;   Look before target block. Registers (BC) are used as the lower
-; pointer and (DE) as the upper pointer.
+;   pointer and (DE) as the upper pointer.
 ;
 FNDSPA1:
     LD    A,C        ;is block 0 specified?
@@ -2952,12 +2954,12 @@ FNDSPA1:
     JP    NC,FNDSPA3    ;yes. use this.
 ;
 ;   Note that the above logic gets the first block that it finds
-; that is empty. Thus a file could be written 'backward' making
-; it very slow to access. This could be changed to look for the
-; first empty block and then continue until the start of this
-; empty space is located and then used that starting block.
-; This should help speed up access to some files especially on
-; a well used disk with lots of fairly small 'holes'.
+;   that is empty. Thus a file could be written 'backward' making
+;   it very slow to access. This could be changed to look for the
+;   first empty block and then continue until the start of this
+;   empty space is located and then used that starting block.
+;   This should help speed up access to some files especially on
+;   a well used disk with lots of fairly small 'holes'.
 ;
     POP    BC        ;nope, check some more.
     POP    DE
@@ -2984,7 +2986,7 @@ FNDSPA2:
     JP    FNDSPA1
 ;
 ;   Empty block found. Set it as used and return with (HL)
-; pointing to it (true?).
+;   pointing to it (true?).
 ;
 FNDSPA3:
     RLA            ;reset byte.
@@ -2995,7 +2997,7 @@ FNDSPA3:
     RET    
 ;
 ;   Free block was not found. If (BC) is not zero, then we have
-; not checked all of the disk space.
+;   not checked all of the disk space.
 ;
 FNDSPA4:
     LD    A,C
@@ -3011,8 +3013,8 @@ FCBSET:
     LD    E,32        ;length of each entry.
 ;
 ;   Move (E) bytes from the fcb pointed to by (PARAMS) into
-; fcb in directory starting at relative byte (C). This updated
-; directory buffer is then written to the disk.
+;   fcb in directory starting at relative byte (C). This updated
+;   directory buffer is then written to the disk.
 ;
 UPDATE:
     PUSH    DE
@@ -3028,8 +3030,8 @@ UPDATE1:
     JP    DIRWRITE    ;then write this sector out.
 ;
 ;   Routine to change the name of all files on the disk with a
-; specified name. The fcb contains the current name as the
-; first 12 characters and the new name 16 bytes into the fcb.
+;   specified name. The fcb contains the current name as the
+;   first 12 characters and the new name 16 bytes into the fcb.
 ;
 CHGNAMES:
     CALL    CHKWPRT        ;check for a write protected disk.
@@ -3051,9 +3053,9 @@ CHGNAM1:
     JP    CHGNAM1        ;and continue.
 ;
 ;   Update a files attributes. The procedure is to search for
-; every file with the same name as shown in fcb (ignoring bit 7)
-; and then to update it (which includes bit 7). No other changes
-; are made.
+;   every file with the same name as shown in fcb (ignoring bit 7)
+;   and then to update it (which includes bit 7). No other changes
+;   are made.
 ;
 SAVEATTR:
     LD    C,12        ;match first 12 bytes.
@@ -3111,9 +3113,9 @@ OPENIT2:
     RET    
 ;
 ;   Move two bytes from (DE) to (HL) if (and only if) (HL)
-; point to a zero value (16 bit).
+;   point to a zero value (16 bit).
 ;   Return with zero flag set it (DE) was moved. Registers (DE)
-; and (HL) are not changed. However (A) is.
+;   and (HL) are not changed. However (A) is.
 ;
 MOVEWORD:
     LD    A,(HL)        ;check for a zero word.
@@ -3215,7 +3217,7 @@ CLOSEIT7:
     RET    
 ;
 ;   Routine to get the next empty space in the directory. It
-; will then be cleared for use.
+;   will then be cleared for use.
 ;
 GETEMPTY:
     CALL    CHKWPRT        ;make sure disk is not write protected.
@@ -3247,7 +3249,7 @@ GETMT1:
     JP    SETS2B7        ;set 's2' byte bit 7 (unmodified at present).
 ;
 ;   Routine to close the current extent and open the next one
-; for reading.
+;   for reading.
 ;
 GETNEXT:
     XOR    A
@@ -3300,7 +3302,7 @@ GTNEXT4:
     JP    SETSTAT
 ;
 ;   Error in extending the file. Too many extents were needed
-; or not enough space on the disk.
+;   or not enough space on the disk.
 ;
 GTNEXT5:
     CALL    IOERR1        ;set error code, clear bit 7 of 's2'
@@ -3412,8 +3414,8 @@ WTSEQ6:
     JP    NZ,WTSEQ9
 ;
 ;   Special random i/o from function #40. Maybe for M/PM, but the
-; current block, if it has not been written to, will be zeroed
-; out and then written (reason?).
+;   current block, if it has not been written to, will be zeroed
+;   out and then written (reason?).
 ;
     POP    BC
     PUSH    BC
@@ -3451,7 +3453,7 @@ WTSEQ8:
     CALL    DEFDMA        ;and reset dma address.
 ;
 ;   Normal disk write. Set the desired track and sector then
-; do the actual write.
+;   do the actual write.
 ;
 WTSEQ9:
     CALL    TRKSEC1        ;determine track and sector for this write.
@@ -3467,13 +3469,13 @@ WTSEQ9:
     INC    (HL)
     LD    C,2
 ;
-;*   This area has been patched to correct disk update problem
-;* when using blocking and de-blocking in the BIOS.
+;*  XXX This area has been patched to correct disk update problem
+;*  when using blocking and de-blocking in the BIOS.
 ;
 WTSEQ10:
-    NOP            ;was 'dcr c'
-    NOP            ;was 'dcr c'
-    LD    HL,0        ;was 'jnz wtseq99'
+;    NOP                ;was 'dcr c'
+;    NOP                ;was 'dcr c'
+    LD    HL,$0000      ;was 'jnz wtseq99'
 ;
 ; *   End of patch.
 ;
@@ -3503,20 +3505,20 @@ WTSEQ12:
 
 ;
 ;   For random i/o, set the fcb for the desired record number
-; based on the 'r0,r1,r2' bytes. These bytes in the fcb are
-; used as follows:
+;   based on the 'r0,r1,r2' bytes. These bytes in the fcb are
+;   used as follows:
 ;
-;       fcb+35            fcb+34            fcb+33
-;  |     'r-2'      |      'r-1'      |      'r-0'     |
-;  |7             0 | 7             0 | 7             0|
-;  |0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0|
-;  |    overflow   | | extra |  extent   |   record #  |
-;  | ______________| |_extent|__number___|_____________|
-;                     also 's2'
+;        fcb+35            fcb+34            fcb+33
+;   |     'r-2'      |      'r-1'      |      'r-0'     |
+;   |7             0 | 7             0 | 7             0|
+;   |0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0 | 0 0 0 0 0 0 0 0|
+;   |    overflow   | | extra |  extent   |   record #  |
+;   | ______________| |_extent|__number___|_____________|
+;                      also 's2'
 ;
 ;   On entry, register (C) contains 0ffh if this is a read
-; and thus we can not access unwritten disk space. Otherwise,
-; another extent will be opened (for writing) if required.
+;   and thus we can not access unwritten disk space. Otherwise,
+;   another extent will be opened (for writing) if required.
 ;
 POSITION:
     XOR    A        ;set random i/o flag.
@@ -3642,12 +3644,12 @@ WRITERAN:
     RET    
 ;
 ;   Compute the random record number. Enter with (HL) pointing
-; to a fcb an (DE) contains a relative location of a record
-; number. On exit, (C) contains the 'r0' byte, (B) the 'r1'
-; byte, and (A) the 'r2' byte.
+;   to a fcb an (DE) contains a relative location of a record
+;   number. On exit, (C) contains the 'r0' byte, (B) the 'r1'
+;   byte, and (A) the 'r2' byte.
 ;
 ;   On return, the zero flag is set if the record is within
-; bounds. Otherwise, an overflow occured.
+;   bounds. Otherwise, an overflow occured.
 ;
 COMPRAND:
     EX    DE,HL        ;save fcb pointer in (DE).
@@ -3688,12 +3690,12 @@ COMPRAND:
     RET    
 ;
 ;   Routine to setup the fcb (bytes 'r0', 'r1', 'r2') to
-; reflect the last record used for a random (or other) file.
-; This reads the directory and looks at all extents computing
-; the largerst record number for each and keeping the maximum
-; value only. Then 'r0', 'r1', and 'r2' will reflect this
-; maximum record number. This is used to compute the space used
-; by a random file.
+;   reflect the last record used for a random (or other) file.
+;   This reads the directory and looks at all extents computing
+;   the largerst record number for each and keeping the maximum
+;   value only. Then 'r0', 'r1', and 'r2' will reflect this
+;   maximum record number. This is used to compute the space used
+;   by a random file.
 ;
 RANSIZE:
     LD    C,12        ;look thru directory for first entry with
@@ -3738,7 +3740,7 @@ RANSIZ3:
     RET            ;return.
 ;
 ;   Function to return the random record position of a given
-; file which has been read in sequential mode up to now.
+;   file which has been read in sequential mode up to now.
 ;
 SETRAN:
     LD    HL,(PARAMS)    ;point to fcb.
@@ -3754,8 +3756,8 @@ SETRAN:
     RET    
 ;
 ;   This routine select the drive specified in (ACTIVE) and
-; update the login vector and bitmap table if this drive was
-; not already active.
+;   update the login vector and bitmap table if this drive was
+;   not already active.
 ;
 LOGINDRV:
     LD    HL,(LOGIN)    ;get the login vector.
@@ -3788,8 +3790,8 @@ SETDSK:
     JP    LOGINDRV
 ;
 ;   This is the 'auto disk select' routine. The first byte
-; of the fcb is examined for a drive specification. If non
-; zero then the drive will be selected and logged in.
+;   of the fcb is examined for a drive specification. If non
+;   zero then the drive will be selected and logged in.
 ;
 AUTOSEL:
     LD    A,0FFH        ;say 'auto-select activated'.
@@ -3848,8 +3850,8 @@ CLOSEFIL:
     JP    CLOSEIT        ;and close the file.
 ;
 ;   Function to return the first occurence of a specified file
-; name. If the first byte of the fcb is '?' then the name will
-; not be checked (get the first entry no matter what).
+;   name. If the first byte of the fcb is '?' then the name will
+;   not be checked (get the first entry no matter what).
 ;
 GETFST:
     LD    C,0        ;prepare for special search.
@@ -3884,7 +3886,7 @@ DELFILE:
     JP    STSTATUS    ;set status and return.
 ;
 ;   Function to execute a sequential read of the specified
-; record number.
+;   record number.
 ;
 READSEQ:
     CALL    AUTOSEL        ;select proper drive then read.
@@ -3949,7 +3951,7 @@ SETATTR:
     JP    STSTATUS
 ;
 ;   Function to return the address of the disk parameter block
-; for the current drive.
+;   for the current drive.
 ;
 GETPARM:
     LD    HL,(DISKPB)
@@ -3958,8 +3960,8 @@ GETPRM1:
     RET    
 ;
 ;   Function to get or set the user number. If (E) was (FF)
-; then this is a request to return the current user number.
-; Else set the user number from (E).
+;   then this is a request to return the current user number.
+;   Else set the user number from (E).
 ;
 GETUSER:
     LD    A,(EPARAM)    ;get parameter.
@@ -3991,10 +3993,10 @@ FILESIZE:
     JP    RANSIZE
 ;
 ;   Function #37. This allows a program to log off any drives.
-; On entry, set (DE) to contain a word with bits set for those
-; drives that are to be logged off. The log-in vector and the
-; write protect vector will be updated. This must be a M/PM
-; special function.
+;   On entry, set (DE) to contain a word with bits set for those
+;   drives that are to be logged off. The log-in vector and the
+;   write protect vector will be updated. This must be a M/PM
+;   special function.
 ;
 LOGOFF:
     LD    HL,(PARAMS)    ;get drives to log off.
@@ -4045,11 +4047,11 @@ GOBACK1:
     RET            ;and go back to user.
 ;
 ;   Function #40. This is a special entry to do random i/o.
-; For the case where we are writing to unused disk space, this
-; space will be zeroed out first. This must be a M/PM special
-; purpose function, because why would any normal program even
-; care about the previous contents of a sector about to be
-; written over.
+;   For the case where we are writing to unused disk space, this
+;   space will be zeroed out first. This must be a M/PM special
+;   purpose function, because why would any normal program even
+;   care about the previous contents of a sector about to be
+;   written over.
 ;
 WTSPECL:
     CALL  AUTOSEL       ;select proper drive.

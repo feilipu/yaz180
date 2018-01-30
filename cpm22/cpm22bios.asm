@@ -216,9 +216,9 @@ gocpm:
     call    _asci0_flush_Rx_di
     call    _asci1_flush_Rx_di
 
-	xor     a		        ;0 accumulator
-	LD	    (hstact),a		;host buffer inactive
-	LD	    (unacnt),a		;clear unalloc count
+    xor     a               ;0 accumulator
+    LD      (hstact),a      ;host buffer inactive
+    LD      (unacnt),a      ;clear unalloc count
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
