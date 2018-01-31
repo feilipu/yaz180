@@ -12,6 +12,8 @@ EXTERN  _asci0_flush_Rx_di, _asci1_flush_Rx_di
 
 EXTERN  _dmac0Lock
 
+EXTERN  _bank_sp                    ;address of initial SP value
+
 PUBLIC  _cpm_disks
 
 PUBLIC  _cpm_ccp_tfcb
@@ -161,9 +163,12 @@ boot:       ;simplest case is to just perform parameter initialization
     jp      gocpm           ;initialize and go to cp/m
 
 wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
-    ld      a,_cpm_src_bank ;get CP/M CCP/BDOS/BIOS src bank
+    ld      sp,(_bank_sp)   ;set SP to original (temporary) boot setting
+
+    ld      a,(_cpm_src_bank)   ;get CP/M CCP/BDOS/BIOS src bank
     or      a               ;check ROM version exists (src bank non zero)
-    jp      Z,boot          ;jp to boot, if there's nothing to load
+    jp      Z,gocpm         ;jp to gocpm, if there's nothing to load
+                            ;cross fingers that the CCP/BDOS still exists
 
     ld      hl, _dmac0Lock
     sra     (hl)            ;take the DMAC0 lock

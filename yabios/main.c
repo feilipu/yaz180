@@ -44,8 +44,8 @@ int16_t AccDirs;
  */
 
 // CP/M related functions
-int8_t ya_mkcpm(char **args);   // initialise CP/M bank with up to 4 drives
-int8_t ya_mkfile(char **args);  // create a file for CP/M drive
+int8_t ya_mkcpmb(char **args);  // initialise CP/M bank with up to 4 drives
+int8_t ya_mkcpmd(char **args);  // create a FATFS file for CP/M drive
 
 // bank related functions
 int8_t ya_mkb(char **args);     // initialise the nominated bank (to warm state)
@@ -101,8 +101,8 @@ struct Builtin {
 
 struct Builtin builtins[] = {
   // CP/M related functions
-    { "mkcpm", &ya_mkcpm, "[src][dest][file][][][] - initialise dest bank for CP/M from src, 4 drive files"},
-    { "mkfile", &ya_mkfile, "[file][dir][bytes] - create a drive file for CP/M, dir entries, of bytes size"},
+    { "mkcpmb", &ya_mkcpmb, "[src][dest][file][][][] - initialise dest bank for CP/M from src, 4 drive files"},
+    { "mkcpmd", &ya_mkcpmd, "[file][dir][bytes] - create a drive file for CP/M, dir entries, of bytes size"},
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
@@ -155,11 +155,11 @@ uint8_t ya_num_builtins() {
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "mkcpm".  args[1] is the source bank.  args[2] is the CP/M destination bank.
+   @param args List of args.  args[0] is "mkcpmb".  args[1] is the source bank.  args[2] is the CP/M destination bank.
                               args[3][4][5][6] are names of drive files.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
+int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
 {
     FRESULT res;
     uint8_t * page0Template;
@@ -170,7 +170,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
     uint32_t driveLBAbase[4] = {0,0,0,0};
     
     if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mkcpm\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"mkcpmb\"\n");
     } else {
 
         page0Template = (uint8_t *)malloc((PAGE0_SIZE+3) * sizeof(uint8_t));    /* Get work area for the Page 0 */
@@ -183,7 +183,7 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
             memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
             // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
 
-            // set the new bank SP to point to top of BANKn for _jp_far(), _bank_sp = 0x003B
+            // set the new bank SP to point to top of BANKnn for _jp_far(), _bank_sp = 0x003B
             *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE;
 
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
@@ -214,6 +214,9 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
                 memcpy_far( (void *)0x0100, (int8_t)destBank, (void *)0x0100, (int8_t)srcBank, (__COMMON_AREA_1_BASE - PAGE0_SIZE));
                 // do the Page 0 copy from template to final destination bank Page 0
                 memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE);
+                // do the Page 0 initialisation from CP/M CCP/BDOS/BIOS src to final destination bank
+                memcpy_far( (void *)0x0000, (int8_t)destBank, (void *)0x0000, (int8_t)srcBank, 0x08);
+                
             } else {
                 // we'll have to load CP/M using loadh later
                 *(volatile uint8_t*)(page0Template + 0x0100) = 0xC3; // jp boot (at 0x0000)
@@ -236,11 +239,11 @@ int8_t ya_mkcpm(char **args)   // initialise CP/M bank with up to 4 drives
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "mkfile".  args[1] is the nominated drive name.
+   @param args List of args.  args[0] is "mkcpmd".  args[1] is the nominated drive name.
                               args[2] is the number of directory entries,  args[3] is file size in bytes.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_mkfile(char **args)  // create a file for CP/M drive
+int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
 {
     FRESULT res;
     int16_t dirEntries;
@@ -250,7 +253,7 @@ int8_t ya_mkfile(char **args)  // create a file for CP/M drive
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
-        fprintf(stdout, "yash: expected 3 arguments to \"mkfile\"\n");
+        fprintf(stdout, "yash: expected 3 arguments to \"mkcpmd\"\n");
     } else {
         fprintf(stdout,"Creating \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_CREATE_ALWAYS | FA_WRITE);
@@ -307,7 +310,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
         // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
         // existing RST jumps and INT0 code is correctly copied.
-        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKn
+        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKnn
         *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
         // we might set other things for individual banks, before copying
         
