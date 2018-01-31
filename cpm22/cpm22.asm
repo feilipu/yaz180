@@ -303,9 +303,9 @@ GETINP:
 ;   Move this record into input buffer.
 ;
     LD    DE,INBUFF+1
-    LD    HL,TBUFF    ;data was read into buffer here.
-    LD    B,128        ;all 128 characters may be used.
-    CALL    HL2DE        ;(HL) to (DE), (B) bytes.
+    LD    HL,TBUFF      ;data was read into buffer here.
+    LD    BC,128        ;all 128 characters may be used.
+    LDIR                ;(HL) to (DE), (BC) bytes.
     LD    HL,BATCHFCB+14
     LD    (HL),0        ;zero out the 's2' byte.
     INC    HL        ;and decrement the record count.
@@ -835,24 +835,7 @@ DECODE4:
     DEC    C
     JP    NZ,DECODE3
     LD    A,B        ;set (A)=the numeric value entered.
-    RET    
-;
-;   Move 3 bytes from (HL) to (DE). Note that there is only
-;   one reference to this at (A2D5h).
-;
-MOVE3:
-    LD    B,3
-;
-;   Move (B) bytes from (HL) to (DE).
-;
-HL2DE:
-    LD    A,(HL)
-    LD    (DE),A
-    INC    HL
-    INC    DE
-    DEC    B
-    JP    NZ,HL2DE
-    RET    
+    RET      
 ;
 ;   Compute (HL)=(TBUFF)+(A)+(C) and get the byte that's here.
 ;
@@ -1150,8 +1133,8 @@ RENAME:
     JP    NZ,RENAME6    ;yes, print error message.
     LD    HL,FCB        ;yes, move this name into second slot.
     LD    DE,FCB+16
-    LD    B,16
-    CALL    HL2DE
+    LD    BC,16
+    LDIR
     LD    HL,(INPOINT)    ;get input pointer.
     EX    DE,HL
     CALL    NONBLANK    ;get next non blank character.
@@ -1252,7 +1235,8 @@ UNKWN2:
     CALL    DSELECT        ;select specified drive.
     POP    DE
     LD    HL,COMFILE    ;set the extension to 'COM'.
-    CALL    MOVE3
+    LD    BC,3
+    LDIR
     CALL    OPENFCB        ;and open this file.
     JP    Z,UNKWN9    ;not present?
 ;
@@ -1298,8 +1282,8 @@ UNKWN4:
     LD    (FCB+32),A
     LD    DE,TFCB        ;move it into place at(005Ch).
     LD    HL,FCB
-    LD    B,33
-    CALL    HL2DE
+    LD    BC,33
+    LDIR
     LD    HL,INBUFF+2    ;now move the remainder of the input
 UNKWN5:
     LD    A,(HL)        ;line down to (0080h). Look for a non blank.
@@ -1435,11 +1419,10 @@ FBASE1:
     LD      A,E        ;and save register (E) in particular.
     LD      (EPARAM),A
     LD      HL,0
-    LD      (STATUS),HL    ;clear return status.
-    ADD     HL,SP
-    LD      (USRSTACK),HL    ;save users stack pointer.
-    LD      SP,STKAREA    ;and set our own.
-    XOR     A        ;clear auto select storage space.
+    LD      (STATUS),HL     ;clear return status.
+    LD      (USRSTACK),SP   ;save users stack pointer.
+    LD      SP,STKAREA      ;and set our own.
+    XOR     A               ;clear auto select storage space.
     LD      (AUTOFLAG),A
     LD      (AUTO),A
     LD      HL,GOBACK    ;set return address.
@@ -1978,29 +1961,29 @@ SELECT:
     INC    HL
     LD    D,(HL)
     INC    HL
-    LD    (SCRATCH1),HL    ;save pointers to scratch areas.
+    LD    (SCRATCH1),HL ;save pointers to scratch areas.
     INC    HL
     INC    HL
-    LD    (SCRATCH2),HL    ;ditto.
+    LD    (SCRATCH2),HL ;ditto.
     INC    HL
     INC    HL
-    LD    (SCRATCH3),HL    ;ditto.
+    LD    (SCRATCH3),HL ;ditto.
     INC    HL
     INC    HL
-    EX    DE,HL        ;now save the translation table address.
+    EX    DE,HL         ;now save the translation table address.
     LD    (XLATE),HL
-    LD    HL,DIRBUF    ;put the next 8 bytes here.
-    LD    C,8        ;they consist of the directory buffer
-    CALL    DE2HL        ;pointer, parameter block pointer,
-    LD    HL,(DISKPB)    ;check and allocation vectors.
+    LD    HL,DIRBUF     ;put the next 8 bytes in DIRBUF.
     EX    DE,HL
-    LD    HL,SECTORS    ;move parameter block into our ram.
-    LD    C,15        ;it is 15 bytes long.
-    CALL    DE2HL
-    LD    HL,(DSKSIZE)    ;check disk size.
-    LD    A,H        ;more than 256 blocks on this?
+    LD    BC,8          ;they consist of the directory buffer
+    LDIR                ;pointer, parameter block pointer,
+    LD    HL,(DISKPB)   ;check and allocation vectors.
+    LD    DE,SECTORS    ;move parameter block into our ram.
+    LD    BC,15         ;it is 15 bytes long.
+    LDIR
+    LD    HL,(DSKSIZE)  ;check disk size.
+    LD    A,H           ;more than 256 blocks on this?
     LD    HL,BIGDISK
-    LD    (HL),0FFH    ;set to samll.
+    LD    (HL),0FFH     ;set to small.
     OR    A
     JP    Z,SELECT1
     LD    (HL),0        ;wrong, set to large.
@@ -2044,11 +2027,14 @@ IORET:
 ;   block number falls in.
 ;
 TRKSEC:
-    LD    HL,(FILEPOS)    ;get position of last accessed file
-    LD    C,2           ;in directory and compute sector #.
-    CALL    SHIFTR        ;sector #=file-position/4.
-    LD    (BLKNMBR),HL    ;save this as the block number of interest.
-    LD    (CKSUMTBL),HL    ;what's it doing here too?
+    LD    HL,(FILEPOS)      ;get position of last accessed file
+                            ;in directory and compute sector #.
+    SRL   H                 ;sector #=file-position/4.
+    RR    L
+    SRL   H
+    RR    L
+    LD    (BLKNMBR),HL      ;save this as the block number of interest.
+    LD    (CKSUMTBL),HL     ;what's it doing here too?
 ;
 ;   If the sector number has already been set (BLKNMBR), enter
 ;   at this point.
@@ -2291,13 +2277,8 @@ SHIFTR:
 SHIFTR1:
     DEC    C
     RET    Z
-    LD    A,H
-    OR    A
-    RRA    
-    LD    H,A
-    LD    A,L
-    RRA    
-    LD    L,A
+    SRL H
+    RR L
     JP    SHIFTR1
 ;
 ;   Compute the check-sum for the directory buffer. Return
@@ -2346,12 +2327,12 @@ SETBIT:
 ;   The result is returned in (A), bit 0.
 ;
 GETWPRT:
-    LD    HL,(WRTPRT)    ;get status bytes.
-    LD    A,(ACTIVE)    ;which drive is current?
+    LD    HL,(WRTPRT)       ;get status bytes.
+    LD    A,(ACTIVE)        ;which drive is current?
     LD    C,A
-    CALL    SHIFTR        ;shift status such that bit 0 is the
-    LD    A,L        ;one of interest for this drive.
-    AND    01H        ;and isolate it.
+    CALL    SHIFTR          ;shift status such that bit 0 is the
+    LD    A,L               ;one of interest for this drive.
+    AND    01H              ;and isolate it.
     RET    
 ;
 ;   Function to write protect the current disk.
@@ -2546,11 +2527,11 @@ DIRDMA1:
 ;   Move the directory buffer into user's dma space.
 ;
 MOVEDIR:
-    LD    HL,(DIRBUF)    ;buffer is located here, and
-    EX    DE,HL
-    LD    HL,(USERDMA)    ; put it here.
-    LD    C,128        ;this is its length.
-    JP    DE2HL        ;move it now and return.
+    LD    HL,(DIRBUF)   ;buffer is located here, and
+    LD    DE,(USERDMA)  ;put it here.
+    LD    BC,128        ;this is its length.
+    LDIR                ;move it now and return.
+    RET
 ;
 ;   Check (FILEPOS) and set the zero flag if it equals 0ffffh.
 ;
@@ -2619,26 +2600,12 @@ CKBITMAP:
 ;
 ;   Compute (BC)=(BC)/8.
 ;
-    LD    A,C
-    RRCA            ;now shift right 3 bits.
-    RRCA    
-    RRCA    
-    AND    1FH        ;and clear bits 7,6,5.
-    LD    C,A
-    LD    A,B
-    ADD    A,A        ;now shift (B) into bits 7,6,5.
-    ADD    A,A
-    ADD    A,A
-    ADD    A,A
-    ADD    A,A
-    OR    C        ;and add in (C).
-    LD    C,A        ;ok, (C) has been completed.
-    LD    A,B        ;is there a better way of doing this?
-    RRCA    
-    RRCA    
-    RRCA    
-    AND    1FH
-    LD    B,A        ;and now (B) is completed.
+    SRL B
+    RR C
+    SRL B
+    RR C
+    SRL B
+    RR C
 ;
 ;   Use this as an offset into the disk space allocation
 ;   table.
@@ -2726,12 +2693,16 @@ SETFL4:
 ;   it is not set at all.
 ;
 BITMAP:
-    LD    HL,(DSKSIZE)    ;compute size of allocation table.
-    LD    C,3
-    CALL    SHIFTR        ;(HL)=(HL)/8.
-    INC    HL        ;at lease 1 byte.
+    LD    HL,(DSKSIZE)      ;compute size of allocation table.
+    SRL   H                 ;(HL)=(HL)/8. 
+    RR    L
+    SRL   H
+    RR    L
+    SRL   H
+    RR    L
+    INC   HL                ;at least 1 byte.
     LD    B,H
-    LD    C,L        ;set (BC) to the allocation table length.
+    LD    C,L               ;set (BC) to the allocation table length.
 ;
 ;   Initialize the bitmap for this drive. Right now, the first
 ;   two bytes are specified by the disk parameter block. However
@@ -3763,13 +3734,13 @@ LOGINDRV:
     LD    HL,(LOGIN)    ;get the login vector.
     LD    A,(ACTIVE)    ;get the default drive.
     LD    C,A
-    CALL    SHIFTR        ;position active bit for this drive
-    PUSH    HL        ;into bit 0.
+    CALL    SHIFTR      ;position active bit for this drive
+    PUSH    HL          ;into bit 0.
     EX    DE,HL
-    CALL    SELECT        ;select this drive.
+    CALL    SELECT      ;select this drive.
     POP    HL
-    CALL    Z,SLCTERR    ;valid drive?
-    LD    A,L        ;is this a newly activated drive?
+    CALL    Z,SLCTERR   ;valid drive?
+    LD    A,L           ;is this a newly activated drive?
     RRA    
     RET    C
     LD    HL,(LOGIN)    ;yes, update the login vector.
@@ -4039,12 +4010,11 @@ GOBACK:
     LD    (EPARAM),A
     CALL  SETDSK
 GOBACK1:
-    LD    HL,(USRSTACK)    ;reset the users stack pointer.
-    LD    SP,HL
-    LD    HL,(STATUS)    ;get return status.
-    LD    A,L        ;force version 1.4 compatability.
+    LD    SP,(USRSTACK) ;reset the users stack pointer.
+    LD    HL,(STATUS)   ;get return status.
+    LD    A,L           ;force version 1.4 compatability.
     LD    B,H
-    RET            ;and go back to user.
+    RET                 ;and go back to user.
 ;
 ;   Function #40. This is a special entry to do random i/o.
 ;   For the case where we are writing to unused disk space, this
