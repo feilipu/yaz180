@@ -154,7 +154,9 @@ diskdef yaz180-8MB
 end
 ```
 
+## Layout problem - January 31, 2018
 
+Noted that I selected the wrong component for the flash, being the 128kB device. This means that the Address 17 pin is not connected. I will next select the 512kB device, and connect both A17 and A18, as this will provide some extra flexibility, if more flash memory is required.
 
 
 

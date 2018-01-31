@@ -67,7 +67,7 @@ Each one of these items will need to be implemented.
 
 - [x] add flash read support into `_ memcpy_far`.
 - [ ] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
-- [ ] support CP/M to warm boot from flash
+- [x] support CP/M to warm boot from flash
 - [x] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
@@ -86,11 +86,11 @@ Each one of these items will need to be implemented.
 
 The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
 
-`BANK0` contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+`BANK00` contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional `BANK1` through `BANK12` are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to `BANK0`.
+Additional `BANK04` through `BANK15` are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to `BANK00`.
 
-Flash found in `BANK13`, `BANK14`, and `BANK15` is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example
+Flash found in `BANK01`, `BANK02`, and `BANK03` is intended to be used for snapshots of default or frequently used applications. For example storing a CP/M snapshot enables a "diskless" CP/M initialisation, using DMA, to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -144,9 +144,9 @@ Preparation of the programming mode perl tool is work in progress.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a system `BANK0`, with additional `BANK1` through `BANK12` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a system `BANK00`, with additional `BANK04` through `BANK15` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space `BANK13`, `BANK14`, and `BANK15`. This non-volatile storage can be used for any purpose.
+The additional flash memory is assigned to the upper memory space `BANK01`, `BANK02`, and `BANK03`. This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
 
@@ -271,7 +271,7 @@ For all memory related functions in the Z180 which extend beyond the Z80 address
 
 However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in `BANK0`. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
-For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK0` and `BANK13`, `BANK14`, and `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
+For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK00` and `BANK01`, `BANK02`, and `BANK03` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
 
 Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
 `0xEE` is the twos complement bank address, as defined above.<br>
@@ -383,11 +383,11 @@ When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will l
 
 The contents of the alternate register set is modified only during the internal banks which function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected, if the system calls `_load_hex`.
+No checking is done to prevent the `BANK00` or flash memory banks `BANK01`, `BANK02`, or `BANK03` from being selected, if the system calls `_load_hex`.
 
 No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_hex`.
 
-When the user calls `_load_hex`, access to `BANK0` down through `BANK13` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
+When the user calls `_load_hex`, access to `BANK00`  through `BANK03` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ### `_load_bin`
 
@@ -415,11 +415,11 @@ When called `_load_bin` waits for binary data to be loaded via the CLI, and will
 
 The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the `BANK0` or flash memory banks `BANK13`, `BANK14`, or `BANK15` from being selected, if the system calls `_load_bin`.
+No checking is done to prevent the `BANK00` or flash memory banks `BANK01`, `BANK02`, or `BANK03` from being selected, if the system calls `_load_bin`.
 
 No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_bin`.
 
-When the user calls `_load_bin`, access to `BANK0` through `BANK15` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
+When the user calls `_load_bin`, access to `BANK00` through `BANK03` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ## User System Interfaces
 
@@ -451,7 +451,7 @@ exx AFBCDEHL        modified  (check called APU Function)
 ```
 Notes:
 
-YABIOS APU Calls are provided within the `BANK0`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
+YABIOS APU Calls are provided within the `BANK00`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
 
 For example, the `APU_OP_ENT16` function parameters are placed in the HL Registers, and the System Call is generated by following example byte code:
 
@@ -481,7 +481,7 @@ exx AFBCDEHL        modified  (check called System Function)
 ```
 Notes:
 
-YABIOS System Calls are provided within the `BANK0`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
+YABIOS System Calls are provided within the `BANK00`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
 
 For example, the `_f_printf` function parameters are placed on the Stack or Registers, and the System Call is generated by following example byte code:
 
@@ -601,8 +601,8 @@ RST08:
 The command line interface is implemented in C, with the underlying functions either in C or in assembly.
 
 #### CP/M Functions
-- `mkcpm [src][dest][file][][][]` - initialise dest bank for CP/M from src, 4 drive files
-- `mkfile [file][dir][bytes]` - create a drive file for CP/M, dir entries, of bytes size
+- `mkcpmb [src][dest][file][][][]` - initialise dest bank for CP/M from src bank, 4 drive files
+- `mkcpmf [file][dir][bytes]` - create a drive file for CP/M, dir entries, of bytes size
 
 #### Bank Functions
 - `mkb [bank]` - initialise the nominated bank (to warm state)

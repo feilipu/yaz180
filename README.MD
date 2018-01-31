@@ -127,12 +127,14 @@ The physical address mapping is provided by the standard CUPL (described below),
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK0, with additional BANK1 through BANK12 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a BANK00, with additional BANK04 through BANK15 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space BANK13, BANK14, and BANK15.
+The additional flash memory is assigned to the upper memory space BANK01, BANK02, and BANK03.
 This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
+
+__To be revised.__
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -174,11 +176,11 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK00 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional BANK1 through BANK12 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK0.
+Additional BANK04 through BANK15 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK00.
 
-Flash found in BANK13, BANK14, and BANK15 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
+Flash found in BANK01, BANK02, and BANK03 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -283,7 +285,7 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 Please see here for status of yabios [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load either [yabios v0.3](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
+Currently the YAZ180 is initialised to load either [yabios v0.4](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
 
 The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB. The intention is to support CP/M drives as simple Fat32 files.
 
@@ -293,4 +295,4 @@ The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File
 
 ## CPM
 
-Work in progress. Currently the console I/O for is complete, as is the underlying disk sub-system. The remaining work is to create CP/M disks as Fat32 files.
+Currently the console I/O for is complete, as is the underlying disk sub-system. The  work to create CP/M disks as Fat32 files has also been completed. CP/M can be booted off the flash snapshot and can load transient programs from FATFS files (read as CP/M drives).
