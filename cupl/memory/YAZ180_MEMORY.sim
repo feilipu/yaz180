@@ -1,0 +1,84 @@
+%SIGNAL
+PIN   9 =  A13 
+PIN   8 =  A14 
+PIN   7 =  A15 
+PIN   6 =  A16 
+PIN   5 =  A17 
+PIN   4 =  A18 
+PIN   3 =  A19 
+PIN  19 = !APU_CS 
+PIN  12 =  BREAK 
+PIN  13 = !DIO_CS 
+PIN  17 = !FLASH_CS 
+PIN  14 = !I2C_CS1 
+PIN  15 = !I2C_CS2 
+PIN  11 = !IORQ 
+PIN   2 = !MREQ 
+PIN   1 = !PROGRAM 
+PIN  18 = !RAM_CS 
+PIN  16 = !USB_CS 
+%END
+
+%FIELD
+FIELD IO_ADDRESS = A15,A14,A13
+FIELD MEM_ADDRESS = A19,A18,A17,A16,A15,A14,A13
+%END
+
+%EQUATION
+APU_CS =>
+    !A13 & A14 & A15 & MREQ
+
+BREAK =>
+    A13 & !A14 & !A15 & !IORQ & MREQ
+
+DIO_CS =>
+    !A13 & A14 & !A15 & !IORQ & MREQ
+
+FLASH_CS =>
+    A16 & !A17 & !A18 & !A19 & IORQ & !MREQ
+  # !A16 & A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
+  # !A14 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
+  # !A15 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
+
+I2C_CS1 =>
+    A13 & !A14 & A15 & !IORQ & MREQ
+
+I2C_CS2 =>
+    !A13 & !A14 & A15 & !IORQ & MREQ
+
+RAM_CS =>
+    A18 & IORQ & !MREQ
+  # A19 & IORQ & !MREQ
+  # A16 & A17 & IORQ & !MREQ
+  # A17 & IORQ & !MREQ & PROGRAM
+  # A14 & A15 & !A16 & !A17 & IORQ & !MREQ
+
+USB_CS =>
+    !A14 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
+  # !A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
+
+APU_CS.oe  =>
+    1 
+
+BREAK.oe  =>
+    1 
+
+DIO_CS.oe  =>
+    1 
+
+FLASH_CS.oe  =>
+    1 
+
+I2C_CS1.oe  =>
+    1 
+
+I2C_CS2.oe  =>
+    1 
+
+RAM_CS.oe  =>
+    1 
+
+USB_CS.oe  =>
+    1 
+
+%END

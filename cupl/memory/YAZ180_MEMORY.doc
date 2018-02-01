@@ -5,11 +5,11 @@
 
 CUPL(WM)        5.0a Serial# 60008009
 Device          g16v8ma  Library DLIB-h-40-8
-Created         Thu Oct 12 08:11:38 2017
+Created         Thu Feb 01 19:49:49 2018
 Name            YAZ180_Memory 
 Partno          00 
-Revision        03 
-Date            12/10/2017 
+Revision        05 
+Date            1/2/2018 
 Designer        Phillip Stevens 
 Company         Emotiv8 
 Assembly        None 
@@ -29,11 +29,10 @@ DIO_CS =>
     !A13 & A14 & !A15 & IORQ & !MREQ
 
 FLASH_CS =>
-    A16 & A18 & A19 & !IORQ & MREQ
-  # A17 & A18 & A19 & !IORQ & MREQ
-  # A18 & A19 & !IORQ & MREQ & PROGRAM
-  # !A14 & !A16 & !A17 & !A18 & !A19 & !IORQ & MREQ & !PROGRAM
-  # !A15 & !A16 & !A17 & !A18 & !A19 & !IORQ & MREQ & !PROGRAM
+    A16 & !A17 & !A18 & !A19 & !IORQ & MREQ
+  # !A16 & A17 & !A18 & !A19 & !IORQ & MREQ & PROGRAM
+  # !A14 & !A17 & !A18 & !A19 & !IORQ & MREQ & !PROGRAM
+  # !A15 & !A17 & !A18 & !A19 & !IORQ & MREQ & !PROGRAM
 
 I2C_CS1 =>
     A13 & !A14 & A15 & IORQ & !MREQ
@@ -48,15 +47,15 @@ MEM_ADDRESS =>
     A19 , A18 , A17 , A16 , A15 , A14 , A13
 
 RAM_CS =>
-    A16 & !A18 & !IORQ & MREQ
-  # A17 & !A18 & !IORQ & MREQ
-  # !A18 & A19 & !IORQ & MREQ
-  # A18 & !A19 & !IORQ & MREQ
-  # A14 & A15 & !A18 & !IORQ & MREQ
-  # !A16 & !A17 & A18 & !IORQ & MREQ & !PROGRAM
+    A18 & !IORQ & MREQ
+  # A19 & !IORQ & MREQ
+  # A16 & A17 & !IORQ & MREQ
+  # A17 & !IORQ & MREQ & !PROGRAM
+  # A14 & A15 & !A16 & !A17 & !IORQ & MREQ
 
 USB_CS =>
-    !A14 & !A15 & !A16 & !A17 & !A18 & !A19 & !IORQ & MREQ & PROGRAM
+    !A14 & !A16 & !A17 & !A18 & !A19 & !IORQ & MREQ & PROGRAM
+  # !A15 & !A16 & !A17 & !A18 & !A19 & !IORQ & MREQ & PROGRAM
 
 APU_CS.oe  =>
     1 
@@ -101,7 +100,7 @@ Pol   Name              Ext     Pin     Type     Used   Pterms  Level
  !  APU_CS                      19       V        1       7       2     
     BREAK                       12       V        1       7       2     
  !  DIO_CS                      13       V        1       7       2     
- !  FLASH_CS                    17       V        5       7       2     
+ !  FLASH_CS                    17       V        4       7       2     
  !  I2C_CS1                     14       V        1       7       2     
  !  I2C_CS2                     15       V        1       7       2     
  !  IORQ                        11       V        -       -       -     
@@ -109,8 +108,8 @@ Pol   Name              Ext     Pin     Type     Used   Pterms  Level
     MEM_ADDRESS                 0        F        -       -       -     
  !  MREQ                        2        V        -       -       -     
  !  PROGRAM                     1        V        -       -       -     
- !  RAM_CS                      18       V        6       7       2     
- !  USB_CS                      16       V        1       7       2     
+ !  RAM_CS                      18       V        5       7       2     
+ !  USB_CS                      16       V        2       7       2     
     APU_CS              oe      19       D        1       1       0     
     BREAK               oe      12       D        1       1       0     
     DIO_CS              oe      13       D        1       1       0     
