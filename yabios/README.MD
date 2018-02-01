@@ -601,8 +601,8 @@ RST08:
 The command line interface is implemented in C, with the underlying functions either in C or in assembly.
 
 #### CP/M Functions
-- `mkcpmb [src][dest][file][][][]` - initialise dest bank for CP/M from src bank, 4 drive files
-- `mkcpmf [file][dir][bytes]` - create a drive file for CP/M, dir entries, of bytes size
+- `mkcpmb [src][dest][file][][][]` - initialise dest bank for CP/M from src bank, up to 4 drive files
+- `mkcpmd [file][dir][bytes]` - create a drive file for CP/M, with dir entries, of bytes size
 
 #### Bank Functions
 - `mkb [bank]` - initialise the nominated bank (to warm state)

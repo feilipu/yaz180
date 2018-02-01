@@ -273,7 +273,7 @@ The YAZ180 is essentially software defined hardware. The use of Programmable Log
 
 ### Memory GAL Configuration
 
-<a href="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_NEW.png"/></a>
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_2018.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/MEMORY_PLD_2018.png"/></a>
 
 ### Logic (Single Step) GAL Configuration
 
