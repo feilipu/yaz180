@@ -3,11 +3,11 @@ LISTING FOR LOGIC DESCRIPTION FILE: YAZ180_MEMORY.pld                Page 1
 CUPL(WM): Universal Compiler for Programmable Logic
 Version 5.0a Serial# 60008009
 Copyright (c) 1983, 1998 Logical Devices, Inc.
-Created Thu Feb 01 19:49:47 2018
+Created Sun Feb 04 20:12:41 2018
 
   1:Name     YAZ180_Memory ;
   2:PartNo   00 ;
-  3:Date     1/2/2018 ;
+  3:Date     4/2/2018 ;
   4:Revision 05 ;
   5:Designer Phillip Stevens ;
   6:Company  Emotiv8 ;
@@ -42,31 +42,31 @@ Created Thu Feb 01 19:49:47 2018
  35:/* *************** MEMORY LOGIC *********************/
  36:
  37:CONDITION {
- 38:        IF (            MREQ & !IORQ & MEM_ADDRESS:[0C000..0FFFF] )      OUT RAM_CS ;  /* BANK00 12kB and COMMON1 4kB (COMMON1 base address is flexible) */
- 39:        IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[20000..2FFFF] )      OUT RAM_CS ;  /* BANK02 SRAM in Run State (not Programme State) */
- 40:        IF (            MREQ & !IORQ & MEM_ADDRESS:[30000..FFFFF] )      OUT RAM_CS ;  /* BANK03 through BANK15 SRAM */
- 41:/*      IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[40000..4FFFF] )      OUT RAM_CS ;  /* BANK04 SRAM in Run State (not Programme State) */
- 42:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[50000..FFFFF] )      OUT RAM_CS ;  /* BANK05 through BANK15 SRAM */
- 43:/*      IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT RAM_CS ;  /* BANK08 SRAM in Run State (not Programme State) */
- 44:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[90000..FFFFF] )      OUT RAM_CS ;  /* BANK09 through BANK15 SRAM */
+ 38:        IF (            MREQ & !IORQ & MEM_ADDRESS:[0C000..0FFFF] )      OUT RAM_CS ;  /* BANK_0 12kB and COMMON1 4kB (COMMON1 base address is flexible) */
+ 39:        IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..DFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK13 SRAM */
+ 40:        IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT RAM_CS ;  /* BANK14 SRAM in Run State (not Programme State) */
+ 41:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..BFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK11 SRAM */
+ 42:/*      IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT RAM_CS ;  /* BANK12 SRAM in Run State (not Programme State) */
+ 43:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..7FFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK_7 SRAM */
+ 44:/*      IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT RAM_CS ;  /* BANK08 SRAM in Run State (not Programme State) */
  45:        }
  46:
  47:CONDITION {
- 48:        IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[00000..0BFFF] )      OUT FLASH_CS ; /* BANK00 YABIOS and system libraries */
- 49:        IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..1FFFF] )      OUT FLASH_CS ; /* BANK01 (Snapshot storage) SST39SF010A 128kB*/
- 50:        IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[20000..2FFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK00 to appear as BANK02 - SST39SF010A 128kB */
- 51:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..3FFFF] )      OUT FLASH_CS ; /* BANK01, BANK02, BANK03 (Snapshot storage) - SST39SF020A 256kB */
- 52:/*      IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[40000..4FFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK00 to appear as BANK04 - SST39SF020A 256kB */
- 53:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..7FFFF] )      OUT FLASH_CS ; /* BANK01, BANK02,... BANK07 (Snapshot storage) - SST39SF040A 512kB */
+ 48:        IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[00000..0BFFF] )      OUT FLASH_CS ; /* BANK_0 YABIOS and system libraries */
+ 49:        IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK14 - SST39SF010A 128kB */
+ 50:        IF (            MREQ & !IORQ & MEM_ADDRESS:[F0000..FFFFF] )      OUT FLASH_CS ; /* BANK15 (Snapshot storage) SST39SF010A 128kB*/
+ 51:/*      IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK12 - SST39SF020A 256kB */
+ 52:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[D0000..FFFFF] )      OUT FLASH_CS ; /* BANK13, BANK14, BANK15 (Snapshot storage) - SST39SF020A 256kB */
+ 53:/*      IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK_8 - SST39SF040A 512kB */
 
 LISTING FOR LOGIC DESCRIPTION FILE: YAZ180_MEMORY.pld                Page 2
 
 CUPL(WM): Universal Compiler for Programmable Logic
 Version 5.0a Serial# 60008009
 Copyright (c) 1983, 1998 Logical Devices, Inc.
-Created Thu Feb 01 19:49:47 2018
+Created Sun Feb 04 20:12:41 2018
 
- 54:/*      IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK00 to appear as BANK08 - SST39SF040A 512kB */
+ 54:/*      IF (            MREQ & !IORQ & MEM_ADDRESS:[90000..FFFFF] )      OUT FLASH_CS ; /* BANK_9, BANK10,... BANK15 (Snapshot storage) - SST39SF040A 512kB */
  55:        }
  56:
  57:CONDITION {
@@ -89,5 +89,5 @@ Created Thu Feb 01 19:49:47 2018
 
 
 
-Jedec Fuse Checksum       (6113)
-Jedec Transmit Checksum   (33e5)
+Jedec Fuse Checksum       (649b)
+Jedec Transmit Checksum   (3bb7)
