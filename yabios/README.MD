@@ -144,12 +144,11 @@ Preparation of the programming mode perl tool is work in progress.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a system `BANK_0`, with additional `BANK_4` through `BANK15` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a system `BANK_0`, with additional `BANK_1` through `BANK14` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space `BANK_1`, `BANK_2`, and `BANK_3`. This non-volatile storage can be used for any purpose.
+The additional flash memory is assigned to the upper memory space (`BANK13`, `BANK14`, and) `BANK15`. This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
-
 
 <div>
 <table style="border: 2px solid #cccccc;">
