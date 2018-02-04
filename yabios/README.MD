@@ -80,23 +80,23 @@ Each one of these items will need to be implemented.
 - [x] [`RST+DEFW+DEFB` `_call_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_call_far)
 - [x] [`RST` `_jp_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_jp_far)
 - [ ] finalise and test
-- [ ] to be added
+- [ ] additional features to be added
 
 ## Memory Map
 
 The organisation below is an attempt to provide a logical memory map for YAZ180, which allows simple bank management. Yet, is flexible enough to support multi-tasking from a RTOS in the future.
 
-`BANK00` contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+`BANK_0` contains YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional `BANK04` through `BANK15` are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to `BANK00`.
+Additional `BANK_1` through `BANK14` are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to `BANK_0`.
 
-Flash found in `BANK01`, `BANK02`, and `BANK03` is intended to be used for snapshots of default or frequently used applications. For example storing a CP/M snapshot enables a "diskless" CP/M initialisation, using DMA, to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
+Flash found in (`BANK13`, `BANK14`, and) `BANK15` is intended to be used for snapshots of default or frequently used applications. For example storing a CP/M snapshot enables a "diskless" CP/M initialisation, using DMA, to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
 
 <div>
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map2.png"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180%20Memory%20Map.png"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YABIOS Memory Map<center></th>
@@ -124,19 +124,19 @@ Preparation of the programming mode perl tool is work in progress.
 <th style="border: 2px solid #cccccc; padding: 6px;">Programming Mode</th>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $1FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (16kB, BANK)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">USB (16kB, CA0)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $BFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB, BANK_0)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">USB (48kB, CA0)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$3000 - $BFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (32kB, BANK)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;"><strong>Flash (32kB, BANK)</strong></td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$C000 - $EFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (12kB, BANK_0)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (8kB, BANK)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$C000 - $FFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (16kB, BANK / CA1)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (16kB, CA1)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$F000 - $FFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (4kB, CA1)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (8kB, CA1)</td>
 </tr>
 </tbody>
 </table>
@@ -144,11 +144,12 @@ Preparation of the programming mode perl tool is work in progress.
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a system `BANK00`, with additional `BANK04` through `BANK15` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a system `BANK_0`, with additional `BANK_4` through `BANK15` containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by `COMMON AREA 1` RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space `BANK01`, `BANK02`, and `BANK03`. This non-volatile storage can be used for any purpose.
+The additional flash memory is assigned to the upper memory space `BANK_1`, `BANK_2`, and `BANK_3`. This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
+
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -159,28 +160,24 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 <th style="border: 2px solid #cccccc; padding: 6px;">Programming Mode</th>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$00000 - $03FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (16kB of 256kB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">USB (16kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$00000 - $0BFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB of 128kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">USB pseudo RAM (48kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$04000 - $0BFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (32kB of 256kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 - $DFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 - $BFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (704kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (704kB of 1MB)</td>
-</tr>
-<tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$C0000 - $CFFFF</th>
+<th style="border: 1px solid #cccccc; padding: 6px;">$E0000 - $EFFFF</th>
 <td style="border: 1px solid #cccccc; padding: 6px;">SRAM (64kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 256kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$D0000 - $FFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$F0000 - $FFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
 </tr>
 </tbody>
 </table>
@@ -269,9 +266,9 @@ Whilst they will be exposed to the user through linkage into the Z88dk libraries
 
 For all memory related functions in the Z180 which extend beyond the Z80 addressing capability of 64kB, there needs to be a decision made as to how to address locations. Where a flat RAM model is being pursued, it makes sense to create a flat addressing structure.
 
-However, in the YAZ180 we have a BANKED memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in `BANK0`. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
+However, in the YAZ180 we have a banked memory assignment. This means that the top of one bank is not contiguous with the bottom of another bank, and the YABIOS exists in a specific location in `BANK_0`. Therefore, we are never going to copy memory across the edge of a BANKED memory space. Both of these issues point to a slightly different addressing scheme.
 
-For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK00` and `BANK01`, `BANK02`, and `BANK03` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
+For all far memory functions, the high byte of the 20bit address will be a twos complement bank-relative address. Additionally, as a later enhancement, calling far memory functions from a non-zero bank (as a user) will ensure that `BANK_0` and (`BANK13`, `BANK14`, and) `BANK15` cannot be reached, and `COMMON_AREA_1` memory cannot be written.
 
 Far pointers will normally be passed in the `EHL` registers, as is the z88dk standard.<br>
 `0xEE` is the twos complement bank address, as defined above.<br>
@@ -377,17 +374,17 @@ exx AFBCDEHL        modified
 ```
 Notes:
 
-When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will load it into the provided initial BANK. Any Type 2 ESA HEX instruction present within the Intel HEX will override CLI selection.
+When called `_load_hex` waits for Intel HEX to be loaded via the CLI, and will load it into the provided initial bank. Any Type 2 ESA HEX instruction present within the Intel HEX will override CLI selection.
 
-`_load_hex` provides an initial BANK for loading the application. Type 2 ESA HEX information provides further _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing), should the program to be loaded extend beyond one BANK.
+`_load_hex` provides an initial bank for loading the application. Type 2 ESA HEX information provides further _relative_ (preferred) bank information, in the [format defined above](https://github.com/feilipu/yaz180/tree/master/yabios#note-on-bank-relative-addressing), should the program to be loaded extend beyond one bank.
 
 The contents of the alternate register set is modified only during the internal banks which function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the `BANK00` or flash memory banks `BANK01`, `BANK02`, or `BANK03` from being selected, if the system calls `_load_hex`.
+No checking is done to prevent the `BANK_0` or flash memory bank (`BANK13`, `BANK14`, or) `BANK15` from being selected, if the system calls `_load_hex`.
 
 No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_hex`.
 
-When the user calls `_load_hex`, access to `BANK00`  through `BANK03` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
+When the user calls `_load_hex`, access to `BANK_0` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ### `_load_bin`
 
@@ -415,15 +412,15 @@ When called `_load_bin` waits for binary data to be loaded via the CLI, and will
 
 The alternate register set is modified only during the internal `_bank_switch` function with interrupts disabled. This is only a momentary situation. Normal `_load_hex` operation is with interrupts enabled (to ensure that the ASCI interfaces are working).
 
-No checking is done to prevent the `BANK00` or flash memory banks `BANK01`, `BANK02`, or `BANK03` from being selected, if the system calls `_load_bin`.
+No checking is done to prevent the `BANK_0` or flash memory bank (`BANK13`, `BANK14`, or) `BANK15` from being selected if the system calls `_load_bin`.
 
 No checking is done to prevent `PAGE0` and `COMMON AREA 1` memory being overwritten, if the system calls `_load_bin`.
 
-When the user calls `_load_bin`, access to `BANK00` through `BANK03` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
+When the user calls `_load_bin`, access to `BANK_0` will be prevented, enabling relocation of applications, and will ensure that critical `PAGE0` and `COMMON AREA 1` memory cannot be overwritten.
 
 ## User System Interfaces
 
-Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to BANKED applications (greater than 60kB in size) is designed to be through the `RST10` `_call_far`. General management of the YAZ180 is to be done through the Command Line Interface.
+Access to YABIOS is designed to be through calls to the `RST20` System Call, and the `RST18` APU Call. Access to banked applications (greater than 60kB in size) is designed to be through the `RST10` `_call_far`. General management of the YAZ180 is to be done through the Command Line Interface.
 
 Errors will be reported to an Error handler function located at `RST8`, registered for each application, as desired.
 
@@ -431,7 +428,7 @@ Additional short call `RST30` addresses may be used by the application as desire
 
 ### `RST30` Reserved User Call
 
-The user might want to have a `RST` short call available. Reserve this `RST` for user short calls within a BANK.
+The user might want to have a `RST` short call available. Reserve this `RST` for user short calls within a bank.
 
 ### `RST28+DEFB` APU Call
 
@@ -451,7 +448,7 @@ exx AFBCDEHL        modified  (check called APU Function)
 ```
 Notes:
 
-YABIOS APU Calls are provided within the `BANK00`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
+YABIOS APU Calls are provided within the `BANK_0`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
 
 For example, the `APU_OP_ENT16` function parameters are placed in the HL Registers, and the System Call is generated by following example byte code:
 
@@ -481,7 +478,7 @@ exx AFBCDEHL        modified  (check called System Function)
 ```
 Notes:
 
-YABIOS System Calls are provided within the `BANK00`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
+YABIOS System Calls are provided within the `BANK_0`, or `COMMON AREA 1` memory space, and can be linked to an Z88dk application program.
 
 For example, the `_f_printf` function parameters are placed on the Stack or Registers, and the System Call is generated by following example byte code:
 
@@ -575,7 +572,7 @@ Registers affected after return:
 ```
 Notes:
 
-YABIOS `_error` calls are provided to support an application in its own memory space. The location of the application `_error` function is provided by a `void*` within the application's own BANK.
+YABIOS `_error` calls are provided to support an application in its own memory space. The location of the application `_error` function is provided by a `void*` within the application's own bank.
 
 The `_error` parameters are placed on the Stack or Registers, and the `_error` call is generated by following example byte code:
 
@@ -640,6 +637,4 @@ The command line interface is implemented in C, with the underlying functions ei
 - `tz [tz]` - set timezone (no daylight saving)
 - `diso` - local time ISO format: 2013-03-23 01:03:52
 - `date` - local time: Sun Mar 23 01:03:52 2013
-
-
 

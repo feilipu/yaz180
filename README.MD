@@ -39,7 +39,7 @@ The fastest readily available Flash memory is 55ns. This is matched by the faste
 
 The Z180 can operate internally at 2x the external Phi clock, which means that the YAZ180 is configured to run at 36.864MHz in normal situations. This is slightly outside the Z180 specification (33MHz), but this frequency is widely recommended even in Zilog documentation.
 
-The AMD Am9511A (1977) was the first hardware arithmetic Floating Point Unit (FPU) developed. It is essentially a "scientific calculator" on a chip, and is capable of both 16 bit and 32 bit fixed and 32 bit floating point processing, across all the standard and trancendental functions. Even though this device is 40 years old, it is still [comparable in performance](https://feilipu.me/2017/02/22/characterising-am9511a-1-apu/) of mathematical calculation to its Z180 host.
+The AMD Am9511A (1977) was the first hardware arithmetic Floating Point Unit (FPU) developed. It is essentially a "scientific calculator" on a chip, and is capable of both 16 bit and 32 bit fixed and 32 bit floating point processing, across all the standard and trancendental functions. Even though this device is 40 years old, it is still [comparable in performance](https://feilipu.me/2017/02/22/characterising-am9511a-1-apu/) of mathematical calculations to its Z180 host.
 
 In addition to the internal Z180 interfaces, I have added a 82C55 Programmable Peripheral Interface (PPI) Controller (1974). This device provides 3x 8 bit parallel ports, and enables the YAZ180 to support 16bit IDE hard drives, as well as providing a mechanism to add parallel data interfacing to future expansion boards.
 
@@ -47,7 +47,7 @@ As the IDE interface requires control signals that are active low, several of th
 
 A single step circuitry has been implemented, which is enabled by a switch, and triggered by writing to an I/O port address. This enables the YAZ180 to run normally, until it becomes interesting to enable a breakpoint.
 
-To interface with modern sensors and devices, two separate I2C interface PCA9665 devices have been provided. This enables one I2C device to be running at 1MHz in Fast-mode Plus (or even Turbo mode) driving a LCD controller for a screen (for example FTDI EVE), and have the other I2C interface connected over longer distances to sensors or keyboard running at 100kHz in Standard mode. The PCA9665 has deep 68 byte hardware buffers, and can operate in buffered or streaming mode, enabling complete I2C sentences to be transmitted or received without CPU interaction. A complete GL graphics command can be sent with one CPU DMA, for example.
+To interface with modern sensors and devices, two separate I2C interface PCA9665 devices have been provided. This enables one I2C device to be running at 1MHz in Fast-mode Plus (or even Turbo mode) driving a LCD controller for a screen (for example FTDI EVE), and have the other I2C interface connected over longer distances to sensors or keyboard running at 100kHz in Standard mode. The PCA9665 has deep 68 byte hardware buffers, and can operate in buffered or streaming mode, enabling complete I2C sentences to be transmitted or received without CPU interaction. A complete GL graphics command could be sent with one CPU DMA, for example.
 
 To interface with TCP/IP networks, using WiFi, an ESP8266 pin-out for the ESP-01S is provided, connected to ASCI1. This enables the YAZ180 to operate as an Internet server (with attached IDE hard drive), and / or to be controlled using Secure Shell from anywhere.
 
@@ -106,7 +106,7 @@ The Z180 data lines are also buffered by an ABT logic bus transceiver. This is t
 
 ## BOM
 
-The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8), or possibly most accurately from thisrepository [here](https://github.com/feilipu/yaz180/blob/master/docs/2017-10-30T22_14_47.csv).
+The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8), or possibly most accurately from [this repository](https://github.com/feilipu/yaz180/blob/master/docs/2017-10-30T22_14_47.csv).
 
 Note that there are two significant items missing from the Shopping Cart.
 
@@ -119,7 +119,7 @@ Some other smaller pin-outs and connectors are not included:
 
 - 1 of 2x4 0.1 inch female for ESP-01S
 - 2 of 1x4 0.1 inch male for Sparkfun I2C
-- 2 of SeeedStudio Grove I2C connectors
+- 2 of Seeed Studio Grove I2C connectors
 
 ## Memory & I/O Address Layout
 
@@ -127,14 +127,11 @@ The physical address mapping is provided by the standard CUPL (described below),
 
 ### Physical Memory Address Space
 
-The basic layout is to allow for an initial boot from flash memory into a BANK00, with additional BANK04 through BANK15 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
+The basic layout is to allow for an initial boot from flash memory into a BANK_0, with additional BANK_1 through BANK14 containing 64kB RAM based application spaces. The upper 4kB of each application space will be masked by COMMON AREA 1 RAM, which provides system utilities.
 
-The additional flash memory is assigned to the upper memory space BANK01, BANK02, and BANK03.
-This non-volatile storage can be used for any purpose.
+The additional flash memory is assigned to the upper memory space (BANK13, BANK14, and) BANK15, depending on the size of flash storage equipped. This non-volatile storage can be used for any purpose.
 
 The PROGRAMMING MODE hardware recognises that data is available on the USB parallel port, and reconfigures the physical address mapping to enable boot from USB, and further programming of Flash or RAM.
-
-__To be revised.__
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -145,28 +142,24 @@ __To be revised.__
 <th style="border: 2px solid #cccccc; padding: 6px;">Programming Mode</th>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$00000 - $03FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (16kB of 256kB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">USB (16kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$00000 - $0BFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB of 128kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">USB pseudo RAM (48kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$04000 - $0BFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (32kB of 256kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 - $DFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 - $BFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (704kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (704kB of 1MB)</td>
-</tr>
-<tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$C0000 - $CFFFF</th>
+<th style="border: 1px solid #cccccc; padding: 6px;">$E0000 - $EFFFF</th>
 <td style="border: 1px solid #cccccc; padding: 6px;">SRAM (64kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 256kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$D0000 - $FFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$F0000 - $FFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
 </tr>
 </tbody>
 </table>
@@ -176,11 +169,11 @@ __To be revised.__
 
 There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK00 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK_0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional BANK04 through BANK15 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK00.
+Additional BANK_1 through BANK14 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK_0.
 
-Flash found in BANK01, BANK02, and BANK03 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
+Flash found in (BANK13, BANK14, and) BANK15 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
 
 <div>
 <table style="border: 2px solid #cccccc;">
@@ -191,19 +184,19 @@ Flash found in BANK01, BANK02, and BANK03 is intended to be used for snapshots o
 <th style="border: 2px solid #cccccc; padding: 6px;">Programming Mode</th>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $1FFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (16kB, BANK)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">USB (16kB, CA0)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$0000 - $BFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB, BANK_0)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">USB (48kB, CA0)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$3000 - $BFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (32kB, BANK)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;"><strong>Flash (32kB, BANK)</strong></td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$C000 - $EFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (12kB, BANK_0)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (8kB, BANK)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$C000 - $FFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (16kB, BANK / CA1)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (16kB, CA1)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$F000 - $FFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (4kB, CA1)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (8kB, CA1)</td>
 </tr>
 </tbody>
 </table>
@@ -293,6 +286,8 @@ The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File
 
 [Z88dk support](https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180) has been completed, but improvement work continues daily.
 
-## CPM
+## CP/M
 
-Currently the console I/O for is complete, as is the underlying disk sub-system. The  work to create CP/M disks as Fat32 files has also been completed. CP/M can be booted off the flash snapshot and can load transient programs from FATFS files (read as CP/M drives).
+Currently the console I/O for is complete, as is the underlying disk sub-system. The work to create CP/M disks as FAT32 files has also been completed. CP/M can be booted off the flash snapshot and can load transient programs from FATFS files (read as CP/M drives).
+
+CP/M drive files can be read and written using a host PC with any operating system, by using the [`cpmtools`](http://www.moria.de/~michael/cpmtools/) utilities, simply by inserting the IDE drive in a USB drive caddy.

@@ -25,7 +25,7 @@ That puts the initial system stack pointer at `$FFC0`, with two bytes available 
 
 ## Modifying the memory model
 
-Based on the above, we can allow the memory model to be expanded by just 3 items. The `rodata_page0` contains `$003B` bytes of simple page zero code, to be replicated to each `BANKnn` during initialisation, and when a bank is reloaded.
+Based on the above, we can allow the memory model to be expanded by just 3 items. The `rodata_page0` contains `$003B` bytes of simple page zero code, to be replicated to each `BANK_n` during initialisation, and when a bank is reloaded.
 
 Then the `rodata_common1_data` and `rodata_common1_driver` can just follow each other into the space from `$F000`. The global stack will grow down to meet them somewhere (hopefully not too often).
 
@@ -62,9 +62,9 @@ Based on the [design rules](https://github.com/feilipu/yaz180/blob/master/yabios
 - Any Z80dk library code that is called by either a `PAGE0` or `COMMON_AREA_1` resident call, unless it is specifically a banked call.
 - Scheduling code, when we get that far...
 
-## What needs to be in `BANK00` RAM?
+## What needs to be in `BANK_0` RAM?
 
-These elements need to be either statically defined the `BANK00` RAM, or located in the system heap space also in `BANK00`.
+These elements need to be either statically defined the `BANK_0` RAM, or located in the system heap space also in `BANK_0`.
 
 - Disk I/O buffers
 - FatFS
@@ -73,7 +73,7 @@ These elements need to be either statically defined the `BANK00` RAM, or located
 - time functions
 - driver code that is not time critical or is large (i2c, graphics).
 
-The boot monitor code will be the major program located in `BANK00` Flash, and this will be written in C.
+The boot monitor code will be the major program located in `BANK_0` Flash, and this will be written in C.
 
 ## Sadly, there can never be a `jp_far`
 
@@ -92,7 +92,7 @@ It also generates a `yabios.def` file containing the calling linkages for the pa
 
 ## Loading Flash from outside yabios
 
-It is possible to load `BANK01`, `BANK02`, and `BANK03` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal.
+It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal.
 
 ## CP/M Implementation
 
@@ -103,9 +103,11 @@ The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT 
 > cat > /dev/ttyUSB0 < cpm22__.ihx 
 ```
 
-I've added the `_f_expand()` into the FATFs implementation, as this will allow the YABIOS command line to create a correctly sized CP/M drive, which can then be added / or exchanged for other drives simply by renaming it. Formatting and other CP/M "disk" management will be done from within CP/M, using the YABIOS tools.
+I've added the `_f_expand()` function into the FATFs implementation, as this will allow the YABIOS command line to create a correctly sized CP/M drive, which can then be added / or exchanged for other drives simply by renaming it. Formatting and other CP/M "disk" management will be done from within CP/M, using the YABIOS tools.
 
 ## CP/M TOOLS Usage
+
+CP/M drive files can be read and written using a host PC with any operating system, by using the [`cpmtools`](http://www.moria.de/~michael/cpmtools/) utilities, simply by inserting the IDE drive in a USB drive caddy.
 
 The CP/M TOOLS package v2.20 is available from debian Sid repository.
 
@@ -157,6 +159,4 @@ end
 ## Layout problem - January 31, 2018
 
 Noted that I selected the wrong device for the flash, being the 128kB version. This means that the Address 17 pin is not connected, by accident. When doing the v2.2 PCB, I will next select the 512kB device, and connect both A17 and A18 to the flash device, as this will provide some extra flexibility, if more flash memory is required.
-
-
 
