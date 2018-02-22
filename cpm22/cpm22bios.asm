@@ -228,15 +228,15 @@ gocpm:
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskchk       ;disk number valid, check existence via valid LBA
-    xor     a               ;invalid disk, change to disk 0 (A:)
 
 diskchg:
+    xor     a               ;invalid disk, change to disk 0 (A:)
     ld      (_cpm_cdisk),a  ;reset current disk number to disk0 (A:)
     ld      c,a             ;send disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 diskchk:
-    ld      c,a
+    ld      e,a             ;save desired disk
     call    getLBAbase      ;get the LBA base address
     ld      a,(hl)          ;check that the LBA is non Zero
     inc     hl
@@ -246,6 +246,7 @@ diskchk:
     inc     hl
     or      a,(hl)
     jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
+    ld      a,e
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 
