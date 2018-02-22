@@ -227,18 +227,33 @@ gocpm:
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
-    jr      C,diskok        ;disk valid, go to ccp
-    xor     a               ;invalid disk, change to disk 0
+    jr      C,diskchk       ;disk number valid, check existence via valid LBA
+    xor     a               ;invalid disk, change to disk 0 (A:)
 
-diskok:
-    ld      c, a            ;send disk number to the ccp
-    jp      __cpm_ccp_head  ;go to cp/m for further processing
+diskchg:
+    ld      (_cpm_cdisk),a  ;reset current disk number to disk0 (A:)
+    ld      c,a             ;send disk number to the ccp
+    jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
+
+diskchk:
+    ld      c,a
+    call    getLBAbase      ;get the LBA base address
+    ld      a,(hl)          ;check that the LBA is non Zero
+    inc     hl
+    or      a,(hl)
+    inc     hl
+    or      a,(hl)
+    inc     hl
+    or      a,(hl)
+    jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
+    jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
+
 
 ;=============================================================================
 ; Console I/O routines
 ;=============================================================================
 const:      ;console status, return 0ffh if character ready, 00h if not
-    ld      A,(_cpm_iobyte)
+    ld      a,(_cpm_iobyte)
     and     00001011b       ;mask off console and high bit of reader
     cp      00001010b       ;redirected to asci1 TTY
     jr      Z,const1
@@ -252,18 +267,18 @@ const0:
     call    _asci0_pollc    ;check whether any characters are in CRT Rx0 buffer
     jr      NC, dataEmpty
 dataReady:
-    ld      A,$FF
+    ld      a,$FF
     ret
 
 const1:
     call    _asci1_pollc    ;check whether any characters are in TTY Rx1 buffer
     jr      C, dataReady
 dataEmpty:
-    xor     A
+    xor     a
     ret
 
 conin:    ;console character into register a
-    ld      A,(_cpm_iobyte)
+    ld      a,(_cpm_iobyte)
     and     00000011b
     cp      00000010b
     jr      Z,reader        ;"BAT:" redirect
@@ -282,18 +297,18 @@ conin1:
    ret
 
 reader:
-    ld      A,(_cpm_iobyte)
+    ld      a,(_cpm_iobyte)
     and     00001100b
     cp      00000100b
-    jr      Z, conin0
+    jr      Z,conin0
     cp      00000000b
-    jr      Z, conin1
-    ld      A,$1A           ;CTRL-Z if not asci0 or asci1
+    jr      Z,conin1
+    ld      a,$1A           ;CTRL-Z if not asci0 or asci1
     ret
 
 conout:    ;console character output from register c
-    ld      l, c            ;Store character
-    ld      A,(_cpm_iobyte)
+    ld      l,c             ;Store character
+    ld      a,(_cpm_iobyte)
     and     00000011b
     cp      00000010b
     jr      Z,list          ;"BAT:" redirect
@@ -302,8 +317,8 @@ conout:    ;console character output from register c
     jp      _asci0_putc
 
 list:
-    ld      l, c            ;Store character
-    ld      A,(_cpm_iobyte)
+    ld      l,c             ;Store character
+    ld      a,(_cpm_iobyte)
     and     11000000b
     cp      01000000b
     jp      Z,_asci0_putc
@@ -312,8 +327,8 @@ list:
     ret
 
 punch:
-    ld      l, c            ;Store character
-    ld      A,(_cpm_iobyte)
+    ld      l,c             ;Store character
+    ld      a,(_cpm_iobyte)
     and     00110000b
     cp      00010000b
     jp      Z,_asci0_putc
@@ -322,7 +337,7 @@ punch:
     ret
 
 listst:     ;return list status
-    ld      A,$FF           ;Return list status of 0xFF (ready).
+    ld      a,$FF           ;Return list status of 0xFF (ready).
     ret
 
 ;=============================================================================
@@ -361,20 +376,35 @@ seldsk:    ;select disk given by register c
     ld      (sekdsk),a
     cp      _cpm_disks      ;must be between 0 and 3
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
+    
+ seldskreset:   
     ld      a,(_cpm_cdisk)  ;so set the drive back to default
     cp      c               ;if the default disk is not the same as the
     ret     NZ              ;selected drive then return, or
-    xor     a               ;else reset default back to a:
+
+    xor     a               ;else reset default disk back to 0 (A:)
     ld      (_cpm_cdisk),a  ;otherwise stuck in a loop
     ld      (sekdsk),a
     ret
 
 chgdsk:
-    ld      (sekdsk),a
-    rlca                    ;*2
-    rlca                    ;*4
-    rlca                    ;*8
-    rlca                    ;*16
+    ex      de,hl           ;keep $0000 in DE
+    call    getLBAbase      ;get the LBA base address for disk
+    ld      a,(hl)          ;check that the LBA is non Zero
+    inc     hl
+    or      a,(hl)
+    inc     hl
+    or      a,(hl)
+    inc     hl
+    or      a,(hl)
+    ex      de,hl           ;get $0000 back in HL as error code
+    jr      Z,seldskreset   ;invalid disk LBA, so load default
+
+    ld      a,(sekdsk)
+    add     a,a             ;*2
+    add     a,a             ;*4
+    add     a,a             ;*8
+    add     a,a             ;*16
     ld      hl,dpbase
     ld      b,0
     ld      c,a
@@ -695,20 +725,13 @@ readhst:
 
 setLBAaddr:
     ld      a,(hstdsk)      ;get disk number (0,1,2,3)
-    add     a,a             ;uint32_t off-set for each disk (file) LBA base address
-    add     a,a             ;so left shift 2 (x4), to create offset to disk base address
-
-    ld      hl,_cpm_dsk0_base;get the address for disk LBA base address
-    ld      e,a    
-    ld      d,$00
-    add     hl,de           ;add the offset to the base address
-
+    call    getLBAbase      ;get the LBA base address
     ex      de,hl           ;DE contains address of active disk (file) LBA LSB
 
     ld      a,(hstsec)      ;prepare the hstsec (5 bits, 32 sectors per track)
-    rlca                    ;rotate hstsec left three bits to remove irrelevant MSBs
-    rlca
-    rlca
+    add     a,a             ;shift hstsec left three bits to remove irrelevant MSBs
+    add     a,a
+    add     a,a
 
     ld      hl,(hsttrk)     ;get both bytes of the hsttrk (maximum 11 bits)
 
@@ -748,6 +771,18 @@ setLBAaddr:
     ld      b,a             ;write LBA MSB, put it in B
 
     ret
+
+getLBAbase:
+    add     a,a             ;uint32_t off-set for each disk (file) LBA base address
+    add     a,a             ;so left shift 2 (x4), to create offset to disk base address
+
+    ld      hl,_cpm_dsk0_base;get the address for disk LBA base address
+    ld      c,a    
+    ld      b,0
+    add     hl,bc           ;add the offset to the base address
+
+    ret                     ;LBA base address in HL
+
 
 ;
 ;    the remainder of the cbios is reserved uninitialized
