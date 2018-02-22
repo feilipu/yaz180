@@ -246,7 +246,7 @@ diskchk:
     inc     hl
     or      a,(hl)
     jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
-    ld      a,e
+    ld      c,e             ;send disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 
@@ -372,13 +372,13 @@ setdma:     ;set dma address given by registers BC
     ret
 
 seldsk:    ;select disk given by register c
-    ld      hl,$0000        ;error return code
     ld      a,c
     ld      (sekdsk),a
     cp      _cpm_disks      ;must be between 0 and 3
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
     
- seldskreset:   
+ seldskreset:
+    ld      hl,$0000        ;error return code
     ld      a,(_cpm_cdisk)  ;so set the drive back to default
     cp      c               ;if the default disk is not the same as the
     ret     NZ              ;selected drive then return, or
@@ -389,16 +389,14 @@ seldsk:    ;select disk given by register c
     ret
 
 chgdsk:
-    ex      de,hl           ;keep $0000 in DE
     call    getLBAbase      ;get the LBA base address for disk
-    ld      a,(hl)          ;check that the LBA is non Zero
+    ld      a,(hl)          ;check that the LBA is non-Zero
     inc     hl
     or      a,(hl)
     inc     hl
     or      a,(hl)
     inc     hl
-    or      a,(hl)
-    ex      de,hl           ;get $0000 back in HL as error code
+    or      a,(hl)    
     jr      Z,seldskreset   ;invalid disk LBA, so load default
 
     ld      a,(sekdsk)
