@@ -373,22 +373,18 @@ setdma:     ;set dma address given by registers BC
 
 seldsk:    ;select disk given by register c
     ld      a,c
-    ld      (sekdsk),a
     cp      _cpm_disks      ;must be between 0 and 3
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
     
  seldskreset:
-    ld      hl,$0000        ;error return code
-    ld      a,(_cpm_cdisk)  ;so set the drive back to default
-    cp      c               ;if the default disk is not the same as the
-    ret     NZ              ;selected drive then return, or
-
-    xor     a               ;else reset default disk back to 0 (A:)
-    ld      (_cpm_cdisk),a  ;otherwise stuck in a loop
-    ld      (sekdsk),a
+    ld      hl,$0000        ;error return code in HL
+    xor     a               ;reset default disk back to 0 (A:)
+    ld      (_cpm_cdisk),a
+    ld      (sekdsk),a      ;and set the seeked disk
     ret
 
 chgdsk:
+    ld      e,c             ;save desireable selected disk
     call    getLBAbase      ;get the LBA base address for disk
     ld      a,(hl)          ;check that the LBA is non-Zero
     inc     hl
@@ -396,18 +392,19 @@ chgdsk:
     inc     hl
     or      a,(hl)
     inc     hl
-    or      a,(hl)    
-    jr      Z,seldskreset   ;invalid disk LBA, so load default
+    or      a,(hl)
+    jr      Z,seldskreset   ;invalid disk LBA, so load default disk
 
-    ld      a,(sekdsk)
-    add     a,a             ;*2
+    ld      a,e             ;recover selected disk
+    ld      (sekdsk),a      ;and set the seeked disk
+    add     a,a             ;*2 calculate offset into dpbase
     add     a,a             ;*4
     add     a,a             ;*8
     add     a,a             ;*16
     ld      hl,dpbase
     ld      b,0
     ld      c,a
-    add     hl,bc
+    add     hl,bc           ;return the disk dpbase in HL
     ret
 
 ;
