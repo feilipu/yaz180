@@ -232,11 +232,11 @@ gocpm:
 diskchg:
     xor     a               ;invalid disk, change to disk 0 (A:)
     ld      (_cpm_cdisk),a  ;reset current disk number to disk0 (A:)
-    ld      c,a             ;send disk number to the ccp
+    ld      c,a             ;send default disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 diskchk:
-    ld      e,a             ;save desired disk
+    ld      c,a             ;send current disk number to the ccp
     call    getLBAbase      ;get the LBA base address
     ld      a,(hl)          ;check that the LBA is non Zero
     inc     hl
@@ -246,7 +246,6 @@ diskchk:
     inc     hl
     or      a,(hl)
     jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
-    ld      c,e             ;send disk number to the ccp
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 
@@ -377,14 +376,13 @@ seldsk:    ;select disk given by register c
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
     
  seldskreset:
-    ld      hl,$0000        ;error return code in HL
     xor     a               ;reset default disk back to 0 (A:)
     ld      (_cpm_cdisk),a
     ld      (sekdsk),a      ;and set the seeked disk
+    ld      hl,$0000        ;return error code in HL
     ret
 
 chgdsk:
-    ld      e,c             ;save desireable selected disk
     call    getLBAbase      ;get the LBA base address for disk
     ld      a,(hl)          ;check that the LBA is non-Zero
     inc     hl
@@ -395,17 +393,18 @@ chgdsk:
     or      a,(hl)
     jr      Z,seldskreset   ;invalid disk LBA, so load default disk
 
-    ld      a,e             ;recover selected disk
+    ld      a,c             ;recover selected disk
     ld      (sekdsk),a      ;and set the seeked disk
     add     a,a             ;*2 calculate offset into dpbase
     add     a,a             ;*4
     add     a,a             ;*8
     add     a,a             ;*16
     ld      hl,dpbase
-    ld      b,0
-    ld      c,a
-    add     hl,bc           ;return the disk dpbase in HL
-    ret
+    add     a,l
+    ld      l,a
+    ret     NC              ;return the disk dpbase in HL, no carry
+    inc     h
+    ret                     ;return the disk dpbase in HL
 
 ;
 ;*****************************************************
@@ -773,10 +772,10 @@ getLBAbase:
     add     a,a             ;so left shift 2 (x4), to create offset to disk base address
 
     ld      hl,_cpm_dsk0_base;get the address for disk LBA base address
-    ld      c,a    
-    ld      b,0
-    add     hl,bc           ;add the offset to the base address
-
+    add     a,l             ;add the offset to the base address
+    ld      l,a
+    ret     NC              ;LBA base address in HL, no carry
+    inc     h
     ret                     ;LBA base address in HL
 
 
