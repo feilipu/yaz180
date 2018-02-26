@@ -1357,17 +1357,6 @@ GETBACK1:
 SECTION cpm_ccp_data
 
 ;
-;   Room for expansion.
-;
-            DEFS    12,0
-
-;
-;   ccp stack area.
-;
-            DEFS    16,0
-CCPSTACK:                   ;top of ccp stack area.
-
-;
 ;   Batch (or SUBMIT) processing information storage.
 ;
 BATCH:      DEFB    0        ;batch mode flag (0=not active).
@@ -1381,6 +1370,17 @@ RTNCODE:    DEFB    0        ;status returned from bdos call.
 CDRIVE:     DEFB    0        ;currently active drive.
 CHGDRV:     DEFB    0        ;change in drives flag (0=no change).
 NBYTES:     DEFW    0        ;byte counter used by TYPE.
+
+;
+;   Room for expansion, and prevent potential stack overflow.
+;
+            DEFS    12,0
+
+;
+;   ccp stack area.
+;
+            DEFS    16,0
+CCPSTACK:                   ;top of ccp stack area.
 
 ;
 ;   Note that the following six bytes must match those at
@@ -1397,6 +1397,8 @@ PATTRN2:    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
 ;
 
 SECTION cpm_bdos
+
+ALIGN   0x100                   ;ALIGN the FBASE to a page
 
 FBASE:
     JP    FBASE1
@@ -2034,7 +2036,7 @@ TRKSEC:
     SRL   H
     RR    L
     LD    (BLKNMBR),HL      ;save this as the block number of interest.
-    LD    (CKSUMTBL),HL     ;what's it doing here too?
+;   LD    (CKSUMTBL),HL     ;what's it doing here too?
 ;
 ;   If the sector number has already been set (BLKNMBR), enter
 ;   at this point.
@@ -4094,7 +4096,7 @@ FCBPOS:     DEFB    0       ;relative position within buffer for fcb of file of 
 FILEPOS:    DEFW    0       ;files position within directory (0 to max entries -1).
 ;
 ;   Disk directory buffer checksum bytes. One for each of the
-; 16 possible drives.
+;   16 possible drives.
 ;
 CKSUMTBL:   DEFS    16,0
 
