@@ -169,8 +169,8 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     
     uint32_t driveLBAbase[4] = {0,0,0,0};
     
-    if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mkcpmb\"\n");
+    if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
+        fprintf(stdout, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
 
         page0Template = (uint8_t *)malloc((PAGE0_SIZE+3) * sizeof(uint8_t));    /* Get work area for the Page 0 */
@@ -640,7 +640,7 @@ int8_t ya_help(char **args)
 
     (void *)args;
 
-    printf("YAZ180 - yabios v0.4\n");
+    printf("YAZ180 - yabios v0.5\n");
     printf("The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
