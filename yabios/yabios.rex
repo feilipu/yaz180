@@ -13,6 +13,8 @@
 + _callee
 
 - _interrupt
+- rc_01_input_
+- rc_01_output_
 + _asci[01]_
 
 + _f_
