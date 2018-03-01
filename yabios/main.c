@@ -1150,64 +1150,6 @@ int8_t ya_execute(char **args)
     return 1;
 }
 
-extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx polling routine, checks Rx buffer fullness
-extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx receive routine, from Rx buffer
-extern uint8_t asci0_peekc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx peek routine, reads Rx without removing it from buffer
-extern uint8_t asci0_putc(uint8_t) __preserves_regs(b,c,d,e,h,iyl,iyh) __z88dk_fastcall; // Tx write routine, writes to Tx buffer
-
-
-#define YA_RL_BUFSIZE 128
-/**
-   @brief Read a line of input from stdin.
-   @return The line from stdin.
- */
-char *ya_read_line(void)
-{
-    uint16_t bufsize = YA_RL_BUFSIZE;
-    uint16_t position = 0;
-    char c;
-    char *line_buffer, *line_buffer_backup;
-
-    line_buffer = (char *)malloc(bufsize * sizeof(char));
-
-    if (line_buffer)
-    {
-        while (1)
-        {
-            // Read a character
-//          c = getchar();      // don't know why this doesn't give me CR or LF ?
-
-            while(asci0_pollc() == 0);
-            c = asci0_getc();
-
-            line_buffer[position] = c;            
-            fputc(c, stdout);
-
-            if ( c == CHAR_CR || c == CHAR_LF )
-            {
-                line_buffer[position] = '\0';
-                return line_buffer;
-            }
-
-            position++;
-
-            // If we have exceeded the line_buffer, reallocate.
-            if (position >= bufsize)
-            {
-                bufsize += YA_RL_BUFSIZE;
-                line_buffer_backup = line_buffer;
-                line_buffer = realloc(line_buffer, bufsize);
-                if (line_buffer == NULL) {
-                    fprintf(stdout, "yash: line_buffer realloc failure\n");
-                    free(line_buffer_backup);
-                    exit(EXIT_FAILURE);
-                }
-            }
-        }
-    }
-    return line_buffer;   // never reaches here, but keep compiler happy
-}
-
 #define YA_TOK_BUFSIZE 32
 #define YA_TOK_DELIM " \t\r\n\a"
 /**
@@ -1256,19 +1198,25 @@ char **ya_split_line(char *line)
 void ya_loop(void)
 {
     char **args;
+    int status;  
     char *line;
-    int status;
+    uint16_t len, slen;
+
+    len = LINE_SIZE;
+    line = (char *)malloc(LINE_SIZE * sizeof(char));  /* Get work area for the line buffer */
+    
+    if (line == NULL) return;
 
     do {
         fprintf(stdout,"\n> ");
+        fflush(stdin);
 
-        line = ya_read_line();        
+        slen = getline(&line, &len, stdin);
         args = ya_split_line(line);
 
         status = ya_execute(args);
-        
-        free(line);
-        free(args);
+        free(args);            
+
     } while (status);
 }
 
@@ -1285,11 +1233,11 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
-    set_system_time(1509454800 - UNIX_OFFSET);      /* Initial time: November 1, 2017 AEST */
+    set_system_time(1519891200 - UNIX_OFFSET);      /* Initial time: March 1, 2018 AEST */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
-    buffer = (char *)malloc(BUFFER_SIZE * sizeof(char *));  /* Get working buffer space */
+    buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));    /* Get working buffer space */
 
     // Load config files, if any.
     
