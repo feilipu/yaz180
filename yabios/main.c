@@ -53,7 +53,7 @@ int8_t ya_mvb(char **args);     // move or clone the nominated bank
 int8_t ya_rmb(char **args);     // remove the nominated bank (to cold state)
 int8_t ya_lsb(char **args);     // list the usage of banks, and whether they are cold, warm, or hot
 int8_t ya_initb(char **args);   // jump to and begin executing the nominated bank at nominated address
-int8_t ya_loadh(char **args);   // load the nominated bank with intel hex
+int8_t ya_loadh(char **args);   // load the nominated bank with intel hex from asci
 int8_t ya_loadb(char **args);   // load the nominated bank and address with binary code
 int8_t ya_saveb(char **args);   // save the nominated bank from 0x0100 to 0xF000 by default
 
@@ -94,9 +94,9 @@ static FRESULT scan_files (char* path); // scan through files in a directory
   List of builtin commands.
  */
 struct Builtin {
-  char *name;
+  const char *name;
   int8_t (*func) (char** args);
-  char *help;
+  const char *help;
 };
 
 struct Builtin builtins[] = {
@@ -110,7 +110,7 @@ struct Builtin builtins[] = {
     { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
     { "initb", &ya_initb, "[bank][origin] - begin executing the nominated bank at nominated address"},
-    { "loadh", &ya_loadh, "[bank] - load the nominated bank with intel hex"},
+    { "loadh", &ya_loadh, "[bank][switch] - load the nominated bank with intel hex"},
     { "loadb", &ya_loadb, "[path][bank][origin] - load the nominated bank from origin with binary code"},
     { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
@@ -249,7 +249,7 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
     int16_t dirEntries;
     int16_t dirBytesWritten;
     uint32_t lbaBase;
-    uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
+    const uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
@@ -1084,7 +1084,7 @@ void put_rc (FRESULT rc)
     for (i = 0; i != rc && *str; i++) {
         while (*str++) ;
     }
-    fprintf(stderr,"\nrc=%u FR_%s\n", (uint8_t)rc, str);
+    fprintf(stderr,"\r\nrc=%2u FR_%S\r\n", (uint8_t)rc, str);
 }
 
 
