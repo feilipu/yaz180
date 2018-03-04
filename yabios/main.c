@@ -110,7 +110,7 @@ struct Builtin builtins[] = {
     { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
     { "initb", &ya_initb, "[bank][origin] - begin executing the nominated bank at nominated address"},
-    { "loadh", &ya_loadh, "[bank][switch] - load the nominated bank with intel hex"},
+    { "loadh", &ya_loadh, "[bank][usart toggle] - load the nominated bank with intel hex"},
     { "loadb", &ya_loadb, "[path][bank][origin] - load the nominated bank from origin with binary code"},
     { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
@@ -412,18 +412,17 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
    @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank. args[2] enables loading from other asci port.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_loadh(char **args)    // load the nominated bank with intel hex
+int8_t ya_loadh(char **args)    // load the nominated bank with intel hex using same or toggled asci port
 {
     uint8_t initialBank;
     uint8_t ioToggle;
 
-    if (args[1] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(stdout, "yash: expected 2 arguments to \"loadh\"\n");
     } else {
         initialBank = bank_get_abs((int8_t)atoi(args[1]));
-        
         ioToggle = (uint8_t)atoi(args[2]) & 0x01;
-        
+       
         bios_ioByte ^= ioToggle;
 
         load_hex( initialBank );
@@ -683,7 +682,12 @@ int8_t ya_ls(char **args)
     uint32_t p1;
     uint16_t s1, s2;
 
-    res = f_opendir(dir, (const TCHAR*)args[1]);
+    if(args[1] == NULL) {
+        res = f_opendir(dir, (const TCHAR*)".");
+    } else {
+        res = f_opendir(dir, (const TCHAR*)args[1]);
+    }
+
     if (res != FR_OK) { put_rc(res); return 1; }
     p1 = s1 = s2 = 0;
     while(1) {
@@ -705,12 +709,18 @@ int8_t ya_ls(char **args)
                 (DWORD)Finfo.fsize, Finfo.fname);
     }
     fprintf(stdout, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
-    res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
+    
+    if(args[1] == NULL) {
+        res = f_getfree( (const TCHAR*)".", (DWORD*)&p1, &fs);
+    } else {
+        res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
+    }
     if (res == FR_OK) {
         fprintf(stdout, ", %10lu bytes free\n", p1 * fs->csize * 512);
     } else {
         put_rc(res);
     }
+
     return 1;
 }
 
@@ -1079,12 +1089,16 @@ void put_rc (FRESULT rc)
         "INVALID_NAME\0" "DENIED\0" "EXIST\0" "INVALID_OBJECT\0" "WRITE_PROTECTED\0"
         "INVALID_DRIVE\0" "NOT_ENABLED\0" "NO_FILE_SYSTEM\0" "MKFS_ABORTED\0" "TIMEOUT\0"
         "LOCKED\0" "NOT_ENOUGH_CORE\0" "TOO_MANY_OPEN_FILES\0" "INVALID_PARAMETER\0";
+    
     FRESULT i;
+    uint8_t res;
+    
+    res = (uint8_t)rc;
 
-    for (i = 0; i != rc && *str; i++) {
+    for (i = 0; i != res && *str; i++) {
         while (*str++) ;
     }
-    fprintf(stderr,"\r\nrc=%2u FR_%S\r\n", (uint8_t)rc, str);
+    fprintf(stderr,"\r\nrc=%u FR_%s\r\n", res, str);
 }
 
 
