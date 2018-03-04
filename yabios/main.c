@@ -409,19 +409,26 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank.
+   @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank. args[2] enables loading from other asci port.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_loadh(char **args)    // load the nominated bank with intel hex
 {
     uint8_t initialBank;
+    uint8_t ioToggle;
 
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"loadh\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"loadh\"\n");
     } else {
         initialBank = bank_get_abs((int8_t)atoi(args[1]));
+        
+        ioToggle = (uint8_t)atoi(args[2]) & 0x01;
+        
+        bios_ioByte ^= ioToggle;
 
         load_hex( initialBank );
+ 
+        bios_ioByte ^= ioToggle;
 
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ initialBank ] );
@@ -817,21 +824,21 @@ int8_t ya_cd(char **args)
 int8_t ya_pwd(char **args)      // show the current working directory
 {  
     FRESULT res;
-    uint8_t * line;                         /* put line buffer on heap */
+    uint8_t * directory;                         /* put directory buffer on heap */
 
     (void *)args;    
     
-    line = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));       /* Get work area for the line buffer */
+    directory = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));     /* Get area for directory buffer */
     
-    if (line != NULL) {
-        res = f_getcwd(line, sizeof(line));
+    if (directory != NULL) {
+        res = f_getcwd(directory, sizeof(directory));
         if (res != FR_OK) {
             put_rc(res);
         } else {
-            fprintf(stdout, "%s", line);
+            fprintf(stdout, "%s", directory);
         }
     }
-    free(line);
+    free(directory);
     return 1;
 }
 
@@ -1241,7 +1248,8 @@ void main(int argc, char **argv)
 
     // Load config files, if any.
     
-    fprintf(stdout,"YAZ180 - yabios");
+    fprintf(stdout,"\r\nYAZ180 - yabios - CRT");
+    fprintf(ttyout,"\r\nYAZ180 - yabios - TTY");
 
     // Run command loop if we got all the memory allocations we need.
     if ( fs && dir && buffer)
