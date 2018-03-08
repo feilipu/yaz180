@@ -35,6 +35,12 @@ static DIR *dir;                /* Pointer to the directory object (on heap) */
 static FILINFO Finfo;           /* File Information */
 static FIL File[MAX_FILES];     /* File object needed for each open file */
 
+
+static FILE *input;             /* defined input */
+static FILE *output;            /* defined input */
+static FILE *error;             /* defined input */
+
+
 int32_t AccSize;                /* Working register for scan_files function */
 int16_t AccFiles;
 int16_t AccDirs;
@@ -85,7 +91,7 @@ int8_t ya_diso(char **args);    // print the local time in ISO: 2013-03-23 01:03
 int8_t ya_date(char **args);    // print the local time in US: Sun Mar 23 01:03:52 2013
 
 // helper functions
-static void put_rc (FRESULT rc);        // print error codes to stderr
+static void put_rc (FRESULT rc);        // print error codes to defined error IO
 static void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt);
 static FRESULT scan_files (char* path); // scan through files in a directory
 
@@ -110,7 +116,7 @@ struct Builtin builtins[] = {
     { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
     { "initb", &ya_initb, "[bank][origin] - begin executing the nominated bank at nominated address"},
-    { "loadh", &ya_loadh, "[bank][usart toggle] - load the nominated bank with intel hex"},
+    { "loadh", &ya_loadh, "[bank] - load the nominated bank with intel hex"},
     { "loadb", &ya_loadb, "[path][bank][origin] - load the nominated bank from origin with binary code"},
     { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
@@ -170,17 +176,17 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     uint32_t driveLBAbase[4] = {0,0,0,0};
     
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
-        fprintf(stdout, "yash: expected 3 arguments to \"mkcpmb\"\n");
+        fprintf(output, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
 
-        page0Template = (uint8_t *)malloc((PAGE0_SIZE+3) * sizeof(uint8_t));    /* Get work area for the Page 0 */
+        page0Template = (uint8_t *)malloc((PAGE0_SIZE) * sizeof(uint8_t));    /* Get work area for the Page 0 */
 
         if (page0Template != NULL && args[1] != NULL && args[2] != NULL)
         {
             srcBank = bank_get_abs((int8_t)atoi(args[1]));
             destBank = bank_get_abs((int8_t)atoi(args[2]));
             
-            memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
+            memcpy( page0Template, (uint8_t *)0x0000, PAGE0_SIZE ); // copy the existing ROM Page0 to our working space
             // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
 
             // set the new bank SP to point to top of BANKnn for _jp_far(), _bank_sp = 0x003B
@@ -189,9 +195,9 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
             while(args[i+3] != NULL)
             {
-                fprintf(stdout,"Opening \"%s\"", args[i+3]);
+                fprintf(output,"Opening \"%s\"", args[i+3]);
                 res = f_open(&File[0], (const TCHAR *)args[i+3], FA_OPEN_EXISTING | FA_READ);
-                fputc('\n', stdout);
+                fputc('\n', output);
                 if (res != FR_OK) {
                     put_rc(res);
                     return 1;
@@ -200,9 +206,9 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
                 f_close(&File[0]);
                 i++;                // go to next file            
             }
-           
+
             // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
-            memcpy((volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, 4*sizeof(uint32_t));
+            memcpy( (volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, 4*sizeof(uint32_t) );
 
             // copy the source bank for CP/M CCP/BDOS/BIOS for CP/M BIOS wboot usage to Page 0 at 0x0050
             *(volatile uint8_t*)(page0Template + 0x0050) = srcBank;
@@ -211,25 +217,25 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             if ( srcBank != 0x00)
             {
                 // do the copy from CP/M CCP/BDOS/BIOS src to final destination bank
-                memcpy_far( (void *)0x0100, (int8_t)destBank, (void *)0x0100, (int8_t)srcBank, (__COMMON_AREA_1_BASE - PAGE0_SIZE));
+                memcpy_far( (void *)0x0100, (int8_t)destBank, (void *)0x0100, (int8_t)srcBank, (__COMMON_AREA_1_BASE - PAGE0_SIZE) );
                 // do the Page 0 copy from template to final destination bank Page 0
-                memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE);
+                memcpy_far( (void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE );
                 // do the Page 0 initialisation from CP/M CCP/BDOS/BIOS src to final destination bank
-                memcpy_far( (void *)0x0000, (int8_t)destBank, (void *)0x0000, (int8_t)srcBank, 0x08);
-                
+                memcpy_far( (void *)0x0000, (int8_t)destBank, (void *)0x0000, (int8_t)srcBank, 0x08 );
+                // do the cpm_iobyte initialisation from the bios_ioByte as this is volatile
+                memcpy_far( (void *)0x0003, (int8_t)destBank, &bios_ioByte, 0, 0x01 );
             } else {
                 // we'll have to load CP/M using loadh later
-                *(volatile uint8_t*)(page0Template + 0x0100) = 0xC3; // jp boot (at 0x0000)
-                *(volatile uint8_t*)(page0Template + 0x0101) = 0x00;
-                *(volatile uint8_t*)(page0Template + 0x0102) = 0x00;
-                // do the Page 0 copy from template to final destination bank Page 0, including jp 0x0000
-                memcpy_far((void *)0x0000, (int8_t)destBank, page0Template, 0, (PAGE0_SIZE+3));
+                // do the Page 0 copy from template to final destination bank Page 0
+                memcpy_far( (void *)0x0000, (int8_t)destBank, page0Template, 0, PAGE0_SIZE );
+                // do the cpm_iobyte initialisation from the bios_ioByte as this is volatile
+                memcpy_far( (void *)0x0003, (int8_t)destBank, &bios_ioByte, 0, 0x01 );
             }
 
             // set bank referenced from _bankLockBase, so the the bank is noted as warm.
             lock_give( &bankLockBase[ destBank ] );
 
-            fprintf(stdout,"Initialised Bank: %01X, for CP/M", destBank);
+            fprintf(output,"Initialised Bank: %01X, for CP/M", destBank);
         }
         free(page0Template);
     }
@@ -253,9 +259,9 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
                                         0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
-        fprintf(stdout, "yash: expected 3 arguments to \"mkcpmd\"\n");
+        fprintf(output, "yash: expected 3 arguments to \"mkcpmd\"\n");
     } else {
-        fprintf(stdout,"Creating \"%s\"", args[1]);
+        fprintf(output,"Creating \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_CREATE_ALWAYS | FA_WRITE);
         if (res != FR_OK) {
             put_rc(res);
@@ -276,7 +282,7 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
             // There are 4 Directory Entries (Extents) per CPM sector
             res = f_write ( &File[0], (const uint8_t *)directoryBlock, 32, &dirBytesWritten );
             if (res != FR_OK || dirBytesWritten != 32) {
-                fprintf(stdout, "\nCP/M Directory incomplete");
+                fprintf(output, "\nCP/M Directory incomplete");
                 put_rc(res);
                 f_close(&File[0]);   
                 return 1;
@@ -286,7 +292,7 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
         lbaBase = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
         f_close(&File[0]);
 
-        fprintf(stdout," at base sector LBA %lu", lbaBase);
+        fprintf(output," at base sector LBA %lu", lbaBase);
     }
     return 1;
 }
@@ -310,10 +316,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
         // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
         // existing RST jumps and INT0 code is correctly copied.
-        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKnn
-        *(volatile uint8_t*)(page0Template + 0x0100) = 0xC9; // RET at 0x0100 for now
-        // we might set other things for individual banks, before copying
-        
+        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKnn       
         
         // do the copy
         memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
@@ -321,7 +324,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
 
-        fprintf(stdout,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
+        fprintf(output,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
     free(page0Template);
     return 1;
@@ -343,7 +346,7 @@ int8_t ya_mvb(char **args)      // move or clone the nominated bank
         // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
 
-        fprintf(stdout,"Cloned Bank:%01X into Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
+        fprintf(output,"Cloned Bank:%01X into Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
     }
     return 1;
 } 
@@ -357,14 +360,14 @@ int8_t ya_mvb(char **args)      // move or clone the nominated bank
 int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
 {
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"rmb\"\n");
+        fprintf(output, "yash: expected 1 argument to \"rmb\"\n");
     } else {
         // set bank referenced from _bankLockBase, so the the bank is noted as cold.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
         
         memset_far((void *)0x0000, (int8_t)atoi(args[1]), 0x76, (__COMMON_AREA_1_BASE-0)); // copy HALT to our deleted BANK
         
-        fprintf(stdout,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
+        fprintf(output,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
    return 1;
 }
@@ -385,7 +388,7 @@ int8_t ya_lsb(char **args)      // list the usage of banks, and whether they are
 /**
    @brief Builtin command: 
    @param args List of args.  args[0] is "initb".  args[1] is the nominated bank. args[2] is the nominated origin.
-   @return NEVER RETURNS.
+   @return only returns when the jumped to bank exits.
  */
 int8_t ya_initb(char **args)    // jump to and begin executing the nominated bank at nominated address
 {
@@ -393,7 +396,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
     uint8_t bank;
 
     if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"initb\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"initb\"\n");
     } else {
         if (args[2] == NULL) {
             origin = (uint8_t *)0x100;
@@ -403,36 +406,30 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
         bank = (int8_t)atoi(args[1]);
         jp_far(origin, bank);   // manages the stack swap from _bios_sp to _bank_sp
     }
-    return;
+    return 1;
 }
 
 
 /**
    @brief Builtin command: 
-   @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank. args[2] enables loading from other asci port.
+   @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_loadh(char **args)    // load the nominated bank with intel hex using same or toggled asci port
+int8_t ya_loadh(char **args)    // load the nominated bank with intel hex using current port
 {
     uint8_t initialBank;
-    uint8_t ioToggle;
 
-    if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"loadh\"\n");
+    if (args[1] == NULL) {
+        fprintf(output, "yash: expected 1 argument to \"loadh\"\n");
     } else {
         initialBank = bank_get_abs((int8_t)atoi(args[1]));
-        ioToggle = (uint8_t)atoi(args[2]) & 0x01;
-       
-        bios_ioByte ^= ioToggle;
 
         load_hex( initialBank );
- 
-        bios_ioByte ^= ioToggle;
 
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ initialBank ] );
 
-        fprintf(stdout,"Loaded Bank: %01X", initialBank );
+        fprintf(output,"Loaded Bank: %01X", initialBank );
     }    
     return 1;
 }  
@@ -455,21 +452,21 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 3 arguments to \"loadb\"\n");
+        fprintf(output, "yash: expected 3 arguments to \"loadb\"\n");
     } else {
         if (args[3] == NULL) {
             dest = (uint8_t *)0x0100;
         } else {
             dest = (uint8_t *)strtoul(args[3], NULL, 16);
         }
-        fprintf(stdout,"Opening \"%s\"", args[1]);
+        fprintf(output,"Opening \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
-        fputc('\n', stdout);
+        fputc('\n', output);
         if (res != FR_OK) {
             put_rc(res);
             return 1;
         }
-        fprintf(stdout,"Loading \"%s\" to %01X:%04X...", args[1], bank_get_abs((int8_t)atoi(args[2])), (uint16_t)dest );
+        fprintf(output,"Loading \"%s\" to %01X:%04X...", args[1], bank_get_abs((int8_t)atoi(args[2])), (uint16_t)dest );
 
         __critical
         {
@@ -506,7 +503,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        fprintf(output, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -528,18 +525,18 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL || args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"saveb\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"saveb\"\n");
     } else {
         origin = (uint8_t *)0x0100;
 
-        fprintf(stdout,"Creating \"%s\"...", args[2]);
+        fprintf(output,"Creating \"%s\"...", args[2]);
         res = f_open(&File[0], (const TCHAR *)args[2], FA_CREATE_ALWAYS | FA_WRITE);
-        fputc('\n', stdout);
+        fputc('\n', output);
         if (res != FR_OK) {
             put_rc(res);
             return 1;
         }
-        fprintf(stdout,"Saving Bank %01X to \"%s\"", bank_get_abs((int8_t)atoi(args[1])), args[2] );
+        fprintf(output,"Saving Bank %01X to \"%s\"", bank_get_abs((int8_t)atoi(args[1])), args[2] );
 
         __critical
         {
@@ -581,7 +578,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        fprintf(output, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -602,7 +599,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
     uint8_t * ptr;
 
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"md\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"md\"\n");
     } else {
         if (args[2] == NULL) {
              origin = (uint8_t *)strtoul(args[1], NULL, 16);
@@ -613,7 +610,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
     }
 
     memcpy_far(buffer, 0, (void *)origin, (int8_t)bank, 0x100); // grab a page
-    fprintf(stdout, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
+    fprintf(output, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
     origin += 0x100;                                    // go to next page (next time)
 
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x100; ptr += 16, ofs += 16) {
@@ -646,11 +643,11 @@ int8_t ya_help(char **args)
 
     (void *)args;
 
-    printf("YAZ180 - yabios v0.5\n");
+    printf("YAZ180 - yabios v0.6\n");
     printf("The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
-        fprintf(stdout,"  %s %s\n", builtins[i].name, builtins[i].help);
+        fprintf(output,"  %s %s\n", builtins[i].name, builtins[i].help);
     }
 
     return 1;
@@ -698,7 +695,7 @@ int8_t ya_ls(char **args)
         } else {
             s1++; p1 += Finfo.fsize;
         }
-        fprintf(stdout, "%c%c%c%c%c %u/%02u/%02u %02u:%02u %9lu  %s\n",
+        fprintf(output, "%c%c%c%c%c %u/%02u/%02u %02u:%02u %9lu  %s\n",
                 (Finfo.fattrib & AM_DIR) ? 'D' : '-',
                 (Finfo.fattrib & AM_RDO) ? 'R' : '-',
                 (Finfo.fattrib & AM_HID) ? 'H' : '-',
@@ -708,7 +705,7 @@ int8_t ya_ls(char **args)
                 (Finfo.ftime >> 11), (Finfo.ftime >> 5) & 63,
                 (DWORD)Finfo.fsize, Finfo.fname);
     }
-    fprintf(stdout, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
+    fprintf(output, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
     
     if(args[1] == NULL) {
         res = f_getfree( (const TCHAR*)".", (DWORD*)&p1, &fs);
@@ -716,7 +713,7 @@ int8_t ya_ls(char **args)
         res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
     }
     if (res == FR_OK) {
-        fprintf(stdout, ", %10lu bytes free\n", p1 * fs->csize * 512);
+        fprintf(output, ", %10lu bytes free\n", p1 * fs->csize * 512);
     } else {
         put_rc(res);
     }
@@ -733,7 +730,7 @@ int8_t ya_ls(char **args)
 int8_t ya_rm(char **args)       // delete a directory or file
 {
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"rm\"\n");
+        fprintf(output, "yash: expected 1 argument to \"rm\"\n");
     } else {
         put_rc(f_unlink((const TCHAR*)args[1]));
     }
@@ -756,24 +753,24 @@ int8_t ya_mv(char **args)       // copy a file
     uint8_t startTimeFraction, finishTimeFraction;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mv\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"mv\"\n");
     } else {
-        fprintf(stdout,"Opening \"%s\"", args[1]);
+        fprintf(output,"Opening \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
-        fputc('\n', stdout);
+        fputc('\n', output);
         if (res != FR_OK) {
             put_rc(res);
             return 1;
         }
-        fprintf(stdout,"Creating \"%s\"", args[2]);
+        fprintf(output,"Creating \"%s\"", args[2]);
         res = f_open(&File[1], (const TCHAR*)args[2], FA_CREATE_ALWAYS | FA_WRITE);
-        fputc('\n', stdout);
+        fputc('\n', output);
         if (res != FR_OK) {
             put_rc(res);
             f_close(&File[0]);
             return 1;
         }
-        fprintf(stdout,"Copying file...");
+        fprintf(output,"Copying file...");
 
         __critical
         {
@@ -804,7 +801,7 @@ int8_t ya_mv(char **args)       // copy a file
             finishTime -= startTime;
             finishTimeFraction -= startTimeFraction;
         }
-        fprintf(stdout, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        fprintf(output, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
     }
     return 1;
 }
@@ -818,7 +815,7 @@ int8_t ya_mv(char **args)       // copy a file
 int8_t ya_cd(char **args)
 {
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"cd\"\n");
+        fprintf(output, "yash: expected 1 argument to \"cd\"\n");
     } else {
         put_rc(f_chdir((const TCHAR*)args[1]));
     }
@@ -845,7 +842,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
         if (res != FR_OK) {
             put_rc(res);
         } else {
-            fprintf(stdout, "%s", directory);
+            fprintf(output, "%s", directory);
         }
     }
     free(directory);
@@ -861,7 +858,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
 int8_t ya_mkdir(char **args)    // create a new directory
 {
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"mkdir\"\n");
+        fprintf(output, "yash: expected 1 argument to \"mkdir\"\n");
     } else {
         put_rc(f_mkdir((const TCHAR*)args[1]));
     }
@@ -880,7 +877,7 @@ int8_t ya_chmod(char **args)    // change file or directory attributes
     (void *)args;
 #else
     if (args[1] == NULL && args[2] == NULL && args[3] == NULL) {
-        fprintf(stdout, "yash: expected 3 arguments to \"chmod\"\n");
+        fprintf(output, "yash: expected 3 arguments to \"chmod\"\n");
     } else {
         put_rc(f_chmod((const TCHAR*)args[1], atoi(args[2]), atoi(args[3])));
     }
@@ -903,10 +900,10 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
     ssize_t bufsize = 0;        // have getline allocate a buffer for us
     
     if (args[1] == NULL && args[2] == NULL ) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mkfs\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"mkfs\"\n");
     } else {
-        fprintf(stdout, "The drive will be erased and formatted. Are you sure [y/N]\n");
-        getline(&line, &bufsize, stdin);
+        fprintf(output, "The drive will be erased and formatted. Are you sure [y/N]\n");
+        getline(&line, &bufsize, input);
         if (line[0] == 'Y')
             put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(buffer)));
     }
@@ -924,7 +921,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
 int8_t ya_mount(char **args)    // mount a FAT file system
 {
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"mount\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"mount\"\n");
     } else {
         if (args[2] == NULL) {
         put_rc(f_mount(fs, "", atoi(args[1])));
@@ -953,11 +950,11 @@ int8_t ya_ds(char **args)       // disk status
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
     
     if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 1 argument to \"ds\"\n");
+        fprintf(output, "yash: expected 1 argument to \"ds\"\n");
     } else {
         res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
         if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(stdout, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
+        fprintf(output, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
                 "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
                 "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n\n",
                 ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
@@ -966,14 +963,14 @@ int8_t ya_ds(char **args)       // disk status
 #if FF_USE_LABEL
         res = f_getlabel((const TCHAR*)args[1], (char*)buffer, (DWORD*)&p2);
         if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(stdout, buffer[0] ? "Volume name is %s\n" : "No volume label\n", (char*)buffer);
-        fprintf(stdout, "Volume S/N is %04X-%04X\n", (DWORD)p2 >> 16, (DWORD)p2 & 0xFFFF);
+        fprintf(output, buffer[0] ? "Volume name is %s\n" : "No volume label\n", (char*)buffer);
+        fprintf(output, "Volume S/N is %04X-%04X\n", (DWORD)p2 >> 16, (DWORD)p2 & 0xFFFF);
 #endif
         AccSize = AccFiles = AccDirs = 0;
-        fprintf(stdout, "...");
+        fprintf(output, "...");
         res = scan_files(args[1]);
         if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(stdout, "\r%u files, %lu bytes.\n%u folders.\n"
+        fprintf(output, "\r%u files, %lu bytes.\n%u folders.\n"
                 "%lu KiB total disk space.\n%lu KiB available.\n",
                 AccFiles, AccSize, AccDirs,
                 (fs->n_fatent - 2) * (fs->csize / 2), (DWORD)p1 * (fs->csize / 2) );
@@ -1001,8 +998,8 @@ int8_t ya_dd(char **args)       // disk dump
     }
 
     res = disk_read(drv, buffer, sect, 1);
-    if (res != FR_OK) { fprintf(stdout, "rc=%d\n", (WORD)res); return 1; }
-    fprintf(stdout, "PD#:%u LBA:%lu\n", drv, sect++);
+    if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
+    fprintf(output, "PD#:%u LBA:%lu\n", drv, sect++);
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
         put_dump(ptr, ofs, 16);
     return 1;
@@ -1051,7 +1048,7 @@ int8_t ya_diso(char **args)     // print the local time in ISO std: 2013-03-23 0
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     isotime_r(&CurrTimeDate, timeStore);
-    fprintf(stdout, "%s\n", timeStore);
+    fprintf(output, "%s\n", timeStore);
 
     return 1;
 }
@@ -1073,7 +1070,7 @@ int8_t ya_date(char **args)     // print the local time: Sun Mar 23 01:03:52 201
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     asctime_r(&CurrTimeDate, timeStore);
-    fprintf(stdout, "%s\n", timeStore);
+    fprintf(output, "%s\n", timeStore);
 
     return 1;
 }
@@ -1098,7 +1095,7 @@ void put_rc (FRESULT rc)
     for (i = 0; i != res && *str; i++) {
         while (*str++) ;
     }
-    fprintf(stderr,"\r\nrc=%u FR_%s\r\n", res, str);
+    fprintf(error,"\r\nrc=%u FR_%s\r\n", res, str);
 }
 
 
@@ -1107,16 +1104,16 @@ void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt)
 {
     uint8_t i;
 
-    fprintf(stdout,"%08lX:", ofs);
+    fprintf(output,"%08lX:", ofs);
 
     for(i = 0; i < cnt; i++) {
-        fprintf(stdout," %02X", buff[i]);
+        fprintf(output," %02X", buff[i]);
     }
-    fputc(' ', stdout);
+    fputc(' ', output);
     for(i = 0; i < cnt; i++) {
-        fputc((buff[i] >= ' ' && buff[i] <= '~') ? buff[i] : '.', stdout);
+        fputc((buff[i] >= ' ' && buff[i] <= '~') ? buff[i] : '.', output);
     }
-    fputc('\n', stdout);
+    fputc('\n', output);
 }
 
 
@@ -1201,7 +1198,7 @@ char **ya_split_line(char *line)
                 tokens = (char **)realloc(tokens, bufsize * sizeof(char*));
                 if (tokens == NULL) {
                     free(tokens_backup);
-                    fprintf(stdout, "yash: tokens realloc failure\n");
+                    fprintf(output, "yash: tokens realloc failure\n");
                     exit(EXIT_FAILURE);
                 }
             }
@@ -1213,6 +1210,13 @@ char **ya_split_line(char *line)
     return tokens;
 }
 
+extern uint8_t asci0_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
+
 /**
    @brief Loop getting input and executing it.
  */
@@ -1221,18 +1225,48 @@ void ya_loop(void)
     char **args;
     int status;  
     char *line;
-    uint16_t len, slen;
+    uint16_t len;
+    uint16_t slen;
 
-    len = LINE_SIZE;
-    line = (char *)malloc(LINE_SIZE * sizeof(char));  /* Get work area for the line buffer */
-    
+    line = (char *)malloc(LINE_SIZE * sizeof(char));    /* Get work area for the line buffer */
+
     if (line == NULL) return;
 
-    do {
-        fprintf(stdout,"\n> ");
-        fflush(stdin);
+    asci0_flush_Rx_di();
+    asci1_flush_Rx_di();
 
-        slen = getline(&line, &len, stdin);
+    while (1){                                          /* look for ":" to select the valid serial port */
+        if (asci0_pollc() != 0) {
+            if (asci0_getc() == ':') {
+                input = stdin;
+                output = stdout;
+                error = stderr;
+                bios_ioByte = 1;
+                break;
+            } else {
+                asci0_flush_Rx_di();
+            }
+        }
+        if (asci1_pollc() != 0) {
+            if (asci1_getc() == ':') {
+                input = ttyin;
+                output = ttyout;
+                error = ttyerr;
+                bios_ioByte = 0;
+                break;
+            } else {
+                asci1_flush_Rx_di();
+            }
+        }
+    }
+
+    len = LINE_SIZE;
+
+    do {
+        fprintf(output,"\n> ");
+        fflush(input);
+
+        slen = getline(&line, &len, input);
         args = ya_split_line(line);
 
         status = ya_execute(args);
@@ -1262,9 +1296,9 @@ void main(int argc, char **argv)
 
     // Load config files, if any.
     
-    fprintf(stdout,"\r\nYAZ180 - yabios - CRT");
-    fprintf(ttyout,"\r\nYAZ180 - yabios - TTY");
-
+    fprintf(stdout, "\r\nYAZ180 - yabios - CRT\r\n");
+    fprintf(ttyout, "\r\nYAZ180 - yabios - TTY\r\n");
+ 
     // Run command loop if we got all the memory allocations we need.
     if ( fs && dir && buffer)
         ya_loop();

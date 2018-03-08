@@ -148,8 +148,6 @@ wboote:
 
 boot:       ;simplest case is to just perform parameter initialization
     xor     a               ;zero in the accum
-    ld      hl, _cpm_iobyte ;set iobyte to 00000001b
-    ld      (hl), 00000001b
     ld      (_cpm_cdisk), a ;select disk zero
 
     ld      (_cpm_ccp_tfcb), a
