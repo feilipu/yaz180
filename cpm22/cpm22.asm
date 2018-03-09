@@ -411,19 +411,19 @@ DELBATCH:
 ;   Check to two strings at (PATTRN1) and (PATTRN2). They must be
 ;   the same or we halt....
 ;
-VERIFY:
-    LD    DE,PATTRN1    ;these are the serial number bytes.
-    LD    HL,PATTRN2    ;ditto, but how could they be different?
-    LD    B,6        ;6 bytes each.
-VERIFY1:
-    LD    A,(DE)
-    CP    (HL)
-    JP    NZ,HALT        ;jump to halt routine.
-    INC    DE
-    INC    HL
-    DEC    B
-    JP    NZ,VERIFY1
-    RET    
+;VERIFY:
+;   LD    DE,PATTRN1    ;these are the serial number bytes.
+;   LD    HL,PATTRN2    ;ditto, but how could they be different?
+;   LD    B,6        ;6 bytes each.
+;VERIFY1:
+;   LD    A,(DE)
+;   CP    (HL)
+;   JP    NZ,HALT        ;jump to halt routine.
+;   INC    DE
+;   INC    HL
+;   DEC    B
+;   JP    NZ,VERIFY1
+;   RET    
 ;
 ;   Print back file name with a '?' to indicate a syntax error.
 ;
@@ -627,7 +627,7 @@ GETEXT9:
 ;
 ;   CP/M command table. Note commands can be either 3 or 4 characters long.
 ;
-DEFC    NUMCMDS =   6        ;number of commands
+DEFC    NUMCMDS =   7        ;number of commands
 CMDTBL:
     DEFM    "DIR "
     DEFM    "ERA "
@@ -635,12 +635,13 @@ CMDTBL:
     DEFM    "SAVE"
     DEFM    "REN "
     DEFM    "USER"
+    DEFM    "EXIT"
 ;
 ;   The following six bytes must agree with those at (PATTRN2)
 ;   or cp/m will HALT. Why?
 ;
-PATTRN1:
-    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
+;PATTRN1:
+;    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
 ;
 ;   Search the command table for a match with what has just
 ;   been entered. If a match is found, then we jump to the
@@ -759,7 +760,7 @@ CMMND2:
 ;
 CMDADR:
     DEFW    DIRECT,ERASE,TYPE,SAVE
-    DEFW    RENAME,USER,UNKNOWN
+    DEFW    RENAME,USER,EXIT,UNKNOWN
 ;
 ;   Halt the system. Reason for this is unknown at present.
 ;
@@ -1193,15 +1194,31 @@ EXISTS:
 ;**************************************************************
 ;
 USER:
-    CALL    DECODE        ;get numeric value following command.
-    CP    16        ;legal user number?
-    JP    NC,SYNERR
-    LD    E,A        ;yes but is there anything else?
-    LD    A,(FCB+1)
-    CP    ' '
-    JP    Z,SYNERR    ;yes, that is not allowed.
+    CALL    DECODE      ;get numeric value following command.
+    CP      16          ;legal user number?
+    JP      NC,SYNERR
+    LD      E,A         ;yes but is there anything else?
+    LD      A,(FCB+1)
+    CP      ' '
+    JP      Z,SYNERR    ;yes, that is not allowed.
     CALL    GETSETUC    ;ok, set user code.
-    JP    GETBACK1
+    JP      GETBACK1
+;
+;**************************************************************
+;*
+;*             E X I T   C O M M A N D
+;*
+;**************************************************************
+;
+EXTERN _exit_far
+;
+EXIT:
+    LD      BC,EXIT_MSG ;notify exit to yabios
+    CALL    PLINE
+    JP      _exit_far   ;jump to yabios BANK_0
+;
+EXIT_MSG:
+    DEFM    "Exiting CP/M",0
 ;
 ;**************************************************************
 ;*
@@ -1210,7 +1227,7 @@ USER:
 ;**************************************************************
 ;
 UNKNOWN:
-    CALL    VERIFY        ;check for valid system (why?).
+;   CALL    VERIFY        ;check for valid system (why?).
     LD    A,(FCB+1)    ;anything to execute?
     CP    ' '
     JP    NZ,UNKWN1
@@ -1386,7 +1403,7 @@ CCPSTACK:                   ;top of ccp stack area.
 ;   Note that the following six bytes must match those at
 ;   (PATTRN1) or cp/m will HALT. Why?
 ;
-PATTRN2:    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
+;PATTRN2:    DEFM    0,22,0,0,0,0    ;(* serial number bytes *).
 
 ;
 ;**************************************************************
