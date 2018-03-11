@@ -21,7 +21,7 @@ The ASCI Tx buffers share a single page, and are interleaved. This provides 127 
 
 So that the Z80 jump and Z180 vector tables don't have to be moved, put them at the top. Therefore the Z80 `__IO_VECTOR_BASE` is `$FFE0`, and with the Z180 `__crt_io_vector_base` being `0x00` bytes later at `$FFE0`.
 
-That puts the initial system stack pointer at `$FFC0`, with two bytes available at `$FFC0` to enable the global SP to be stored, when local SP is switched over.
+That puts the initial system stack pointer at `$FFDE` (pre-decrement), with two bytes available from `$FFDE` to enable the global SP to be stored, when local SP is switched over.
 
 ## Modifying the memory model
 
@@ -92,7 +92,7 @@ It also generates a `yabios.def` file containing the calling linkages for the pa
 
 ## Loading Flash from outside yabios
 
-It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal.
+It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal. The v2.1 PCB doesn't connect A17 to the flash, so it is limited to 128kB. The CUPL has been modified to put the upper page in `BANK15`. Other CUPL options are commented out, for v2.2 PCB which has both A17 and A18 connected.
 
 ## CP/M Implementation
 
@@ -100,10 +100,12 @@ The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT 
 
 ```bash
 > zcc +yaz180 --no-crt -m --list @cpm22.lst -o cpm22; appmake +glue -b cpm22 --ihex --clean
-> cat > /dev/ttyUSB0 < cpm22__.ihx 
+> cat > /dev/ttyUSB0 < cpm22__.ihx
 ```
 
 I've added the `_f_expand()` function into the FATFs implementation, as this will allow the YABIOS command line to create a correctly sized CP/M drive, which can then be added / or exchanged for other drives simply by renaming it. Formatting and other CP/M "disk" management will be done from within CP/M, using the YABIOS tools.
+
+I've added an `EXIT` function into the CP/M CCP. This is to allow the CP/M system to terminate and return to yabios in `BANK_0` successfully. CP/M can be reinitialised, simply with the `initb x 0` command.
 
 ## CP/M TOOLS Usage
 
@@ -156,7 +158,17 @@ diskdef yaz180-8MB
 end
 ```
 
-## Layout problem - January 31, 2018
+## CP/M System Disk
+
+I have found that the [RunCPM system disk](https://github.com/MockbaTheBorg/RunCPM/tree/master/DISK) contains a good package of CP/M utilities, that can just be loaded onto a disk for a complete ready to run CP/M.
+
+I've also found the [NGS Microshell](http://www.z80.eu/microshell.html) to be very useful, so I add it to my system disk too. No need to add it permanently. In fact, adding it will remove the special `EXIT` function I built into the CCP to return to yabios.
+
+## Layout issue - January 31, 2018 - PCB v2.1
 
 Noted that I selected the wrong device for the flash, being the 128kB version. This means that the Address 17 pin is not connected, by accident. When doing the v2.2 PCB, I will next select the 512kB device, and connect both A17 and A18 to the flash device, as this will provide some extra flexibility, if more flash memory is required.
+
+## Layout issue - March 1, 2018 - PCB v2.2
+
+The ESP-01S can't have the DIO lines pull high when booting. This means that the two DIO pins on the connecter must be removed, to prevent these lines from contacting.
 

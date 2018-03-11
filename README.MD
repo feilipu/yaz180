@@ -278,9 +278,9 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 Please see here for status of yabios [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load either [yabios v0.4](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
+Currently the YAZ180 is initialised to load either [yabios v0.6](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_far_call` capability to allow applications to grow beyond 60kB. There is support for CP/M drives as Fat32 files on an IDE drive.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_call_far` capability to allow applications to grow beyond 60kB. There is support for CP/M drives as Fat32 files on an IDE drive.
 
 ## Z88dk
 
@@ -291,3 +291,7 @@ The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File
 CP/M is complete with the console I/O, and the underlying disk sub-system working. Integration of CP/M disks as FAT32 files has also been completed. CP/M can be booted off the Flash snapshot and can load transient programs from FATFS files (read as CP/M drives).
 
 CP/M drive files can be read and written using a host PC with any operating system, by using the [`cpmtools`](http://www.moria.de/~michael/cpmtools/) utilities, simply by inserting the IDE drive in a USB drive caddy.
+
+## Construction Notes
+
+There are some [construction notes](https://github.com/feilipu/yaz180/tree/master/construction_notes.md) with errata, to advise on how to build the YAZ180.
