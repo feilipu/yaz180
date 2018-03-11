@@ -12,11 +12,11 @@ Also, please note that the soldering for the TSSOP SMD devices is quite hard. I 
 
 ## PCB Version 2.1
 
-I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed.
+I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by [three small cuts](https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png), as shown.
 
 ## PCB Version 2.2
 
-The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB.
+The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification and the fix for PCB v2.1 is [shown in this file](https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG).
 
 
 
