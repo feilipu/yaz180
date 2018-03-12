@@ -20,7 +20,7 @@ I found the ESP-01S doesn't need to have a level converter, because it has 5V to
 
 ## PCB Version 2.2 (2018)
 
-The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown below.
+The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown above.
 
 
 
