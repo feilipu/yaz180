@@ -10,13 +10,13 @@ And so, here it is.
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 Left<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Left<center></th>
 </tr>
 <tr>
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 Right<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Right<center></th>
 </tr>
 </tbody>
 </table>
@@ -77,13 +77,13 @@ This is the maximum size supported by the Eagle "Hobby Licence", which was used 
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1.png"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB Layout<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB 2017 Layout<center></th>
 </tr>
 <tr>
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 PCB 2017<center></th>
 </tr>
 </tbody>
 </table>

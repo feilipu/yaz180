@@ -10,13 +10,17 @@ Finally, I use a TL866 to program the Lattice GAL devices, and the Flash with th
 
 Also, please note that the soldering for the TSSOP SMD devices is quite hard. I have a bit of trouble with these myself and I still don't have a perfect workflow for getting the RAM and FTDI devices soldered right every time.
 
-## PCB Version 2.1
+## PCB Version 2.1 (2017)
 
-I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by [three small cuts](https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png), as shown.
+I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by three small cuts, as shown.
 
-## PCB Version 2.2
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png"/></a>
 
-The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification and the fix for PCB v2.1 is [shown in this file](https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG).
+## PCB Version 2.2 (2018)
+
+The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown below.
+
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG"/></a>
 
 
 
