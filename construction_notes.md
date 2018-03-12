@@ -12,15 +12,16 @@ Also, please note that the soldering for the TSSOP SMD devices is quite hard. I 
 
 ## PCB Version 2.1 (2017)
 
-I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by three small cuts, as shown.
+I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by three small cuts, as shown. The Z80 ASCI1 TX line can be bridged with a resistor, between 0 Ohms and 1000 Ohms. I used 220 Ohms. The Z80 ASCI1 RX line can be bridged with a very short piece of wire, as shown.
 
-<a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png"/></a>
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.1errata.png" width="400"/></a>
+
+<a href="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG" width="400"/></a>
 
 ## PCB Version 2.2 (2018)
 
 The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown below.
 
-<a href="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/IMG_1339.JPG"/></a>
 
 
 
