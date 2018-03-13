@@ -3,7 +3,7 @@
   @file         main.c
   @author       Phillip Stevens, inspired by Stephen Brennan
   @brief        YASH (Yet Another SHell)
-  
+
   This programme was reached working state on Melbourne Cup Day, 2017.
 
 *******************************************************************************/
@@ -160,7 +160,7 @@ uint8_t ya_num_builtins() {
 // CP/M related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mkcpmb".  args[1] is the source bank.  args[2] is the CP/M destination bank.
                               args[3][4][5][6] are names of drive files.
    @return Always returns 1, to continue executing.
@@ -170,11 +170,11 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     FRESULT res;
     uint8_t * page0Template;
     uint8_t srcBank;
-    uint8_t destBank;    
+    uint8_t destBank;
     uint8_t i = 0;
-    
+
     uint32_t driveLBAbase[4] = {0,0,0,0};
-    
+
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
@@ -185,7 +185,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
         {
             srcBank = bank_get_abs((int8_t)atoi(args[1]));
             destBank = bank_get_abs((int8_t)atoi(args[2]));
-            
+
             memcpy( page0Template, (uint8_t *)0x0000, PAGE0_SIZE ); // copy the existing ROM Page0 to our working space
             // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
 
@@ -204,7 +204,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
                 }
                 driveLBAbase[i] = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
                 f_close(&File[0]);
-                i++;                // go to next file            
+                i++;                // go to next file
             }
 
             // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
@@ -244,7 +244,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mkcpmd".  args[1] is the nominated drive name.
                               args[2] is the number of directory entries,  args[3] is file size in bytes.
    @return Always returns 1, to continue executing.
@@ -271,12 +271,12 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
         res = f_expand(&File[0], atol(args[3]), 1);
         if (res != FR_OK) {
             put_rc(res);
-            f_close(&File[0]); 
+            f_close(&File[0]);
             return 1;
-        } 
-        
+        }
+
         dirEntries = atoi(args[2]);
-        
+
         for (uint16_t i = 0; i < dirEntries; i++) {
 
             // There are 4 Directory Entries (Extents) per CPM sector
@@ -284,7 +284,7 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
             if (res != FR_OK || dirBytesWritten != 32) {
                 fprintf(output, "\nCP/M Directory incomplete");
                 put_rc(res);
-                f_close(&File[0]);   
+                f_close(&File[0]);
                 return 1;
             }
         }
@@ -301,7 +301,7 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
 // bank related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mkb".  args[1] is the nominated bank.
    @return Always returns 1, to continue executing.
  */
@@ -316,14 +316,11 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         memcpy(page0Template, (uint8_t *)0x0000, PAGE0_SIZE); // copy the existing ROM Page0 to our working space
         // existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100.
         // existing RST jumps and INT0 code is correctly copied.
-        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKnn       
-        
+        *(volatile uint16_t*)(page0Template + (uint16_t)&bank_sp) = __COMMON_AREA_1_BASE; // set the new bank SP to point to top of BANKnn
         // do the copy
         memcpy_far((void *)0x0000, (int8_t)atoi(args[1]), page0Template, 0, PAGE0_SIZE);
-        
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
-
         fprintf(output,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
     free(page0Template);
@@ -332,7 +329,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mvb".  args[1] is source bank. args[2] is the destination bank.
    @return Always returns 1, to continue executing.
  */
@@ -342,18 +339,16 @@ int8_t ya_mvb(char **args)      // move or clone the nominated bank
     {
         // do the copy
         memcpy_far((void *)0x0000, (int8_t)atoi(args[2]), (void *)0x0000, (int8_t)atoi(args[1]), (__COMMON_AREA_1_BASE-0)); // copy it all
-        
         // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
-
         fprintf(output,"Cloned Bank:%01X into Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
     }
     return 1;
-} 
+}
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "rmb".  args[1] is the nominated bank.
    @return Always returns 1, to continue executing.
  */
@@ -364,9 +359,7 @@ int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
     } else {
         // set bank referenced from _bankLockBase, so the the bank is noted as cold.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
-        
         memset_far((void *)0x0000, (int8_t)atoi(args[1]), 0x76, (__COMMON_AREA_1_BASE-0)); // copy HALT to our deleted BANK
-        
         fprintf(output,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
    return 1;
@@ -374,7 +367,7 @@ int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "lsb".
    @return Always returns 1, to continue executing.
  */
@@ -386,7 +379,7 @@ int8_t ya_lsb(char **args)      // list the usage of banks, and whether they are
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "initb".  args[1] is the nominated bank. args[2] is the nominated origin.
    @return only returns when the jumped to bank exits.
  */
@@ -395,7 +388,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
     uint8_t * origin;
     uint8_t bank;
 
-    if (args[1] == NULL || args[2] == NULL) {
+    if (args[1] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"initb\"\n");
     } else {
         if (args[2] == NULL) {
@@ -411,7 +404,7 @@ int8_t ya_initb(char **args)    // jump to and begin executing the nominated ban
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "loadh".  args[1] is the nominated initial bank.
    @return Always returns 1, to continue executing.
  */
@@ -423,20 +416,17 @@ int8_t ya_loadh(char **args)    // load the nominated bank with intel hex using 
         fprintf(output, "yash: expected 1 argument to \"loadh\"\n");
     } else {
         initialBank = bank_get_abs((int8_t)atoi(args[1]));
-
         load_hex( initialBank );
-
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ initialBank ] );
-
         fprintf(output,"Loaded Bank: %01X", initialBank );
-    }    
+    }
     return 1;
-}  
+}
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "loadb".  args[1] is the path.
         args[2] is the nominated bank. args[3] is the origin address.
    @return Always returns 1, to continue executing.
@@ -510,7 +500,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "saveb".  args[1] is the nominated bank. args[2] is the filename / directory
    @return Always returns 1, to continue executing.
  */
@@ -554,9 +544,9 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
             }
 
             if ( s1 == 0) break;                /* end of BANK at (__COMMON_AREA_1_BASE-1) */
-            
+
             res = f_write(&File[0], buffer, s1, &s2);
-            origin += s2;            
+            origin += s2;
             p1 += s2;
             if (res != FR_OK || s2 < s1) break; /* error or disk full */
         }
@@ -587,12 +577,12 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
 // system related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "md". args[1] is the nominated bank. args[2] is the origin address.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_md(char **args)       // dump RAM contents from nominated bank from nominated origin.
-{  
+{
     static uint8_t * origin;
     static uint8_t bank;
     uint32_t ofs;
@@ -605,7 +595,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
              origin = (uint8_t *)strtoul(args[1], NULL, 16);
         } else {
             bank = bank_get_abs((int8_t)atoi(args[1]));
-            origin = (uint8_t *)strtoul(args[2], NULL, 16);        
+            origin = (uint8_t *)strtoul(args[2], NULL, 16);
         }
     }
 
@@ -621,12 +611,12 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "reset".
    @return Always returns 1, to continue executing.
  */
 int8_t ya_reset(char **args)    // reset YAZ180 to cold start, clear all bank information
-{  
+{
     (void *)args;
     return 0;
 }
@@ -660,7 +650,7 @@ int8_t ya_help(char **args)
    @return Always returns 0, to terminate execution.
  */
 int8_t ya_exit(char **args)
-{   
+{
     (void *)args;
     return 0;
 }
@@ -669,7 +659,7 @@ int8_t ya_exit(char **args)
 // fat related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "ls".  args[1] is the path.
    @return Always returns 1, to continue executing.
  */
@@ -706,7 +696,7 @@ int8_t ya_ls(char **args)
                 (DWORD)Finfo.fsize, Finfo.fname);
     }
     fprintf(output, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
-    
+
     if(args[1] == NULL) {
         res = f_getfree( (const TCHAR*)".", (DWORD*)&p1, &fs);
     } else {
@@ -723,7 +713,7 @@ int8_t ya_ls(char **args)
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "rm".  args[1] is the directory or file.
    @return Always returns 1, to continue executing.
  */
@@ -739,7 +729,7 @@ int8_t ya_rm(char **args)       // delete a directory or file
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mv".  args[1] is the src, args[2] is the dst
    @return Always returns 1, to continue executing.
  */
@@ -793,7 +783,7 @@ int8_t ya_mv(char **args)       // copy a file
 
         f_close(&File[1]);
         f_close(&File[0]);
-        
+
         if(finishTimeFraction < startTimeFraction) {
             finishTime -= (startTime+1);
             finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
@@ -824,19 +814,19 @@ int8_t ya_cd(char **args)
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "pwd".
    @return Always returns 1, to continue executing.
  */
 int8_t ya_pwd(char **args)      // show the current working directory
-{  
+{
     FRESULT res;
     uint8_t * directory;                         /* put directory buffer on heap */
 
-    (void *)args;    
-    
+    (void *)args;
+
     directory = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));     /* Get area for directory buffer */
-    
+
     if (directory != NULL) {
         res = f_getcwd(directory, sizeof(directory));
         if (res != FR_OK) {
@@ -851,7 +841,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mkdir".  args[1] is the directory.
    @return Always returns 1, to continue executing.
  */
@@ -867,7 +857,7 @@ int8_t ya_mkdir(char **args)    // create a new directory
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "chmod".  args[1] is the directory.
    @return Always returns 1, to continue executing.
  */
@@ -887,7 +877,7 @@ int8_t ya_chmod(char **args)    // change file or directory attributes
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mkfs".  args[1] is the type, args[2] is the block size.
    @return Always returns 1, to continue executing.
  */
@@ -898,7 +888,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
 #else
     char *line = NULL;
     ssize_t bufsize = 0;        // have getline allocate a buffer for us
-    
+
     if (args[1] == NULL && args[2] == NULL ) {
         fprintf(output, "yash: expected 2 arguments to \"mkfs\"\n");
     } else {
@@ -914,7 +904,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "mount". args[1] is the path, args[2] is the option byte.
    @return Always returns 1, to continue executing.
  */
@@ -936,7 +926,7 @@ int8_t ya_mount(char **args)    // mount a FAT file system
 // disk related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "ds".  args[1] is the drive.
    @return Always returns 1, to continue executing.
  */
@@ -948,7 +938,7 @@ int8_t ya_ds(char **args)       // disk status
     int32_t p2;
 #endif
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
-    
+
     if (args[1] == NULL) {
         fprintf(output, "yash: expected 1 argument to \"ds\"\n");
     } else {
@@ -980,7 +970,7 @@ int8_t ya_ds(char **args)       // disk status
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector hex.
    @return Always returns 1, to continue executing.
  */
@@ -1009,7 +999,7 @@ int8_t ya_dd(char **args)       // disk dump
 // time related functions
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "clock".  args[1] is the UNIX time.
    @return Always returns 1, to continue executing.
  */
@@ -1021,7 +1011,7 @@ int8_t ya_clock(char **args)    // set the time (using UNIX epoch)
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "tz".  args[1] is TZ offset in hours.
    @return Always returns 1, to continue executing.
  */
@@ -1033,18 +1023,18 @@ int8_t ya_tz(char **args)       // set timezone (no daylight savings, so adjust 
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "diso".
    @return Always returns 1, to continue executing.
  */
 int8_t ya_diso(char **args)     // print the local time in ISO std: 2013-03-23 01:03:52
 {
-    time_t theTime;    
+    time_t theTime;
     struct tm CurrTimeDate;     // set up an array for the RTC info.
     char timeStore[26];
 
     (void *)args;
-    
+
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     isotime_r(&CurrTimeDate, timeStore);
@@ -1055,18 +1045,18 @@ int8_t ya_diso(char **args)     // print the local time in ISO std: 2013-03-23 0
 
 
 /**
-   @brief Builtin command: 
+   @brief Builtin command:
    @param args List of args.  args[0] is "date".
    @return Always returns 1, to continue executing.
  */
 int8_t ya_date(char **args)     // print the local time: Sun Mar 23 01:03:52 2013
 {
-    time_t theTime;    
+    time_t theTime;
     struct tm CurrTimeDate;     // set up an array for the RTC info.
     char timeStore[26];
 
     (void *)args;
-    
+
     time(&theTime);
     localtime_r(&theTime, &CurrTimeDate);
     asctime_r(&CurrTimeDate, timeStore);
@@ -1086,10 +1076,10 @@ void put_rc (FRESULT rc)
         "INVALID_NAME\0" "DENIED\0" "EXIST\0" "INVALID_OBJECT\0" "WRITE_PROTECTED\0"
         "INVALID_DRIVE\0" "NOT_ENABLED\0" "NO_FILE_SYSTEM\0" "MKFS_ABORTED\0" "TIMEOUT\0"
         "LOCKED\0" "NOT_ENOUGH_CORE\0" "TOO_MANY_OPEN_FILES\0" "INVALID_PARAMETER\0";
-    
+
     FRESULT i;
     uint8_t res;
-    
+
     res = (uint8_t)rc;
 
     for (i = 0; i != res && *str; i++) {
@@ -1181,9 +1171,9 @@ char **ya_split_line(char *line)
     uint16_t position = 0;
     char *token;
     char **tokens, **tokens_backup;
-     
+
     tokens = (char **)malloc(bufsize * sizeof(char*));
-    
+
     if (tokens && line)
     {
         token = strtok(line, YA_TOK_DELIM);
@@ -1206,7 +1196,7 @@ char **ya_split_line(char *line)
             token = strtok(NULL, YA_TOK_DELIM);
         }
         tokens[position] = NULL;
-    }    
+    }
     return tokens;
 }
 
@@ -1223,7 +1213,7 @@ extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 rec
 void ya_loop(void)
 {
     char **args;
-    int status;  
+    int status;
     char *line;
     uint16_t len;
     uint16_t slen;
@@ -1270,7 +1260,7 @@ void ya_loop(void)
         args = ya_split_line(line);
 
         status = ya_execute(args);
-        free(args);            
+        free(args);
 
     } while (status);
 }
@@ -1283,7 +1273,7 @@ void ya_loop(void)
    @return status code
  */
 void main(int argc, char **argv)
-{  
+{
     (void)argc;
     (void *)argv;
 
@@ -1295,7 +1285,7 @@ void main(int argc, char **argv)
     buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));    /* Get working buffer space */
 
     // Load config files, if any.
-    
+
     fprintf(stdout, "\r\nYAZ180 - yabios - CRT\r\n");
     fprintf(ttyout, "\r\nYAZ180 - yabios - TTY\r\n");
  
@@ -1304,7 +1294,6 @@ void main(int argc, char **argv)
         ya_loop();
 
     // Perform any shutdown/cleanup.
-    
     free(buffer);
     free(dir);
     free(fs);
