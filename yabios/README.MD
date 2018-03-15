@@ -44,7 +44,7 @@ Each one of these items will need to be implemented.
 
 ### Phase 1 - Z88dk application support
 
-- [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far), [`_memset_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memset_far) functions
+- [x] [`_memcpy_far`](https://github.com/feilipu/yaz180/tree/master/yabios#_memcpy_far)function
 - [x] [`_load_hex`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_hex)
 - [x] [`_load_bin`](https://github.com/feilipu/yaz180/tree/master/yabios#_load_bin) functions
 - [x] [Command Line Interface](https://github.com/feilipu/yaz180/tree/master/yabios#command-line-interface)
@@ -53,6 +53,8 @@ Each one of these items will need to be implemented.
 - [x] [`RST+DEFB` Error Handler](https://github.com/feilipu/yaz180/tree/master/yabios#rst8defb-error-handler)
 - [x] Integrate existing FatFs code for IDE interface on 82C55.
 - [x] I/O redirection for CP/M IOBYTE support
+
+Note: `_memset_far` was deleted as there was insufficient space in CA1 memory.
 
 ### Phase 2 - CP/M application support
 
@@ -314,43 +316,6 @@ Notes:
 No checking is done to prevent writing to the `PAGE0` region, as this will be a common requirement.
 
 Memory copying is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
-
-### `_memset_far`
-
-`void *memset_far(void *str, int8_t bank, const int16_t c, size_t n)`<br>
-`str` − This is a pointer to the block of memory to fill, type-cast to a pointer of type `far void*`.<br>
-`bank` − This is the bank address, relative to the current bank.
-`c` − This is the value to be set. The value is passed as an int, but the function fills the block of memory using the unsigned char conversion of this value.<br>
-`n` − This is the number of bytes to be set to the value `c`.<br>
-
-This function returns a `void*` pointer to the memory area `str` in `HL`.
-
-IN:
-
-    stack:
-    n high
-    n low
-    c high
-    c low
-    bank far
-    str high
-    str low
-    ret high
-    ret low
-
-OUT:
-    HL = `void*` to `str`
-
-Registers affected after return:
-```
-    ..BC..../IXIY   preserved
-    AF..DEHL/....   modified
-```
-Notes:
-
-No checking is done to prevent writing to `PAGE0` regions, as this will be a common requirement.
-
-Memory setting is done with DMAC0, using burst mode. This means that the CPU is halted during the transfer. This affects processing of other interrupts.
 
 ### `_load_hex`
 

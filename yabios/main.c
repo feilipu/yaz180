@@ -236,8 +236,8 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             lock_give( &bankLockBase[ destBank ] );
 
             fprintf(output,"Initialised Bank: %01X, for CP/M", destBank);
+            free(page0Template);            
         }
-        free(page0Template);
     }
     return 1;
 }
@@ -322,8 +322,8 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
         fprintf(output,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
+        free(page0Template);        
     }
-    free(page0Template);
     return 1;
 }
 
@@ -359,7 +359,6 @@ int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
     } else {
         // set bank referenced from _bankLockBase, so the the bank is noted as cold.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
-        memset_far((void *)0x0000, (int8_t)atoi(args[1]), 0x76, (__COMMON_AREA_1_BASE-0)); // copy HALT to our deleted BANK
         fprintf(output,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
    return 1;
@@ -834,8 +833,8 @@ int8_t ya_pwd(char **args)      // show the current working directory
         } else {
             fprintf(output, "%s", directory);
         }
+        free(directory);        
     }
-    free(directory);
     return 1;
 }
 
@@ -896,8 +895,8 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
         getline(&line, &bufsize, input);
         if (line[0] == 'Y')
             put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(buffer)));
+        free(line);
     }
-    free(line);
 #endif
     return 1;
 }

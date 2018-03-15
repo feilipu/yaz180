@@ -79,6 +79,12 @@ The boot monitor code will be the major program located in `BANK_0` Flash, and t
 
 I modified the `call_far` code to make a `jp_far` using the `RSTx + DEFW + DEFC` mechanism, but forgot that a `jp` instruction doesn't push the `PC` onto the stack. Therefore there is no way to know from whence the program arrived, when it hits the `rst` instruction. Damn. It would have been so nice to just switch banks like that. I guess the only way to do it is off the stack (costing the ability to pass some parameters).
 
+## Stack Canary
+
+After finding there were stack issues, I built a canary that `xor` two bytes. These two bytes are located at the end of the CA1 code, and are the first thing the bios stack will grow down to meet. The stack canary is checked once per second by the system tick. An error code of `0x40` will be printed on the console if the stack collides with the CA1 code.
+
+As part of resolving this issue, I had to delete the `_memset_far` function. I think it was the most unnecessary piece of code of all the functions in CA1.
+
 ## Compilation Command Line
 
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
