@@ -1,4 +1,16 @@
 ;
+;
+;**************************************************************
+;*
+;*             C P / M   version   2 . 2
+;*
+;*   Reconstructed from memory image on February 27, 1981
+;*
+;*                by Clark A. Calkins
+;*
+;**************************************************************
+;
+;
 ; Converted to z88dk z80asm for YAZ180 by
 ; Phillip Stevens @feilipu https://feilipu.me
 ; December 2017
@@ -11,18 +23,6 @@ EXTERN  _cpm_ccp_tbuff
 EXTERN  _cpm_ccp_tbase
 
 EXTERN  __cpm_bdos_head
-
-;**************************************************************
-;*
-;*             C P / M   version   2 . 2
-;*
-;*   Reconstructed from memory image on February 27, 1981
-;*
-;*                by Clark A. Calkins
-;*
-;**************************************************************
-;
-;
 ;
 
 DEFC    IOBYTE      =       _cpm_iobyte     ;i/o definition byte
@@ -49,6 +49,7 @@ DEFC    CNTRLU      =   15H     ;control-u
 DEFC    CNTRLX      =   18H     ;control-x
 DEFC    CNTRLZ      =   1AH     ;control-z (end-of-file mark)
 DEFC    DEL         =   7FH     ;rubout
+
 ;
 ;   Set origin for CP/M
 ;
@@ -73,7 +74,6 @@ INPOINT:
 NAMEPNT:
     DEFW    0           ;input line pointer used for error message. Points to
                         ;start of name in error.
-
 ;
 ;   Routine to print (A) on the console. All registers used.
 ;
@@ -698,12 +698,12 @@ COMMAND:
     PUSH    BC              ;note that (C) should be equal to:
     LD      A,C             ;(uuuudddd) where 'uuuu' is the user number
     RRA                     ;and 'dddd' is the drive number.
-    RRA    
-    RRA    
-    RRA    
+    RRA
+    RRA
+    RRA
     AND     0FH             ;isolate the user number.
     LD      E,A
-    CALL    GETSETUC        ;and set it.   
+    CALL    GETSETUC        ;and set it.
     CALL    RESDSK          ;reset the disk system.
     LD      (BATCH),A       ;clear batch mode flag.
     POP     BC

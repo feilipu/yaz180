@@ -246,10 +246,10 @@ diskchk:
     jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
     jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
-
 ;=============================================================================
 ; Console I/O routines
 ;=============================================================================
+
 const:      ;console status, return 0ffh if character ready, 00h if not
     ld      a,(_cpm_iobyte)
     and     00001011b       ;mask off console and high bit of reader
@@ -520,6 +520,7 @@ alloc:
 ;*    Common code for READ and WRITE follows         *
 ;*                                                   *
 ;*****************************************************
+
 rwoper:
 ;           enter here to perform the read/write
     xor     a               ;zero to accum
@@ -628,6 +629,7 @@ rwmove:
 ;*    Utility subroutine for 16-bit compare          *
 ;*                                                   *
 ;*****************************************************
+
 sektrkcmp:
 ;           HL = unatrk or hsttrk, compare with sektrk
     ex      de,hl
@@ -650,9 +652,6 @@ sektrkcmp:
 ;*    disk.                                          *
 ;*                                                   *
 ;*****************************************************
-
-EXTERN ide_write_sector
-EXTERN ide_read_sector
 
 writehst:
     ;hstdsk = host disk #,

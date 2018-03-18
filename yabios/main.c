@@ -59,7 +59,7 @@ int8_t ya_mvb(char **args);     // move or clone the nominated bank
 int8_t ya_rmb(char **args);     // remove the nominated bank (to cold state)
 int8_t ya_lsb(char **args);     // list the usage of banks, and whether they are cold, warm, or hot
 int8_t ya_initb(char **args);   // jump to and begin executing the nominated bank at nominated address
-int8_t ya_loadh(char **args);   // load the nominated bank with intel hex from asci
+int8_t ya_loadh(char **args);   // load the nominated bank with intel hex from ascii
 int8_t ya_loadb(char **args);   // load the nominated bank and address with binary code
 int8_t ya_saveb(char **args);   // save the nominated bank from 0x0100 to 0xF000 by default
 
