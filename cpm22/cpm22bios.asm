@@ -9,6 +9,7 @@ INCLUDE "config_yaz180_private.inc"
 EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
 EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
 EXTERN  _asci0_flush_Rx_di, _asci1_flush_Rx_di
+EXTERN  ide_write_sector, ide_read_sector
 
 EXTERN  _dmac0Lock
 

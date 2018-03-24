@@ -21,11 +21,15 @@
 #include <lib/yaz180/ff.h>
 #include <lib/yaz180/time.h>
 
+// DEFINES
+
 #define MAX_FILES 4             // number of files open at any time
 #define BUFFER_SIZE 1024        // size of working buffer (on heap)
 #define LINE_SIZE 256           // size of a command line (on heap)
 
 #define PAGE0_SIZE 0x0100       // size of a Page0 copy buffer (on heap)
+
+// GLOBALS
 
 static void * buffer;           /* create a scratch buffer on heap later */
 
@@ -35,16 +39,14 @@ static DIR *dir;                /* Pointer to the directory object (on heap) */
 static FILINFO Finfo;           /* File Information */
 static FIL File[MAX_FILES];     /* File object needed for each open file */
 
+static uint32_t driveLBAbase[4];/* Base of CPM drive files */
 
 static FILE *input;             /* defined input */
 static FILE *output;            /* defined input */
 static FILE *error;             /* defined input */
 
-
-int32_t AccSize;                /* Working register for scan_files function */
-int16_t AccFiles;
-int16_t AccDirs;
-
+const static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
+                                            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 /*
   Function Declarations for builtin shell commands:
  */
@@ -92,8 +94,15 @@ int8_t ya_date(char **args);    // print the local time in US: Sun Mar 23 01:03:
 // helper functions
 static void put_rc (FRESULT rc);        // print error codes to defined error IO
 static void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt);
-static FRESULT scan_files (char* path); // scan through files in a directory
 
+// external functions
+
+extern uint8_t asci0_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
 
 /*
   List of builtin commands.
@@ -121,11 +130,11 @@ struct Builtin builtins[] = {
 
 // system related functions
     { "md", &ya_md, "- [bank][origin] - memory dump"},
-    { "reset", &ya_reset, "- reset YAZ180 to cold start, clear all bank information"},
     { "help", &ya_help, "- this is it"},
-    { "exit", &ya_exit, "- exit and halt"},
+    { "exit", &ya_exit, "- exit and restart"},
 
 // fat related functions
+    { "mount", &ya_mount, "[option] - mount a FAT file system"},
     { "ls", &ya_ls, "[path] - directory listing"},
     { "rm", &ya_rm, "[file] - delete a file"},
     { "mv", &ya_mv, "[src][dest] - copy a file"},
@@ -134,11 +143,10 @@ struct Builtin builtins[] = {
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
     { "chmod", &ya_chmod, "[path][attr][mask] - change file or directory attributes"},
     { "mkfs", &ya_mkfs, "[type][block size] - create a FAT file system (excluded)"},
-    { "mount", &ya_mount, "[path][option] - mount a FAT file system"},
 
 // disk related functions
-    { "ds", &ya_ds, "[drive][path] - disk status"},
-    { "dd", &ya_dd, "[drive][sector] - disk dump, sector in hex"},
+    { "ds", &ya_ds, " - disk status"},
+    { "dd", &ya_dd, "[sector] - disk dump, sector in decimal"},
 
 // time related functions
     { "clock", &ya_clock, "[timestamp] - set the time (UNIX epoch) 'date +%s'"},
@@ -173,14 +181,9 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     uint8_t destBank;
     uint8_t i = 0;
 
-    uint32_t driveLBAbase[4] = {0,0,0,0};
-
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
-        res = (f_mount(fs, (const TCHAR*)"", 0));
-        if (res != FR_OK) { put_rc(res); return 1; }
-
         page0Template = (uint8_t *)malloc((PAGE0_SIZE) * sizeof(uint8_t));    /* Get work area for the Page 0 */
 
         if (page0Template != NULL && args[1] != NULL && args[2] != NULL)
@@ -197,16 +200,12 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
             while(args[i+3] != NULL)
             {
-                fprintf(output,"Opening \"%s\"", args[i+3]);
+                fprintf(output,"Opening \"%s\"\n", args[i+3]);
                 res = f_open(&File[0], (const TCHAR *)args[i+3], FA_OPEN_EXISTING | FA_READ);
-                fputc('\n', output);
-                if (res != FR_OK) {
-                    put_rc(res);
-                    return 1;
-                }
+                if (res != FR_OK) { put_rc(res); return 1; }
                 driveLBAbase[i] = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
                 f_close(&File[0]);
-                i++;                // go to next file
+                ++i;                // go to next file
             }
 
             // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
@@ -257,18 +256,13 @@ int8_t ya_mkcpmd(char **args)  // create a file for CP/M drive
     int16_t dirEntries;
     int16_t dirBytesWritten;
     uint32_t lbaBase;
-    const uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
-                                        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"mkcpmd\"\n");
     } else {
         fprintf(output,"Creating \"%s\"", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_CREATE_ALWAYS | FA_WRITE);
-        if (res != FR_OK) {
-            put_rc(res);
-            return 1;
-        }
+        if (res != FR_OK) { put_rc(res); return 1; }
 
         res = f_expand(&File[0], atol(args[3]), 1);
         if (res != FR_OK) {
@@ -450,13 +444,10 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
         } else {
             dest = (uint8_t *)strtoul(args[3], NULL, 16);
         }
-        fprintf(output,"Opening \"%s\"", args[1]);
+        fprintf(output,"Opening \"%s\"\n", args[1]);
         res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
-        fputc('\n', output);
-        if (res != FR_OK) {
-            put_rc(res);
-            return 1;
-        }
+        if (res != FR_OK) { put_rc(res); return 1; }
+
         fprintf(output,"Loading \"%s\" to %01X:%04X...", args[1], bank_get_abs((int8_t)atoi(args[2])), (uint16_t)dest );
 
         __critical
@@ -520,13 +511,10 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
     } else {
         origin = (uint8_t *)0x0100;
 
-        fprintf(output,"Creating \"%s\"...", args[2]);
+        fprintf(output,"Creating \"%s\"...\n", args[2]);
         res = f_open(&File[0], (const TCHAR *)args[2], FA_CREATE_ALWAYS | FA_WRITE);
-        fputc('\n', output);
-        if (res != FR_OK) {
-            put_rc(res);
-            return 1;
-        }
+        if (res != FR_OK) { put_rc(res); return 1; }
+
         fprintf(output,"Saving Bank %01X to \"%s\"", bank_get_abs((int8_t)atoi(args[1])), args[2] );
 
         __critical
@@ -602,7 +590,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
 
     memcpy_far(buffer, 0, (void *)origin, (int8_t)bank, 0x100); // grab a page
     fprintf(output, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
-    origin += 0x100;                                    // go to next page (next time)
+    origin += 0x100;                                            // go to next page (next time)
 
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x100; ptr += 16, ofs += 16) {
         put_dump(ptr, ofs, 16);
@@ -658,7 +646,7 @@ int8_t ya_ls(char **args)
     uint32_t p1;
     uint16_t s1, s2;
 
-    res = (f_mount(fs, (const TCHAR*)"", 0));
+    res = f_mount(fs, (const TCHAR*)"", 0);
     if (res != FR_OK) { put_rc(res); return 1; }
 
     if(args[1] == NULL) {
@@ -736,16 +724,11 @@ int8_t ya_mv(char **args)       // copy a file
     if (args[1] == NULL && args[2] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"mv\"\n");
     } else {
-        fprintf(output,"Opening \"%s\"", args[1]);
+        fprintf(output,"Opening \"%s\"\n", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
-        fputc('\n', output);
-        if (res != FR_OK) {
-            put_rc(res);
-            return 1;
-        }
-        fprintf(output,"Creating \"%s\"", args[2]);
+        if (res != FR_OK) { put_rc(res); return 1; }
+        fprintf(output,"Creating \"%s\"\n", args[2]);
         res = f_open(&File[1], (const TCHAR*)args[2], FA_CREATE_ALWAYS | FA_WRITE);
-        fputc('\n', output);
         if (res != FR_OK) {
             put_rc(res);
             f_close(&File[0]);
@@ -896,19 +879,15 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "mount". args[1] is the path, args[2] is the option byte.
+   @param args List of args.  args[0] is "mount". args[1] is the option byte.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_mount(char **args)    // mount a FAT file system
 {
-    if (args[1] == NULL && args[2] == NULL) {
-        fprintf(output, "yash: expected 2 arguments to \"mount\"\n");
+    if (args[1] == NULL) {
+        put_rc(f_mount(fs, (const TCHAR*)"", 0));
     } else {
-        if (args[2] == NULL) {
-        put_rc(f_mount(fs, "", atoi(args[1])));
-        } else {
-        put_rc(f_mount(fs, (const TCHAR*)args[1], atoi(args[2])));
-        }
+        put_rc(f_mount(fs, (const TCHAR*)"", atoi(args[1])));
     }
     return 1;
 }
@@ -918,69 +897,48 @@ int8_t ya_mount(char **args)    // mount a FAT file system
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "ds".  args[1] is the drive. args[2] is the path
+   @param args List of args.  args[0] is "ds".
    @return Always returns 1, to continue executing.
  */
 int8_t ya_ds(char **args)       // disk status
 {
     FRESULT res;
     int32_t p1;
-#if FF_USE_LABEL
-    int32_t p2;
-#endif
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
+    (void *)args;
 
-    if (args[1] == NULL) {
-        fprintf(stdout, "yash: expected 2 arguments to \"ds\"\n");
-    } else {
-        res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
-        if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(output, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
-                "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
-                "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n\n",
-                ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
-                fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
-                fs->volbase, fs->fatbase, fs->dirbase, fs->database);
-#if FF_USE_LABEL
-        res = f_getlabel((const TCHAR*)args[1], (char*)buffer, (DWORD*)&p2);
-        if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(output, buffer[0] ? "Volume name is %s\n" : "No volume label\n", (char*)buffer);
-        fprintf(output, "Volume S/N is %04X-%04X\n", (DWORD)p2 >> 16, (DWORD)p2 & 0xFFFF);
-#endif
-        AccSize = AccFiles = AccDirs = 0;
-        fprintf(output, "...");
-        res = scan_files(args[2]);
-        if (res != FR_OK) { put_rc(res); return 1; }
-        fprintf(output, "\r%u files, %lu bytes.\n%u folders.\n"
-                "%lu KiB total disk space.\n%lu KiB available.\n",
-                AccFiles, AccSize, AccDirs,
-                (fs->n_fatent - 2) * (fs->csize / 2), (DWORD)p1 * (fs->csize / 2) );
-    }
+    res = f_getfree( (const TCHAR*)"", (DWORD*)&p1, &fs);
+    if (res != FR_OK) { put_rc(res); return 1; }
+
+    fprintf(output, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
+        "Root DIR entries = %u\nSectors/FAT = %lu\nNumber of clusters = %lu\n"
+        "Volume start (lba) = %lu\nFAT start (lba) = %lu\nDIR start (lba,cluster) = %lu\nData start (lba) = %lu\n",
+        ft[fs->fs_type & 3], (DWORD)fs->csize * 512, fs->n_fats,
+        fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
+        fs->volbase, fs->fatbase, fs->dirbase, fs->database);
     return 1;
 }
 
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector in hex.
+   @param args List of args.  args[0] is "dd". args[1] is the sector in decimal.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_dd(char **args)       // disk dump
 {
     FRESULT res;
     static uint32_t sect;
-    static uint8_t drv;
     uint32_t ofs;
     uint8_t * ptr;
 
-    if (args[1] != NULL && args[2] != NULL) {
-        drv = (uint8_t)atoi(args[1]);
-        sect = strtoul(args[2], NULL, 10);
+    if (args[1] != NULL ) {
+        sect = strtoul(args[1], NULL, 10);
     }
 
-    res = disk_read(drv, buffer, sect, 1);
+    res = disk_read( 0, buffer, sect, 1);
     if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
-    fprintf(output, "PD#:%u LBA:%lu\n", drv, sect++);
+    fprintf(output, "LBA:%lu\n", sect++);
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
         put_dump(ptr, ofs, 16);
     return 1;
@@ -1098,34 +1056,6 @@ void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt)
 }
 
 
-static
-FRESULT scan_files (
-    char* path        /* Pointer to the path name working buffer */
-)
-{
-    DIR dirs;
-    FRESULT res;
-    BYTE i;
-
-    if ((res = f_opendir(&dirs, path)) == FR_OK) {
-        while (((res = f_readdir(&dirs, &Finfo)) == FR_OK) && Finfo.fname[0]) {
-            if (Finfo.fattrib & AM_DIR) {
-                AccDirs++;
-                i = strlen(path);
-                path[i] = '/'; strcpy(&path[i+1], Finfo.fname);
-                res = scan_files(path);
-                path[i] = '\0';
-                if (res != FR_OK) break;
-            } else {
-                AccFiles++;
-                AccSize += Finfo.fsize;
-            }
-        }
-    }
-    return res;
-}
-
-
 /**
    @brief Execute shell built-in function.
    @param args Null terminated list of arguments.
@@ -1191,13 +1121,6 @@ char **ya_split_line(char *line)
     return tokens;
 }
 
-extern uint8_t asci0_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
-extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
-extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
-extern uint8_t asci1_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
-extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
-extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
-
 /**
    @brief Loop getting input and executing it.
  */
@@ -1207,10 +1130,8 @@ void ya_loop(void)
     int status;
     char *line;
     uint16_t len;
-    uint16_t slen;
 
     line = (char *)malloc(LINE_SIZE * sizeof(char));    /* Get work area for the line buffer */
-
     if (line == NULL) return;
 
     asci0_flush_Rx_di();
@@ -1247,7 +1168,7 @@ void ya_loop(void)
         fprintf(output,"\n> ");
         fflush(input);
 
-        slen = getline(&line, &len, input);
+        getline(&line, &len, input);
         args = ya_split_line(line);
 
         status = ya_execute(args);
