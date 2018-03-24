@@ -200,10 +200,11 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             // set up (up to 4) CPM drive LBA locations, before copying to Page 0 template
             while(args[i+3] != NULL)
             {
-                fprintf(output,"Opening \"%s\"\n", args[i+3]);
+                fprintf(output,"Opening \"%s\"", args[i+3]);
                 res = f_open(&File[0], (const TCHAR *)args[i+3], FA_OPEN_EXISTING | FA_READ);
                 if (res != FR_OK) { put_rc(res); return 1; }
                 driveLBAbase[i] = (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2));
+                fprintf(output," at LBA %lu\n", driveLBAbase[i]);
                 f_close(&File[0]);
                 ++i;                // go to next file
             }

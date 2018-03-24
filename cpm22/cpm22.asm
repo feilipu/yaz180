@@ -1213,12 +1213,12 @@ USER:
 EXTERN _exit_far
 ;
 EXIT:
-    LD      BC,EXIT_MSG ;notify exit to yabios
+    LD      BC,EXIT_MSG ;notify exit to yabios monitor
     CALL    PLINE
     JP      _exit_far   ;jump to yabios BANK_0
 ;
 EXIT_MSG:
-    DEFM    "Exiting CP/M",0
+    DEFM    "Exiting CP/M\n",0
 ;
 ;**************************************************************
 ;*
