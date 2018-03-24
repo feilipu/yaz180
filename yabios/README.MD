@@ -593,8 +593,8 @@ The command line interface is implemented in C, with the underlying functions ei
 - `mount [path][option]` - mount a FAT file system
 
 #### Disk Functions
-- `ds [drive]` - disk status
-- `dd [drive][sector]` - disk dump
+- `ds [drive][path]` - disk status
+- `dd [drive][sector]` - disk dump, sector in decimal
 
 #### Time Functions
 - `clock [timestamp]` - set the time (UNIX epoch) using `date +%s`

@@ -59,15 +59,14 @@ int8_t ya_mvb(char **args);     // move or clone the nominated bank
 int8_t ya_rmb(char **args);     // remove the nominated bank (to cold state)
 int8_t ya_lsb(char **args);     // list the usage of banks, and whether they are cold, warm, or hot
 int8_t ya_initb(char **args);   // jump to and begin executing the nominated bank at nominated address
-int8_t ya_loadh(char **args);   // load the nominated bank with intel hex from ascii
+int8_t ya_loadh(char **args);   // load the nominated bank with intel hex from asci0/1
 int8_t ya_loadb(char **args);   // load the nominated bank and address with binary code
 int8_t ya_saveb(char **args);   // save the nominated bank from 0x0100 to 0xF000 by default
 
 // system related functions
 int8_t ya_md(char **args);      // memory dump
-int8_t ya_reset(char **args);   // reset YAZ180 to cold start, clear all bank information
 int8_t ya_help(char **args);    // help
-int8_t ya_exit(char **args);    // exit and halt
+int8_t ya_exit(char **args);    // exit and restart
 
 // fat related functions
 int8_t ya_ls(char **args);      // directory listing
@@ -138,7 +137,7 @@ struct Builtin builtins[] = {
     { "mount", &ya_mount, "[path][option] - mount a FAT file system"},
 
 // disk related functions
-    { "ds", &ya_ds, "[drive] - disk status"},
+    { "ds", &ya_ds, "[drive][path] - disk status"},
     { "dd", &ya_dd, "[drive][sector] - disk dump, sector in hex"},
 
 // time related functions
@@ -156,6 +155,7 @@ uint8_t ya_num_builtins() {
 /*
   Builtin function implementations.
 */
+
 
 // CP/M related functions
 
@@ -178,6 +178,8 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
+        res = (f_mount(fs, (const TCHAR*)"", 0));
+        if (res != FR_OK) { put_rc(res); return 1; }
 
         page0Template = (uint8_t *)malloc((PAGE0_SIZE) * sizeof(uint8_t));    /* Get work area for the Page 0 */
 
@@ -610,18 +612,6 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
 
 
 /**
-   @brief Builtin command:
-   @param args List of args.  args[0] is "reset".
-   @return Always returns 1, to continue executing.
- */
-int8_t ya_reset(char **args)    // reset YAZ180 to cold start, clear all bank information
-{
-    (void *)args;
-    return 0;
-}
-
-
-/**
    @brief Builtin command: help.
    @param args List of args.  args[0] is "help".
    @return Always returns 1, to continue executing.
@@ -629,7 +619,6 @@ int8_t ya_reset(char **args)    // reset YAZ180 to cold start, clear all bank in
 int8_t ya_help(char **args)
 {
     uint8_t i;
-
     (void *)args;
 
     printf("YAZ180 - yabios v0.6\n");
@@ -651,6 +640,7 @@ int8_t ya_help(char **args)
 int8_t ya_exit(char **args)
 {
     (void *)args;
+    f_mount(0, (const TCHAR*)"", 0);        /* Unmount the default drive */
     return 0;
 }
 
@@ -668,13 +658,15 @@ int8_t ya_ls(char **args)
     uint32_t p1;
     uint16_t s1, s2;
 
+    res = (f_mount(fs, (const TCHAR*)"", 0));
+    if (res != FR_OK) { put_rc(res); return 1; }
+
     if(args[1] == NULL) {
         res = f_opendir(dir, (const TCHAR*)".");
     } else {
         res = f_opendir(dir, (const TCHAR*)args[1]);
     }
 
-    if (res != FR_OK) { put_rc(res); return 1; }
     p1 = s1 = s2 = 0;
     while(1) {
         res = f_readdir(dir, &Finfo);
@@ -926,7 +918,7 @@ int8_t ya_mount(char **args)    // mount a FAT file system
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "ds".  args[1] is the drive.
+   @param args List of args.  args[0] is "ds".  args[1] is the drive. args[2] is the path
    @return Always returns 1, to continue executing.
  */
 int8_t ya_ds(char **args)       // disk status
@@ -939,7 +931,7 @@ int8_t ya_ds(char **args)       // disk status
     const uint8_t ft[] = {0, 12, 16, 32};   // FAT type
 
     if (args[1] == NULL) {
-        fprintf(output, "yash: expected 1 argument to \"ds\"\n");
+        fprintf(stdout, "yash: expected 2 arguments to \"ds\"\n");
     } else {
         res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
         if (res != FR_OK) { put_rc(res); return 1; }
@@ -957,7 +949,7 @@ int8_t ya_ds(char **args)       // disk status
 #endif
         AccSize = AccFiles = AccDirs = 0;
         fprintf(output, "...");
-        res = scan_files(args[1]);
+        res = scan_files(args[2]);
         if (res != FR_OK) { put_rc(res); return 1; }
         fprintf(output, "\r%u files, %lu bytes.\n%u folders.\n"
                 "%lu KiB total disk space.\n%lu KiB available.\n",
@@ -970,7 +962,7 @@ int8_t ya_ds(char **args)       // disk status
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector hex.
+   @param args List of args.  args[0] is "dd".  args[1] is the drive. args[2] is the sector in hex.
    @return Always returns 1, to continue executing.
  */
 int8_t ya_dd(char **args)       // disk dump
@@ -983,7 +975,7 @@ int8_t ya_dd(char **args)       // disk dump
 
     if (args[1] != NULL && args[2] != NULL) {
         drv = (uint8_t)atoi(args[1]);
-        sect = strtoul(args[2], NULL, 16);
+        sect = strtoul(args[2], NULL, 10);
     }
 
     res = disk_read(drv, buffer, sect, 1);

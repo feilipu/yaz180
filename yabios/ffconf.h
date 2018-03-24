@@ -8,14 +8,25 @@
 / Function Configurations
 /---------------------------------------------------------------------------*/
 
+#if __RC2014
+#define FF_FS_READONLY  1
+#elif __YAZ180
 #define FF_FS_READONLY  0
+#else
+#define FF_FS_READONLY  0
+#endif
 /* This option switches read-only configuration. (0:Read/Write or 1:Read-only)
 /  Read-only configuration removes writing API functions, f_write(), f_sync(),
-/  f_unlink(), f_mkdir(), f_chmod(), f_rename(), f_truncate(), f_getfree()
+/  f_unlink(), f_mkdir(), f_chmod(), f_rename(), f_truncate()
 /  and optional writing functions as well. */
 
-
+#if __RC2014
 #define FF_FS_MINIMIZE  0
+#elif __YAZ180
+#define FF_FS_MINIMIZE  0
+#else
+#define FF_FS_MINIMIZE  0
+#endif
 /* This option defines minimization level to remove some basic API functions.
 /
 /   0: Basic functions are fully enabled.
@@ -148,8 +159,13 @@
 /   3: Unicode in UTF-8
 */
 
-
+#if __RC2014
+#define FF_FS_RPATH     1
+#elif __YAZ180
 #define FF_FS_RPATH     2
+#else
+#define FF_FS_RPATH     2
+#endif
 /* This option configures support for relative path.
 /
 /   0: Disable relative path and remove related functions.
