@@ -9,13 +9,13 @@ PUBLIC _bank_cpm_bdos_addr
 DEFC _bank_cpm_bdos_addr             = $0006
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $5DEC
+DEFC _f_mount                        = $5DF0
 
 PUBLIC _f_open
-DEFC _f_open                         = $5E59
+DEFC _f_open                         = $5E5D
 
 PUBLIC _f_read
-DEFC _f_read                         = $6377
+DEFC _f_read                         = $637B
 
 PUBLIC _f_write
 DEFC _f_write                        = $68B4
@@ -36,34 +36,34 @@ PUBLIC _f_lseek
 DEFC _f_lseek                        = $7367
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $790B
+DEFC _f_opendir                      = $7901
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7A02
+DEFC _f_closedir                     = $79F8
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $7A28
+DEFC _f_readdir                      = $7A1E
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7A99
+DEFC _f_stat                         = $7A8F
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $7B06
+DEFC _f_getfree                      = $7AFC
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7DC9
+DEFC _f_truncate                     = $7DBF
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $7FE7
+DEFC _f_unlink                       = $7FE5
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $818B
+DEFC _f_mkdir                        = $8185
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $83EF
+DEFC _f_rename                       = $83E9
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $86A5
+DEFC _f_expand                       = $8719
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0516
