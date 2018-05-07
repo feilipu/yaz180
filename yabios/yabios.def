@@ -1,12 +1,12 @@
 
 PUBLIC _bank_cpm_iobyte
-DEFC _bank_cpm_iobyte                = $0037
+DEFC _bank_cpm_iobyte                = $0003
 
 PUBLIC _bank_cpm_default_drive
-DEFC _bank_cpm_default_drive         = $0038
+DEFC _bank_cpm_default_drive         = $0004
 
 PUBLIC _bank_cpm_bdos_addr
-DEFC _bank_cpm_bdos_addr             = $003A
+DEFC _bank_cpm_bdos_addr             = $0006
 
 PUBLIC _bios_sp
 DEFC _bios_sp                        = $FFDE

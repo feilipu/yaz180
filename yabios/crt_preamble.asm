@@ -1,9 +1,5 @@
 
-IF (__crt_org_code = 0) && (__page_zero_present != 1)
-
-INCLUDE "crt_page_zero_yabios.inc"
-
-ENDIF
+IF (__page_zero_present)
 
     xor     A               ; Zero Accumulator
 
@@ -111,9 +107,6 @@ ENDIF
     ld      hl, _bankLockBase
     ld      (hl), $FF
 
-                            ; put the stack somewhere safe temporarily
-    INCLUDE "../crt_init_sp.inc"
-
     EXTERN  _asci0_init
     call    _asci0_init     ; initialise the asci0
 
@@ -123,4 +116,10 @@ ENDIF
     EXTERN  _apu_reset
     call    _apu_reset      ; and the Am9511A apu
 
+ENDIF
 
+IF (__crt_org_code = 0) && !(__page_zero_present)
+
+INCLUDE "crt_page_zero_yabios.inc"
+
+ENDIF
