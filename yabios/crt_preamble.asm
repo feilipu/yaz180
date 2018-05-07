@@ -103,12 +103,6 @@ ENDIF
     ld      a, TCR_TIE0|TCR_TDE0
     out0    (TCR), a        ; using the driver/z180/system_tick.asm
 
-    EXTERN  _asci0_init
-    call    _asci0_init     ; initialise the asci0
-
-    EXTERN  _asci1_init    
-    call    _asci1_init     ; and the asci1 interfaces
-
     EXTERN  _bios_ioByte    ; set default interface to asci0
     ld      hl, _bios_ioByte
     ld      (hl), $01       ; via the bios IO Byte
@@ -116,4 +110,17 @@ ENDIF
     EXTERN  _bankLockBase   ; lock BANK0 whilst the yabios CLI is running
     ld      hl, _bankLockBase
     ld      (hl), $FF
+
+                            ; put the stack somewhere safe temporarily
+    INCLUDE "../crt_init_sp.inc"
+
+    EXTERN  _asci0_init
+    call    _asci0_init     ; initialise the asci0
+
+    EXTERN  _asci1_init    
+    call    _asci1_init     ; the asci1 interfaces
+
+    EXTERN  _apu_reset
+    call    _apu_reset      ; and the Am9511A apu
+
 
