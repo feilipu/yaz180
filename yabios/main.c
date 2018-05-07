@@ -21,6 +21,18 @@
 #include <lib/yaz180/ff.h>
 #include <lib/yaz180/time.h>
 
+// PRAGMA
+
+#pragma printf = "%s %lu %u %d %c %X"
+
+#pragma output REGISTER_SP             = __BIOS_SP
+#pragma output CRT_ENABLE_RST          = 0x00FE
+#pragma output CRT_ENABLE_TRAP         = 1
+
+#pragma output CLIB_MALLOC_HEAP_SIZE   = -1
+#pragma output CLIB_EXIT_STACK_SIZE    = 0            // do not reserve space for registering atexit() functions
+
+
 // DEFINES
 
 #define MAX_FILES 4             // number of files open at any time
@@ -610,8 +622,8 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    printf("YAZ180 - yabios v0.6\n");
-    printf("The following functions are built in:\n");
+    fprintf(output,"YAZ180 - yabios v0.6\n");
+    fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
         fprintf(output,"  %s %s\n", builtins[i].name, builtins[i].help);

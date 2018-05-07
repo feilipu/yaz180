@@ -90,7 +90,7 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
 
 ```bash
-> zcc +yaz180 -v -subtype=yabios -SO3 --list -m --c-code-in-asm -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --max-allocs-per-node200000 main.c -gpf yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --list --c-code-in-asm --max-allocs-per-node20000 @yabios.lst -gpf yabios.rex -o yabios -create-app
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
