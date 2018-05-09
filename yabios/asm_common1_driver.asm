@@ -1359,7 +1359,6 @@ ASCI0_TX_CHECK:                 ; now start doing the Tx stuff
 
     ld hl, asci0TxCount
     dec (hl)                    ; atomically decrement current Tx count
-
     jr NZ, ASCI0_TX_END         ; if we've more Tx bytes to send, we're done for now
 
 ASCI0_TX_TIE0_CLEAR:
@@ -1370,7 +1369,6 @@ ASCI0_TX_TIE0_CLEAR:
 ASCI0_TX_END:
     pop hl
     pop af
-
     ei
     ret
 
@@ -1398,10 +1396,10 @@ _asci0_init:
     ld      a,STAT0_RIE         ; receive interrupt enabled
     out0    (STAT0),a           ; output to the ASCI0 status reg
 
-    ld hl, _asci0TxLock         ; load the mutex lock address
-    ld (hl), $FE                ; give mutex lock
-    ld hl, _asci0RxLock         ; load the mutex lock address
-    ld (hl), $FE                ; give mutex lock
+    ld hl,_asci0TxLock          ; load the mutex lock address
+    ld (hl),$FE                 ; give mutex lock
+    ld hl,_asci0RxLock          ; load the mutex lock address
+    ld (hl),$FE                 ; give mutex lock
 
     ret
 
@@ -1501,19 +1499,14 @@ EXTERN asci0RxCount, asci0RxOut
 
 _asci0_peekc:
 
-    ld a, (asci0RxCount)        ; get the number of bytes in the Rx buffer
-    ld l, a                     ; and put it in l
+    ld a,(asci0RxCount)         ; get the number of bytes in the Rx buffer
+    ld l,a                      ; and put it in l
     or a                        ; see if there are zero bytes available
     ret Z                       ; if the count is zero, then return
 
-    push hl
-
-    ld hl, (asci0RxOut)         ; get the pointer to place where we pop the Rx byte
-    ld a, (hl)                  ; get the Rx byte
-
-    pop hl
-
-    ld l, a                     ; and put it in l
+    ld hl,(asci0RxOut)          ; get the pointer to place where we pop the Rx byte
+    ld a,(hl)                   ; get the Rx byte
+    ld l,a                      ; and put it in l
     ret
 
 PUBLIC _asci0_pollc
@@ -1538,59 +1531,56 @@ _asci0_pollc:
 
 PUBLIC _asci0_putc
 
-EXTERN asci0TxCount, asci0TxIn
+    EXTERN asci0TxCount, asci0TxIn
 
 _asci0_putc:
-
     ; enter    : l = char to output
     ; exit     : l = 1 if Tx buffer is full
     ;            carry reset
     ; modifies : af, hl
-
-    ld a, (asci0TxCount)        ; get the number of bytes in the Tx buffer
+    ld a,(asci0TxCount)         ; get the number of bytes in the Tx buffer
     or a                        ; check whether the buffer is empty
-    jr NZ, asci0_put_buffer_tx  ; buffer not empty, so abandon immediate Tx
+    jr NZ,asci0_put_buffer_tx   ; buffer not empty, so abandon immediate Tx
 
-    in0 a, (STAT0)              ; get the ASCI0 status register
+    di
+    in0 a,(STAT0)               ; get the ASCI0 status register
     and STAT0_TDRE              ; test whether we can transmit on ASCI0
-    jr Z, asci0_put_buffer_tx   ; if not, so abandon immediate Tx
-
+    jr Z,asci0_put_buffer_tx    ; if not, so abandon immediate Tx
+    ei
     out0 (TDR0), l              ; output the Tx byte to the ASCI0
 
     ld l, 0                     ; indicate Tx buffer was not full
     ret                         ; and just complete
 
 asci0_put_buffer_tx:
+    ei
     ld a, (asci0TxCount)        ; Get the number of bytes in the Tx buffer
     cp __ASCI0_TX_SIZE-1        ; check whether there is space in the buffer
+    jr NC, asci0_put_buffer_tx  ; buffer full, so keep trying
+
     ld a,l                      ; Tx byte
-
-    ld l,1
-    jr NC, asci0_clean_up_tx    ; buffer full, so drop the Tx byte and clean up
-
+    ld hl,asci0TxCount
+    di
+    inc (hl)                    ; atomic increment of Tx count
     ld hl, (asci0TxIn)          ; get the pointer to where we poke
+    ei
     ld (hl), a                  ; write the Tx byte to the asci0TxIn
 
     inc l                       ; move the Tx pointer low byte along, 0xFF rollover
     inc l
     ld (asci0TxIn), hl          ; write where the next byte should be poked
 
-    ld hl, asci0TxCount
-    inc (hl)                    ; atomic increment of Tx count
-
     ld l, 0                     ; indicate Tx buffer was not full
 
 asci0_clean_up_tx:
     in0 a, (STAT0)              ; load the ASCI0 status register
     and STAT0_TIE               ; test whether ASCI0 interrupt is set
-    ret nz                      ; if so then just return
+    ret NZ                      ; if so then just return
 
     di                          ; critical section begin
-
     in0 a, (STAT0)              ; get the ASCI status register again
     or STAT0_TIE                ; mask in (enable) the Tx Interrupt
     out0 (STAT0), a             ; set the ASCI status register
-
     ei                          ; critical section end
     ret
 
@@ -1661,7 +1651,6 @@ ASCI1_TX_CHECK:                 ; now start doing the Tx stuff
 
     ld hl, asci1TxCount
     dec (hl)                    ; atomically decrement current Tx count
-
     jr NZ, ASCI1_TX_END         ; if we've more Tx bytes to send, we're done for now
 
 ASCI1_TX_TIE1_CLEAR:
@@ -1672,7 +1661,6 @@ ASCI1_TX_TIE1_CLEAR:
 ASCI1_TX_END:
     pop hl
     pop af
-
     ei
     ret
 
@@ -1700,10 +1688,10 @@ _asci1_init:
     ld      a,STAT1_RIE         ; receive interrupt enabled
     out0    (STAT1),a           ; output to the ASCI1 status reg
 
-    ld hl, _asci1TxLock         ; load the mutex lock address
-    ld (hl), $FE                ; give mutex lock
-    ld hl, _asci1RxLock         ; load the mutex lock address
-    ld (hl), $FE                ; give mutex lock
+    ld hl,_asci1TxLock          ; load the mutex lock address
+    ld (hl),$FE                 ; give mutex lock
+    ld hl,_asci1RxLock          ; load the mutex lock address
+    ld (hl),$FE                 ; give mutex lock
 
     ret
 
@@ -1804,19 +1792,14 @@ EXTERN asci1RxCount, asci1RxOut
 
 _asci1_peekc:
 
-    ld a, (asci1RxCount)        ; get the number of bytes in the Rx buffer
-    ld l, a                     ; and put it in l
+    ld a,(asci1RxCount)         ; get the number of bytes in the Rx buffer
+    ld l,a                      ; and put it in l
     or a                        ; see if there are zero bytes available
     ret Z                       ; if the count is zero, then return
 
-    push hl
-
-    ld hl, (asci1RxOut)         ; get the pointer to place where we pop the Rx byte
-    ld a, (hl)                  ; get the Rx byte
-
-    pop hl
-
-    ld l, a                     ; and put it in l
+    ld hl,(asci1RxOut)          ; get the pointer to place where we pop the Rx byte
+    ld a,(hl)                   ; get the Rx byte
+    ld l,a                      ; and put it in l
     ret
 
 PUBLIC _asci1_pollc
@@ -1844,56 +1827,53 @@ PUBLIC _asci1_putc
 EXTERN asci1TxCount, asci1TxIn
 
 _asci1_putc:
-
     ; enter    : l = char to output
     ; exit     : l = 1 if Tx buffer is full
     ;            carry reset
     ; modifies : af, hl
-
     ld a, (asci1TxCount)        ; get the number of bytes in the Tx buffer
     or a                        ; check whether the buffer is empty
-    jr NZ, asci1_put_buffer_tx  ; buffer not empty, so abandon immediate Tx
+    jr NZ,asci1_put_buffer_tx   ; buffer not empty, so abandon immediate Tx
 
+    di
     in0 a, (STAT1)              ; get the ASCI1 status register
     and STAT1_TDRE              ; test whether we can transmit on ASCI1
-    jr Z, asci1_put_buffer_tx   ; if not, so abandon immediate Tx
-
+    jr Z,asci1_put_buffer_tx    ; if not, so abandon immediate Tx
+    ei
     out0 (TDR1), l              ; output the Tx byte to the ASCI1
 
     ld l, 0                     ; indicate Tx buffer was not full
     ret                         ; and just complete
 
 asci1_put_buffer_tx:
+    ei
     ld a, (asci1TxCount)        ; Get the number of bytes in the Tx buffer
     cp __ASCI1_TX_SIZE-1        ; check whether there is space in the buffer
+    jr NC, asci1_put_buffer_tx  ; buffer full, so keep trying
+
     ld a,l                      ; Tx byte
-
-    ld l,1
-    jr NC, asci1_clean_up_tx    ; buffer full, so drop the Tx byte and clean up
-
+    ld hl,asci1TxCount
+    di
+    inc (hl)                    ; atomic increment of Tx count
     ld hl, (asci1TxIn)          ; get the pointer to where we poke
+    ei
     ld (hl), a                  ; write the Tx byte to the asci1TxIn
 
     inc l                       ; move the Tx pointer low byte along, 0xFF rollover
     inc l
     ld (asci1TxIn), hl          ; write where the next byte should be poked
 
-    ld hl, asci1TxCount
-    inc (hl)                    ; atomic increment of Tx count
-
     ld l, 0                     ; indicate Tx buffer was not full
 
 asci1_clean_up_tx:
     in0 a, (STAT1)              ; load the ASCI1 status register
     and STAT1_TIE               ; test whether ASCI1 interrupt is set
-    ret nz                      ; if so then just return
+    ret NZ                      ; if so then just return
 
     di                          ; critical section begin
-
     in0 a, (STAT1)              ; get the ASCI status register again
     or STAT1_TIE                ; mask in (enable) the Tx Interrupt
     out0 (STAT1), a             ; set the ASCI status register
-
     ei                          ; critical section end
     ret
 

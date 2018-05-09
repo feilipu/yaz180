@@ -21,16 +21,16 @@
 #include <lib/yaz180/ff.h>
 #include <lib/yaz180/time.h>
 
-// PRAGMA
+// PRAGMAS
 
-#pragma printf = "%s %lu %u %d %c %X"
+// #pragma printf = "%s %lu %u %d %c %X"
 
-#pragma output REGISTER_SP             = __BIOS_SP
+#pragma output REGISTER_SP             = 0xFFDE // __BIOS_SP
 #pragma output CRT_ENABLE_RST          = 0x00FE
 #pragma output CRT_ENABLE_TRAP         = 1
 
-#pragma output CLIB_MALLOC_HEAP_SIZE   = -1
-#pragma output CLIB_EXIT_STACK_SIZE    = 0            // do not reserve space for registering atexit() functions
+#pragma output CLIB_MALLOC_HEAP_SIZE   = 4096
+// #pragma output CLIB_EXIT_STACK_SIZE    = 0      // do not reserve space for registering atexit() functions
 
 
 // DEFINES
@@ -622,7 +622,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v0.6\n");
+    fprintf(output,"YAZ180 - yabios v0.7\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -1175,6 +1175,7 @@ void ya_loop(void)
             }
         }
     }
+    fprintf(output," :-)\n");
 
     len = LINE_SIZE;
 
@@ -1212,8 +1213,8 @@ void main(int argc, char **argv)
 
     // Load config files, if any.
 
-    fprintf(stdout, "\r\nYAZ180 - yabios - CRT\r\n");
-    fprintf(ttyout, "\r\nYAZ180 - yabios - TTY\r\n");
+    fprintf(stdout, "\n\nYAZ180 - yabios - CRT\n\n> :?");
+    fprintf(ttyout, "\n\nYAZ180 - yabios - TTY\n\n> :?");
  
     // Run command loop if we got all the memory allocations we need.
     if ( fs && dir && buffer)

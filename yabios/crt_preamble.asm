@@ -113,9 +113,6 @@ IF (__page_zero_present)
     EXTERN  _asci1_init    
     call    _asci1_init     ; the asci1 interfaces
 
-    EXTERN  _apu_reset
-    call    _apu_reset      ; and the Am9511A apu
-
 ENDIF
 
 IF (__crt_org_code = 0) && !(__page_zero_present)
