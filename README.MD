@@ -18,6 +18,12 @@ And so, here it is.
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Right<center></th>
 </tr>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/P1090697.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/P1090697.JPG"/></a></td>
+</tr>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Live with yabios and CP/M<center></th>
+</tr>
 </tbody>
 </table>
 </div>
