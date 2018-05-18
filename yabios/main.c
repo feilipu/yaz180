@@ -622,7 +622,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v0.7\n");
+    fprintf(output,"YAZ180 - yabios v0.8\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -1204,7 +1204,7 @@ void main(int argc, char **argv)
     (void)argc;
     (void *)argv;
 
-    set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
+    set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
     set_system_time(1519891200 - UNIX_OFFSET);      /* Initial time: March 1, 2018 AEST */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
