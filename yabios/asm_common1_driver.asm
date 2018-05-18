@@ -2062,7 +2062,7 @@ ide_setup_lba:
     call ide_write_byte     ;set LBA2 16:23
     ld a, b
     and 00001111b           ;lowest 4 bits used only
-    or  11100000b           ;to enable LBA address mode
+    or  11100000b           ;to enable LBA address mode, Master only
     ld e, a
     ld a, __IO_IDE_LBA3
     call ide_write_byte     ;set LBA3 24:27 + bits 5:7=111
