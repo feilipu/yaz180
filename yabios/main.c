@@ -35,7 +35,7 @@
 
 // DEFINES
 
-#define MAX_FILES 4             // number of files open at any time
+#define MAX_FILES 2             // number of files open at any time
 #define BUFFER_SIZE 1024        // size of working buffer (on heap)
 #define LINE_SIZE 256           // size of a command line (on heap)
 
@@ -196,7 +196,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
     if (args[1] == NULL || args[2] == NULL || args[3] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"mkcpmb\"\n");
     } else {
-        page0Template = (uint8_t *)malloc((PAGE0_SIZE) * sizeof(uint8_t));    /* Get work area for the Page 0 */
+        page0Template = (uint8_t *)malloc(sizeof(uint8_t)*PAGE0_SIZE);  /* Get work area for the Page 0 */
 
         if (page0Template != NULL && args[1] != NULL && args[2] != NULL)
         {
@@ -222,7 +222,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             }
 
             // copy up to 4x LBA base addresses into the Page 0 template YABIOS scratch at 0x0040
-            memcpy( (volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, 4*sizeof(uint32_t) );
+            memcpy( (volatile uint8_t*)(page0Template + 0x0040), (const uint8_t*)driveLBAbase, sizeof(uint32_t)*4 );
 
             // copy the source bank for CP/M CCP/BDOS/BIOS for CP/M BIOS wboot usage to Page 0 at 0x0050
             *(volatile uint8_t*)(page0Template + 0x0050) = srcBank;
@@ -318,7 +318,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
 {
     uint8_t * page0Template;
 
-    page0Template = (uint8_t *)malloc(PAGE0_SIZE * sizeof(uint8_t));       /* Get work area for the Page 0 */
+    page0Template = (uint8_t *)malloc(sizeof(uint8_t)*PAGE0_SIZE);  /* Get work area for the Page 0 */
 
     if (page0Template != NULL && args[1] != NULL)
     {
@@ -470,7 +470,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
         }
         p1 = 0;
         while ((uint16_t)dest < (__COMMON_AREA_1_BASE-0)) {
-            res = f_read(&File[0], buffer, sizeof(buffer), &s1);
+            res = f_read(&File[0], buffer, sizeof(char)*BUFFER_SIZE, &s1);
             if (res != FR_OK || s1 == 0) break;   /* error or eof */
 
             if (s1 > (__COMMON_AREA_1_BASE-0) - (uint16_t)dest) {       // don't overwrite COMMON AREA 1
@@ -537,9 +537,9 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
         }
         p1 = 0;
         while ((uint16_t)origin < (__COMMON_AREA_1_BASE-0)) {
-            memcpy_far(buffer, 0, (void *)origin, (uint8_t)atoi(args[1]), sizeof(buffer));   // read sizeof(buffer) bytes from ram
+            memcpy_far(buffer, 0, (void *)origin, (uint8_t)atoi(args[1]), sizeof(char)*BUFFER_SIZE);   // read sizeof(buffer) bytes from ram
 
-            s1 = sizeof(buffer);
+            s1 = sizeof(char)*BUFFER_SIZE;
 
             if (s1 > (__COMMON_AREA_1_BASE-0) - (uint16_t)origin) {       // don't overwrite COMMON AREA 1
                 s1 = (__COMMON_AREA_1_BASE-0) - (uint16_t)origin;
@@ -757,7 +757,7 @@ int8_t ya_mv(char **args)       // copy a file
         }
         p1 = 0;
         while (1) {
-            res = f_read(&File[0], buffer, sizeof(buffer), &s1);
+            res = f_read(&File[0], buffer, sizeof(char)*BUFFER_SIZE, &s1);
             if (res != FR_OK || s1 == 0) break;   /* error or eof */
             res = f_write(&File[1], buffer, s1, &s2);
             p1 += s2;
@@ -813,7 +813,7 @@ int8_t ya_pwd(char **args)      // show the current working directory
 
     (void *)args;
 
-    directory = (uint8_t *)malloc(LINE_SIZE * sizeof(uint8_t));     /* Get area for directory buffer */
+    directory = (uint8_t *)malloc(sizeof(uint8_t)*LINE_SIZE);     /* Get area for directory buffer */
 
     if (directory != NULL) {
         res = f_getcwd(directory, sizeof(directory));
@@ -883,7 +883,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
         fprintf(output, "The drive will be erased and formatted. Are you sure [y/N]\n");
         getline(&line, &bufsize, input);
         if (line[0] == 'Y')
-            put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(buffer)));
+            put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(char)*BUFFER_SIZE));
         free(line);
     }
 #endif
@@ -1107,7 +1107,7 @@ char **ya_split_line(char *line)
     char *token;
     char **tokens, **tokens_backup;
 
-    tokens = (char **)malloc(bufsize * sizeof(char*));
+    tokens = (char **)malloc(sizeof(char*)*bufsize);
 
     if (tokens && line)
     {
@@ -1120,7 +1120,7 @@ char **ya_split_line(char *line)
             if (position >= bufsize) {
                 bufsize += YA_TOK_BUFSIZE;
                 tokens_backup = tokens;
-                tokens = (char **)realloc(tokens, bufsize * sizeof(char*));
+                tokens = (char **)realloc(tokens, sizeof(char*)*bufsize);
                 if (tokens == NULL) {
                     free(tokens_backup);
                     fprintf(output, "yash: tokens realloc failure\n");
@@ -1145,7 +1145,7 @@ void ya_loop(void)
     char *line;
     uint16_t len;
 
-    line = (char *)malloc(LINE_SIZE * sizeof(char));    /* Get work area for the line buffer */
+    line = (char *)malloc(sizeof(char)*LINE_SIZE);      /* Get work area for the line buffer */
     if (line == NULL) return;
 
     asci0_flush_Rx_di();
@@ -1209,7 +1209,7 @@ void main(int argc, char **argv)
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
-    buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));    /* Get working buffer space */
+    buffer = (char *)malloc(sizeof(char)*BUFFER_SIZE);      /* Get working buffer space */
 
     // Load config files, if any.
 
