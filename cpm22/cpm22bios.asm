@@ -99,6 +99,7 @@ DEFC    secmsk  =    hstblk-1   ;sector mask
 ;*         BDOS constants on entry to write          *
 ;*                                                   *
 ;*****************************************************
+
 DEFC    wrall   =    0          ;write to allocated
 DEFC    wrdir   =    1          ;write to directory
 DEFC    wrual   =    2          ;write to unallocated
@@ -214,15 +215,15 @@ gocpm:
     ld      hl, __cpm_bdos_head  ;bdos entry point
     ld      ($0006),hl      ;set address field of Jump at 5 to bdos
 
-    ld      bc,$80          ;default dma address is 0x80
+    ld      bc,$0080        ;default dma address is 0x0080
     call    setdma
 
     call    _asci0_flush_Rx_di
     call    _asci1_flush_Rx_di
 
     xor     a               ;0 accumulator
-    LD      (hstact),a      ;host buffer inactive
-    LD      (unacnt),a      ;clear unalloc count
+    ld      (hstact),a      ;host buffer inactive
+    ld      (unacnt),a      ;clear unalloc count
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
@@ -785,6 +786,9 @@ getLBAbase:
 
 SECTION cpm_bios_data
 
+;------------------------------------------------------------------------------
+; start of fixed tables - non aligned rodata
+;------------------------------------------------------------------------------
 ;
 ;    fixed data tables for four-drive standard drives
 ;    no translations
@@ -824,9 +828,10 @@ dpblk:
     defb    $00         ;AL1 - 1 bit set per directory block (ALLOC0)
     defw    0           ;CKS - DIR check vector size (DRM+1)/4 (0=fixed disk) (ALLOC1)
     defw    0           ;OFF - Reserved tracks offset
-;
+
+;------------------------------------------------------------------------------
 ;    end of fixed tables
-;
+;------------------------------------------------------------------------------
 
 ;
 ;    scratch ram area for bios use

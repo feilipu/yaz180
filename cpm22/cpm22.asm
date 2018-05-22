@@ -23,7 +23,6 @@ EXTERN  _cpm_ccp_tbuff
 EXTERN  _cpm_ccp_tbase
 
 EXTERN  __cpm_bdos_head
-;
 
 DEFC    IOBYTE      =       _cpm_iobyte     ;i/o definition byte
 DEFC    TDRIVE      =       _cpm_cdisk      ;current drive name and user number
@@ -1391,12 +1390,12 @@ NBYTES:     DEFW    0        ;byte counter used by TYPE.
 ;
 ;   Room for expansion, and prevent potential stack overflow.
 ;
-            DEFS    12,0
+;           DEFS    12,0
 
 ;
 ;   ccp stack area.
 ;
-            DEFS    16,0
+            DEFS    32,0
 CCPSTACK:                   ;top of ccp stack area.
 
 ;
@@ -1918,23 +1917,6 @@ RTN:
 IOERR1:
     LD    A,1
     JP    SETSTAT
-;
-OUTFLAG:    DEFB    0       ;output flag (non zero means no output).
-STARTING:   DEFB    2       ;starting position for cursor.
-CURPOS:     DEFB    0       ;cursor position (0=start of line).
-PRTFLAG:    DEFB    0       ;printer flag (control-p toggle). List if non zero.
-CHARBUF:    DEFB    0       ;single input character buffer.
-;
-;   Stack area for BDOS calls.
-;
-USRSTACK:   DEFW    0       ;save users stack pointer here.
-            DEFS    48,0
-STKAREA:                    ;top of stack area.
-;
-USERNO:     DEFB    0       ;current user number.
-ACTIVE:     DEFB    0       ;currently active drive.
-PARAMS:     DEFW    0       ;save (DE) parameters here on entry.
-STATUS:     DEFW    0       ;status returned from bdos function.
 ;
 ;   Select error occured, jump to error routine.
 ;
@@ -4061,9 +4043,21 @@ WTSPECL:
 SECTION     cpm_bdos_data
 
 EMPTYFCB:   DEFB    0E5H    ;empty directory segment indicator.
+USERDMA:    DEFW    0080H   ;user's dma address (defaults to 80h).
+;
+OUTFLAG:    DEFB    0       ;output flag (non zero means no output).
+STARTING:   DEFB    2       ;starting position for cursor.
+CURPOS:     DEFB    0       ;cursor position (0=start of line).
+PRTFLAG:    DEFB    0       ;printer flag (control-p toggle). List if non zero.
+CHARBUF:    DEFB    0       ;single input character buffer.
+;
+USERNO:     DEFB    0       ;current user number.
+ACTIVE:     DEFB    0       ;currently active drive.
+PARAMS:     DEFW    0       ;save (DE) parameters here on entry.
+STATUS:     DEFW    0       ;status returned from bdos function.
+;
 WRTPRT:     DEFW    0       ;write protect status for all 16 drives.
 LOGIN:      DEFW    0       ;drive active word (1 bit per drive).
-USERDMA:    DEFW    0080H   ;user's dma address (defaults to 80h).
 ;
 ;   Scratch areas from parameter block.
 ;
@@ -4116,6 +4110,13 @@ FILEPOS:    DEFW    0       ;files position within directory (0 to max entries -
 ;   16 possible drives.
 ;
 CKSUMTBL:   DEFS    16,0
+;
+;   Stack area for BDOS calls.
+;
+USRSTACK:   DEFW    0       ;save users stack pointer here.
+            DEFS    48,0
+STKAREA:                    ;top of stack area.
+;
 
 ;
 ;**************************************************************
