@@ -381,7 +381,7 @@ GETDSK:
     LD    C,25
     JP    ENTRY
 ;
-;   Set the stabdard dma address.
+;   Set the standard dma address.
 ;
 STDDMA:
     LD    DE,TBUFF
@@ -4042,8 +4042,8 @@ WTSPECL:
 
 SECTION     cpm_bdos_data
 
-EMPTYFCB:   DEFB    0E5H    ;empty directory segment indicator.
-USERDMA:    DEFW    0080H   ;user's dma address (defaults to 80h).
+EMPTYFCB:   DEFB    $E5     ;empty directory segment indicator.
+USERDMA:    DEFW    $0080   ;user's dma address (defaults to 80h).
 ;
 OUTFLAG:    DEFB    0       ;output flag (non zero means no output).
 STARTING:   DEFB    2       ;starting position for cursor.
@@ -4113,9 +4113,9 @@ CKSUMTBL:   DEFS    16,0
 ;
 ;   Stack area for BDOS calls.
 ;
-USRSTACK:   DEFW    0       ;save users stack pointer here.
             DEFS    48,0
 STKAREA:                    ;top of stack area.
+USRSTACK:   DEFW    0       ;save users stack pointer here.
 ;
 
 ;
