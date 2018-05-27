@@ -152,13 +152,6 @@ boot:       ;simplest case is to just perform parameter initialization
     xor     a               ;zero in the accum
     ld      (_cpm_cdisk), a ;select disk zero
 
-    ld      (_cpm_ccp_tfcb), a
-    ld      hl, _cpm_ccp_tfcb
-    ld      d, h
-    ld      e, l
-    inc     de
-    ld      bc, 0x20-1
-    ldir                    ;clear default FCB
 
     jp      gocpm           ;initialize and go to cp/m
 
@@ -206,24 +199,32 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
 ; Common code for cold and warm boot
 ;=============================================================================
 gocpm:
-    ld      a,$C3           ;c3 is a jmp instruction
+    ld      a,$C3           ;C3 is a jmp instruction
     ld      ($0000),a       ;for jmp to wboot
-    ld      hl, wboote      ;wboot entry point
+    ld      hl,wboote       ;wboot entry point
     ld      ($0001),hl      ;set address field for jmp at 0 to wboote
 
-    ld      ($0005),a       ;for jmp to bdos
-    ld      hl, __cpm_bdos_head  ;bdos entry point
+    ld      ($0005),a       ;C3 for jmp to bdos entry point
+    ld      hl,__cpm_bdos_head   ;bdos entry point
     ld      ($0006),hl      ;set address field of Jump at 5 to bdos
 
     ld      bc,$0080        ;default dma address is 0x0080
     call    setdma
 
-    call    _asci0_flush_Rx_di
-    call    _asci1_flush_Rx_di
-
     xor     a               ;0 accumulator
     ld      (hstact),a      ;host buffer inactive
     ld      (unacnt),a      ;clear unalloc count
+
+    ld      (_cpm_ccp_tfcb), a
+    ld      hl, _cpm_ccp_tfcb
+    ld      d, h
+    ld      e, l
+    inc     de
+    ld      bc, 0x20-1
+    ldir                    ;clear default FCB
+
+    call    _asci0_flush_Rx_di
+    call    _asci1_flush_Rx_di
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
@@ -246,7 +247,8 @@ diskchk:
     inc     hl
     or      a,(hl)
     jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
-    jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
+
+    jp      __cpm_ccp_head  ;valid disk, go to ccp for further processing
 
 ;=============================================================================
 ; Console I/O routines
