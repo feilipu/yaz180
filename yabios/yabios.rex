@@ -17,9 +17,9 @@
 - rc_01_output_
 + _asci[01]_
 
-+ _f_
++ asm_am9511a_
 
-+ _apu_
++ _f_
 
 + ide_write_sector
 + ide_read_sector

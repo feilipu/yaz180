@@ -223,9 +223,6 @@ gocpm:
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
 
-    call    _asci0_flush_Rx_di
-    call    _asci1_flush_Rx_di
-
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskchk       ;disk number valid, check existence via valid LBA
