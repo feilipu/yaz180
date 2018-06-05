@@ -928,7 +928,7 @@ am9511a_isr_entry:
 
     ld hl,(APUCMDOutPtr)    ; get the pointer to place where we pop the COMMAND
     ld a,(hl)               ; get the COMMAND byte
-    ld (APUStatus),a        ; save the COMMAND (in status byte)
+    ld (APUStatus),a        ; save the COMMAND (in APUStatus byte)
 
     inc l                   ; move the COMMAND pointer low byte along, 0xFF rollover
     ld (APUCMDOutPtr),hl    ; write where the next byte should be popped
@@ -996,7 +996,7 @@ am9511a_isr_op_ent:
     ex (sp),hl
     outi                    ; output 16 bit OPERAND to APU
 
-    ld a,(APUStatus)        ; recover the COMMAND status
+    ld a,(APUStatus)        ; recover the COMMAND (stored in APUStatus byte)
     cp __IO_APU_OP_ENT16    ; is it a 2 byte OPERAND
     jp Z,am9511a_isr_entry  ; yes? then go back to get another COMMAND
 
@@ -1035,7 +1035,7 @@ am9511a_isr_op_rem:         ; REMINDER operands removed BIG ENDIAN !!!
 
     inc hl                  ; reverse the OPERAND bytes to load
 
-    ld a,(APUStatus)        ; recover the COMMAND status
+    ld a,(APUStatus)        ; recover the COMMAND (stored in APUStatus byte)
     cp __IO_APU_OP_REM16    ; is it a 2 byte OPERAND
     jr Z,am9511a_isr_op_rem16   ; yes then skip over 32bit stuff
 
@@ -1179,7 +1179,7 @@ asm_am9511a_opp:
     rrca                    ; we know BBR lower nibble is 0
     rrca
     rrca
-    add a,c                 ; create destination far address, from twos complement relative input
+    add a,b                 ; create destination far address, from twos complement relative input
     and a,$0F               ; convert it to 4 bit address (not implicit here)
 
     rlca                    ; move the origin bank to high nibble
