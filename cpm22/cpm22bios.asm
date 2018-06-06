@@ -163,9 +163,9 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     jp      Z,gocpm         ;jp to gocpm, if there's nothing to load
                             ;cross fingers that the CCP/BDOS still exists
 
-    ld      hl, _dmac0Lock
-    sra     (hl)            ;take the DMAC0 lock
-    jr      C, wboot
+;   ld      hl, _dmac0Lock
+;   sra     (hl)            ;take the DMAC0 lock
+;   jr      C, wboot
 
     out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
 
@@ -190,8 +190,8 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
     out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
                             ;in burst mode the Z180 CPU stops until the DMA completes
-    ld      a,$FE
-    ld      (_dmac0Lock), a ;give DMAC0 free
+;   ld      a,$FE
+;   ld      (_dmac0Lock), a ;give DMAC0 free
 
     jp      gocpm           ;transfer to cp/m if all have been loaded
 
@@ -222,6 +222,9 @@ gocpm:
     inc     de
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
+
+    call    _asci0_flush_Rx_di
+    call    _asci1_flush_Rx_di
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
