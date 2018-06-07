@@ -27,6 +27,7 @@
 
 + delay
 + rhex
++ pchar
 + phex
 + pstring
 + pnewline
