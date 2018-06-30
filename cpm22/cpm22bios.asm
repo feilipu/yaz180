@@ -160,7 +160,7 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
 
     ld      a,(_cpm_src_bank)   ;get CP/M CCP/BDOS/BIOS src bank
     or      a               ;check ROM version exists (src bank non zero)
-    jp      Z,gocpm         ;jp to gocpm, if there's nothing to load
+    jr      Z,gocpm         ;jp to gocpm, if there's nothing to load
                             ;cross fingers that the CCP/BDOS still exists
 
 ;   ld      hl, _dmac0Lock
@@ -193,7 +193,7 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
 ;   ld      a,$FE
 ;   ld      (_dmac0Lock), a ;give DMAC0 free
 
-    jp      gocpm           ;transfer to cp/m if all have been loaded
+;   jp      gocpm           ;transfer to cp/m if all have been loaded
 
 ;=============================================================================
 ; Common code for cold and warm boot
