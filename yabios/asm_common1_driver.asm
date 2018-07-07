@@ -30,6 +30,11 @@ _error_handler_rst:     ; RST  8
     call phexwd         ; output originating RST address on serial port
     ex de,hl            ; get error code in L
     call phex           ; output error code on serial port
+    ld b, $00
+error_handler_delay_loop:
+    ex (sp), hl
+    ex (sp), hl
+    djnz error_handler_delay_loop
     halt
 
 ;------------------------------------------------------------------------------
@@ -850,7 +855,7 @@ asm_system_tick:
 
     ld hl,__system_time_fraction
     inc (hl)
-    jr Z,system_tick_stack_check ; at 0 we're at 1 second count, interrupted 256 times
+    jr Z,system_tick_update     ; at 0 we're at 1 second count, interrupted 256 times
 
 system_tick_exit:
     pop hl
@@ -858,17 +863,14 @@ system_tick_exit:
     ei                          ; interrupts were enabled, or we wouldn't have been here
     ret
 
-system_tick_stack_check:
+system_tick_update:
     ld hl,_bios_stack_canary    ; check that the bios stack has not collided with code
     ld a,(hl)                   ; grab first byte $AA
     rrca                        ; rotate it to $55
     inc hl                      ; point to second byte $55
     xor (hl)                    ; if correct, zero result
-    jr Z,system_tick_update     ; so continue as normal
-    rst 8                       ; Okay, Houston, we've had a problem!
-    defb $40                    ; Stack Error Code 0x40 '@'
+    jr NZ,system_tick_error     ; if not, then error
 
-system_tick_update:
     ld hl,__system_time
     inc (hl)
     jr NZ,system_tick_exit
@@ -882,6 +884,10 @@ system_tick_update:
     inc (hl)
     jr system_tick_exit
 
+system_tick_error:
+    rst 8                       ; Okay, Houston, we've had a problem!
+    defb $40                    ; Stack Error Code 0x40 '@'
+    
 ;------------------------------------------------------------------------------
 ; start of common area 1 driver - am9511a functions
 ;------------------------------------------------------------------------------
@@ -911,11 +917,6 @@ asm_am9511a_isr:
     push de
     push hl
 
-    xor a                   ; set internal clock = crystal x 1 = 18.432MHz
-                            ; that makes the PHI 9.216MHz
-    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
-                            ; Am9511A-1 needs TWCS 30ns. This provides 41.7ns.
-
 am9511a_isr_entry:
     ld a,(APUCMDBufUsed)    ; check whether we have a command to do
     or a                    ; zero?
@@ -937,23 +938,29 @@ am9511a_isr_entry:
     dec (hl)                ; atomically decrement COMMAND count remaining
 
     and $F0                 ; mask only most significant nibble of COMMAND
-    cp __IO_APU_OP_ENT      ; check whether it is OPERAND entry COMMAND
-    jr Z,am9511a_isr_op_ent ; load an OPERAND
 
     cp __IO_APU_OP_REM      ; check whether it is OPERAND removal COMMAND
     jr Z,am9511a_isr_op_rem ; remove an OPERAND
 
+    cp __IO_APU_OP_ENT      ; check whether it is OPERAND entry COMMAND
+    jr Z,am9511a_isr_op_ent ; load an OPERAND
+
+    xor a                   ; set internal clock = crystal x 1 = 18.432MHz
+                            ; that makes the PHI 9.216MHz
+    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+                            ; Am9511A-1 needs TWCS 30ns. This provides 41.7ns.
+
     ld a,(APUStatus)        ; recover the COMMAND from status byte
     ld bc,__IO_APU_CONTROL  ; the address of the APU control port in BC
     out (c),a               ; load the COMMAND, and do it
-    
+
+    ld a,CMR_X2             ; set internal clock = crystal x 2 = 36.864MHz
+    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+
     ld hl,APUStatus         ; set APUStatus to busy
     ld (hl),__IO_APU_STATUS_BUSY
 
 am9511a_isr_exit:
-    ld a,CMR_X2             ; set internal clock = crystal x 2 = 36.864MHz
-    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
-
     pop hl                  ; recover HL, etc
     pop de
     pop bc
@@ -989,6 +996,11 @@ am9511a_isr_op_ent:
     in0 e,(BBR)             ; keep current BBR in E
     out0 (BBR),b            ; make the bank swap to B
 
+    xor a                   ; set internal clock = crystal x 1 = 18.432MHz
+                            ; that makes the PHI 9.216MHz
+    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+                            ; Am9511A-1 needs TWCS 30ns. This provides 41.7ns.
+
     ld bc,__IO_APU_DATA+$0300 ; the address of the APU data port in BC
     outi                    ; output 16 bit OPERAND to APU
 
@@ -998,7 +1010,7 @@ am9511a_isr_op_ent:
 
     ld a,(APUStatus)        ; recover the COMMAND (stored in APUStatus byte)
     cp __IO_APU_OP_ENT16    ; is it a 2 byte OPERAND
-    jp Z,am9511a_isr_entry  ; yes? then go back to get another COMMAND
+    jr Z,am9511a_isr_op_ent16 ; yes, then skip over 32bit stuff
 
     ex (sp),hl              ; delay for 38 cycles (5us) TWI 1.280us
     ex (sp),hl
@@ -1007,6 +1019,10 @@ am9511a_isr_op_ent:
     ex (sp),hl              ; delay for 38 cycles (5us) TWI 1.280us
     ex (sp),hl
     outi
+
+am9511a_isr_op_ent16:
+    ld a,CMR_X2             ; set internal clock = crystal x 2 = 36.864MHz
+    out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
 
     out0 (BBR),e            ; make the bank swap back
     jp am9511a_isr_entry    ; go back to get another COMMAND
@@ -1037,7 +1053,7 @@ am9511a_isr_op_rem:         ; REMINDER operands removed BIG ENDIAN !!!
 
     ld a,(APUStatus)        ; recover the COMMAND (stored in APUStatus byte)
     cp __IO_APU_OP_REM16    ; is it a 2 byte OPERAND
-    jr Z,am9511a_isr_op_rem16   ; yes then skip over 32bit stuff
+    jr Z,am9511a_isr_op_rem16   ; yes, then skip over 32bit stuff
 
     inc hl                  ; increment two more bytes for 32bit OPERAND
     inc hl
