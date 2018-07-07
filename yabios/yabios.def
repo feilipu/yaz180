@@ -192,64 +192,64 @@ PUBLIC _common1_phase_end
 DEFC _common1_phase_end              = $FE50
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $5E33
+DEFC _f_mount                        = $5E4E
 
 PUBLIC _f_open
-DEFC _f_open                         = $5EA0
+DEFC _f_open                         = $5EBB
 
 PUBLIC _f_read
-DEFC _f_read                         = $63BE
+DEFC _f_read                         = $63CE
 
 PUBLIC _f_write
-DEFC _f_write                        = $68F7
+DEFC _f_write                        = $68E0
 
 PUBLIC _f_sync
-DEFC _f_sync                         = $6EE2
+DEFC _f_sync                         = $6ED1
 
 PUBLIC _f_close
-DEFC _f_close                        = $703B
+DEFC _f_close                        = $7034
 
 PUBLIC _f_chdrive
-DEFC _f_chdrive                      = $7071
+DEFC _f_chdrive                      = $706A
 
 PUBLIC _f_chdir
-DEFC _f_chdir                        = $708F
+DEFC _f_chdir                        = $7088
 
 PUBLIC _f_getcwd
-DEFC _f_getcwd                       = $7146
+DEFC _f_getcwd                       = $713F
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $73EE
+DEFC _f_lseek                        = $73E5
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $7992
+DEFC _f_opendir                      = $7989
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7A89
+DEFC _f_closedir                     = $7A80
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $7AAF
+DEFC _f_readdir                      = $7AA6
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7B20
+DEFC _f_stat                         = $7B17
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $7B8D
+DEFC _f_getfree                      = $7B84
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7E50
+DEFC _f_truncate                     = $7E47
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $8076
+DEFC _f_unlink                       = $806D
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $821A
+DEFC _f_mkdir                        = $8210
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $847E
+DEFC _f_rename                       = $8477
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $87D3
+DEFC _f_expand                       = $87A7
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0516
@@ -282,37 +282,37 @@ PUBLIC __mullong_callee
 DEFC __mullong_callee                = $0FB9
 
 PUBLIC _fflush_fastcall
-DEFC _fflush_fastcall                = $1166
+DEFC _fflush_fastcall                = $115E
 
 PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $116C
+DEFC _fputc_callee                   = $1164
 
 PUBLIC _getline_callee
-DEFC _getline_callee                 = $1174
+DEFC _getline_callee                 = $116C
 
 PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $1803
+DEFC _atoi_fastcall                  = $17FB
 
 PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $1821
+DEFC _atol_fastcall                  = $1819
 
 PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $1842
+DEFC _exit_fastcall                  = $183A
 
 PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $17FB
+DEFC _strtoul_callee                 = $17F3
 
 PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $195C
+DEFC _memcmp_callee                  = $1954
 
 PUBLIC _memcpy_callee
-DEFC _memcpy_callee                  = $1964
+DEFC _memcpy_callee                  = $195C
 
 PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $196C
+DEFC _strcmp_callee                  = $1964
 
 PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $1972
+DEFC _strtok_callee                  = $196A
 
 PUBLIC _disk_initialize_fastcall
 DEFC _disk_initialize_fastcall       = $0224
