@@ -22,6 +22,8 @@ Note that the SST39SF020A 256kB flash device is only supported for 128kB, unless
 
 Note that the Am9511A needs to have 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A.
 
+<a href="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" width="400"/></a>
+
 ## PCB Version 2.2 (2018)
 
 The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown above.
