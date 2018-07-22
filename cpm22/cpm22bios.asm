@@ -163,9 +163,9 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     jr      Z,gocpm         ;jp to gocpm, if there's nothing to load
                             ;cross fingers that the CCP/BDOS still exists
 
-;   ld      hl, _dmac0Lock
-;   sra     (hl)            ;take the DMAC0 lock
-;   jr      C, wboot
+    ld      hl, _dmac0Lock
+    sra     (hl)            ;take the DMAC0 lock
+    jr      C, wboot
 
     out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
 
@@ -190,8 +190,8 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
     out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
                             ;in burst mode the Z180 CPU stops until the DMA completes
-;   ld      a,$FE
-;   ld      (_dmac0Lock), a ;give DMAC0 free
+    ld      a,$FE
+    ld      (_dmac0Lock), a ;give DMAC0 free
 
 ;   jp      gocpm           ;transfer to cp/m if all have been loaded
 
@@ -289,13 +289,13 @@ conin:    ;console character into register a
 conin0:
    call     _asci0_getc     ;check whether any characters are in CRT Rx0 buffer
    jr       NC, conin0      ;if Rx buffer is empty
-   and      $7F             ;strip parity bit
+;  and      $7F             ;strip parity bit - support 8 bit XMODEM
    ret
 
 conin1:
    call     _asci1_getc     ;check whether any characters are in TTY Rx1 buffer
    jr       NC, conin1      ;if Rx buffer is empty
-   and      $7F             ;strip parity bit
+;  and      $7F             ;strip parity bit - support 8 bit XMODEM
    ret
 
 reader:
@@ -787,6 +787,8 @@ getLBAbase:
 ;
 
 SECTION cpm_bios_data
+
+ALIGN 0x0008                ;align the bios data
 
 ;------------------------------------------------------------------------------
 ; start of fixed tables - non aligned rodata
