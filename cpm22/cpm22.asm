@@ -1470,7 +1470,7 @@ BADSCTR:
     CP    CNTRLC        ;re-boot request (control-c)?
     JP    Z,0           ;yes.
     RET                 ;no, return to retry i/o function.
-;
+
 BADSLCT:
     LD    HL,BADSEL     ;bad drive selected.
     JP    ERRORBDOS
@@ -1910,16 +1910,7 @@ IOERR1:
 ;   Select error occured, jump to error routine.
 ;
 SLCTERR:
-    LD    HL,BADSLCT
-;
-;   Jump to (HL) indirectly.
-;
-JUMPHL:
-    LD    E,(HL)
-    INC    HL
-    LD    D,(HL)        ;now (DE) contain the desired address.
-    EX    DE,HL
-    JP    (HL)
+    JP    BADSLCT
 ;
 ;   Block move. (DE) to (HL), (C) bytes total.
 ;
@@ -2010,8 +2001,7 @@ DOWRITE:
 IORET:
     OR      A
     RET     Z               ;return unless an error occured.
-    LD      HL,BADSCTR      ;bad read/write on this sector.
-    JP      JUMPHL
+    JP      BADSCTR         ;bad read/write on this sector.
 ;
 ;   Routine to select the track and sector that the desired
 ;   block number falls in.
@@ -2346,23 +2336,21 @@ WRTPRTD:
 ;   Check for a read only file.
 ;
 CHKROFL:
-    CALL    FCB2HL        ;set (HL) to file entry in directory buffer.
+    CALL    FCB2HL      ;set (HL) to file entry in directory buffer.
 CKROF1:
-    LD    DE,9        ;look at bit 7 of the ninth byte.
+    LD     DE,9         ;look at bit 7 of the ninth byte.
     ADD    HL,DE
-    LD    A,(HL)
+    LD     A,(HL)
     RLA    
-    RET    NC        ;return if ok.
-    LD    HL,ROFILE    ;else, print error message and terminate.
-    JP    JUMPHL
+    RET    NC           ;return if ok.
+    JP     ROFILE       ;else, print error message and terminate.
 ;
 ;   Check the write protect status of the active disk.
 ;
 CHKWPRT:
     CALL    GETWPRT
-    RET    Z        ;return if ok.
-    LD    HL,RODISK    ;else print message and terminate.
-    JP    JUMPHL
+    RET     Z          ;return if ok.
+    JP      RODISK     ;else print message and terminate.
 ;
 ;   Routine to set (HL) pointing to the proper entry in the
 ;   directory buffer.
