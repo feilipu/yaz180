@@ -1466,7 +1466,7 @@ FUNCTNS:
 ;
 BADSCTR:
     LD    HL,BADSEC     ;bad sector message.
-    CALL    PRTERR      ;print it and get a 1 char response.
+    CALL  PRTERR        ;print it and get a 1 char response.
     CP    CNTRLC        ;re-boot request (control-c)?
     JP    Z,0           ;yes.
     RET                 ;no, return to retry i/o function.
@@ -1483,7 +1483,7 @@ ROFILE:
     LD    HL,FILERO     ;file is read only.
 
 ERRORBDOS:
-    CALL    PRTERR
+    CALL  PRTERR
     JP    0             ;always reboot on these errors.
 
 BDOSERR:    DEFM    "Bdos Err On "
