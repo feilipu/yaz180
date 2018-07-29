@@ -1416,21 +1416,10 @@ SECTION cpm_bdos
 
 ALIGN   0x100                   ;ALIGN the FBASE to a page
 
-FBASE:
-    JP    FBASE1
-;
-;   Bdos error table.
-;
-BADSCTR:    DEFW    ERROR1      ;bad sector on read or write
-BADSLCT:    DEFW    ERROR2      ;bad disk select
-RODISK:     DEFW    ERROR3      ;disk is read only
-ROFILE:     DEFW    ERROR4      ;file is read only
-
-;
 ;   Entry into bdos. (DE) or (E) are the parameters passed. The
 ;   function number desired is in register (C).
 ;
-FBASE1:
+FBASE:
     EX      DE,HL        ;save the (DE) parameters.
     LD      (PARAMS),HL
     EX      DE,HL
@@ -1475,27 +1464,27 @@ FUNCTNS:
 ;
 ;   Bdos error message section.
 ;
-ERROR1:
-    LD    HL,BADSEC    ;bad sector message.
-    CALL    PRTERR        ;print it and get a 1 char response.
+BADSCTR:
+    LD    HL,BADSEC     ;bad sector message.
+    CALL    PRTERR      ;print it and get a 1 char response.
     CP    CNTRLC        ;re-boot request (control-c)?
-    JP    Z,0        ;yes.
-    RET            ;no, return to retry i/o function.
+    JP    Z,0           ;yes.
+    RET                 ;no, return to retry i/o function.
 ;
-ERROR2:
-    LD    HL,BADSEL    ;bad drive selected.
-    JP    ERROR5
+BADSLCT:
+    LD    HL,BADSEL     ;bad drive selected.
+    JP    ERRORBDOS
 
-ERROR3:
-    LD    HL,DISKRO    ;disk is read only.
-    JP    ERROR5
+RODISK:
+    LD    HL,DISKRO     ;disk is read only.
+    JP    ERRORBDOS
 
-ERROR4:
-    LD    HL,FILERO    ;file is read only.
+ROFILE:
+    LD    HL,FILERO     ;file is read only.
 
-ERROR5:
+ERRORBDOS:
     CALL    PRTERR
-    JP    0        ;always reboot on these errors.
+    JP    0             ;always reboot on these errors.
 
 BDOSERR:    DEFM    "Bdos Err On "
 BDOSDRV:    DEFM    " : $"
