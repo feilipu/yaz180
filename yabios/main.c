@@ -29,7 +29,7 @@
 #pragma output CRT_ENABLE_RST          = 0x00FE
 #pragma output CRT_ENABLE_TRAP         = 1
 
-#pragma output CLIB_MALLOC_HEAP_SIZE   = 4096
+#pragma output CLIB_MALLOC_HEAP_SIZE   = 8192
 // #pragma output CLIB_EXIT_STACK_SIZE    = 0      // do not reserve space for registering atexit() functions
 
 
