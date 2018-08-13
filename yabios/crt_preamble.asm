@@ -108,7 +108,7 @@ IF (__page_zero_present)
     ld      (hl), $FF
 
     EXTERN  _asci0_init
-    call    _asci0_init     ; initialise the asci0
+    call    _asci0_init     ; initialise the asci0 and,
 
     EXTERN  _asci1_init    
     call    _asci1_init     ; the asci1 interfaces
