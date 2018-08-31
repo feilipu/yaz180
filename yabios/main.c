@@ -23,15 +23,11 @@
 
 // PRAGMAS
 
-// #pragma printf = "%s %lu %u %d %c %X"
-
 #pragma output REGISTER_SP             = 0xFFDE // __BIOS_SP
 #pragma output CRT_ENABLE_RST          = 0x00FE
 #pragma output CRT_ENABLE_TRAP         = 1
 
 #pragma output CLIB_MALLOC_HEAP_SIZE   = 8192
-// #pragma output CLIB_EXIT_STACK_SIZE    = 0      // do not reserve space for registering atexit() functions
-
 
 // DEFINES
 
@@ -622,7 +618,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v1.0\n");
+    fprintf(output,"YAZ180 - yabios v1.1\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -1205,7 +1201,7 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1530921600 - UNIX_OFFSET);      /* Initial time: July 7, 2018 UTC */
+    set_system_time(1535760000 - UNIX_OFFSET);      /* Initial time: September 1, 2018 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */

@@ -945,17 +945,18 @@ am9511a_isr_entry:
     cp __IO_APU_OP_ENT      ; check whether it is OPERAND entry COMMAND
     jr Z,am9511a_isr_op_ent ; load an OPERAND
 
-    xor a                   ; set internal clock = crystal x 1 = 18.432MHz
-                            ; that makes the PHI 9.216MHz
+    xor a                   ; set PHI = crystal x 1/2 = 9.216MHz
     out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+    out0 (CCR),a            ; CPU Control Reg (CCR)
                             ; Am9511A-1 needs TWCS 30ns. This provides 41.7ns.
 
     ld a,(APUStatus)        ; recover the COMMAND from status byte
     ld bc,__IO_APU_CONTROL  ; the address of the APU control port in BC
     out (c),a               ; load the COMMAND, and do it
 
-    ld a,CMR_X2             ; set internal clock = crystal x 2 = 36.864MHz
+    ld a,CMR_X2             ; set PHI = crystal x 2 = 36.864MHz
     out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+    out0 (CCR),a            ; CPU Control Reg (CCR) CCR_XTAL_X2 = CMR_X2
 
     ld hl,APUStatus         ; set APUStatus to busy
     ld (hl),__IO_APU_STATUS_BUSY
@@ -996,9 +997,9 @@ am9511a_isr_op_ent:
     in0 e,(BBR)             ; keep current BBR in E
     out0 (BBR),b            ; make the bank swap to B
 
-    xor a                   ; set internal clock = crystal x 1 = 18.432MHz
-                            ; that makes the PHI 9.216MHz
+    xor a                   ; set PHI = crystal x 1/2 = 9.216MHz
     out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+    out0 (CCR),a            ; CPU Control Reg (CCR)
                             ; Am9511A-1 needs TWCS 30ns. This provides 41.7ns.
 
     ld bc,__IO_APU_DATA+$0300 ; the address of the APU data port in BC
@@ -1021,8 +1022,9 @@ am9511a_isr_op_ent:
     outi
 
 am9511a_isr_op_ent16:
-    ld a,CMR_X2             ; set internal clock = crystal x 2 = 36.864MHz
+    ld a,CMR_X2             ; set PHI = crystal x 2 = 36.864MHz
     out0 (CMR),a            ; CPU Clock Multiplier Reg (CMR)
+    out0 (CCR),a            ; CPU Control Reg (CCR) CCR_XTAL_X2 = CMR_X2
 
     out0 (BBR),e            ; make the bank swap back
     jp am9511a_isr_entry    ; go back to get another COMMAND
@@ -1351,11 +1353,11 @@ _asci0_init:
     out0 (CNTLA0),a             ; output to the ASCI0 control A reg
 
                                 ; PHI / PS / SS / DR = BAUD Rate
-                                ; PHI = 18.432MHz
-                                ; BAUD = 115200 = 18432000 / 10 / 1 / 16 
-                                ; PS 0, SS_DIV_1, DR 0
-    ld a,CNTLB0_SS_DIV_1
-    out0 (CNTLB0),a             ; output to the ASCI0 control B reg
+                                ; PHI = 36.864MHz
+                                ; BAUD = 115200 = 36864000 / 10 / 2 / 16 
+                                ; PS 0, SS_DIV_2, DR 0
+    ld a,CNTLB0_SS_DIV_2
+    out0    (CNTLB0),a          ; output to the ASCI0 control B reg
 
     ld a,STAT0_RIE              ; receive interrupt enabled
     out0 (STAT0),a              ; output to the ASCI0 status reg
@@ -1632,11 +1634,11 @@ _asci1_init:
     out0 (CNTLA1),a             ; output to the ASCI1 control A reg
 
                                 ; PHI / PS / SS / DR = BAUD Rate
-                                ; PHI = 18.432MHz
-                                ; BAUD = 9600 = 18432000 / 30 / 1 / 64
-                                ; PS 1, SS_DIV_1, DR 1
-    ld a,CNTLB1_PS|CNTLB1_DR|CNTLB1_SS_DIV_1
-    out0 (CNTLB1),a             ; output to the ASCI1 control B reg
+                                ; PHI = 36.864MHz
+                                ; BAUD = 9600 = 36864000 / 30 / 2 / 64
+                                ; PS 1, SS_DIV_2, DR 1
+    ld a,CNTLB1_PS|CNTLB1_DR|CNTLB1_SS_DIV_2
+    out0    (CNTLB1),a          ; output to the ASCI1 control B reg
 
     ld a,STAT1_RIE              ; receive interrupt enabled
     out0 (STAT1),a              ; output to the ASCI1 status reg
