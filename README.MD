@@ -7,13 +7,13 @@ And so, here it is.
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Left<center></th>
 </tr>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Right<center></th>
@@ -41,9 +41,9 @@ The YAZ180 is fully open source. All documentation and design is available from 
 
 The Z180 CPU is based on the Z80 CPU, but it includes a number of integrated peripherals including a basic Memory Management Unit (MMU), two serial interfaces (ASCI0 & ASCI1), two DMA controllers (DMAC0 & DMAC1), and two Programmable Reload Timers (PRT0 & PRT1).
 
-The fastest readily available Flash memory is 55ns. This is matched by the fastest RAM in 8 x 1MByte packaging at 45ns. Using these two timings the fastest clock that can be therefore be supported is approximately 20MHz. Using this as a guide, and knowing that the Z180 ASCI interfaces are happiest running at a magic frequency, I have therefore selected 18.432MHz as the basic operating frequency (or Phi) for the YAZ180.
+The fastest readily available Flash memory is 55ns. This is matched by the fastest RAM in 8 x 1MByte packaging at 45ns. Using these two timings the fastest clock that can be therefore be supported is approximately 20MHz. Using this as a guide, and knowing that the Z180 ASCI interfaces are happiest running at a magic frequency, I have therefore selected 18.432MHz as the crystal oscillator frequency for the YAZ180.
 
-The Z180 can operate internally at 2x the external Phi clock, which means that the YAZ180 is configured to run at 36.864MHz in normal situations. This is slightly outside the Z180 specification (33MHz), but this frequency is widely recommended even in Zilog documentation.
+The Z180 can operate internally at 2x the crystal oscillator frequency, which means that the YAZ180 is configured to run with PHI at 36.864MHz with 1 wait memory wait state in normal situations. This is slightly outside the Z180 specification (33MHz), but this frequency is reported to work without issues by a number of SBC builds.
 
 The AMD Am9511A (1977) was the first hardware arithmetic Floating Point Unit (FPU) developed. It is essentially a "scientific calculator" on a chip, and is capable of both 16 bit and 32 bit fixed and 32 bit floating point processing, across all the standard and trancendental functions. Even though this device is 40 years old, it is still [comparable in performance](https://feilipu.me/2017/02/22/characterising-am9511a-1-apu/) of mathematical calculations to its Z180 host.
 
@@ -284,7 +284,7 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 Please see here for status of yabios [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load either [yabios v0.6](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM, and RAM models.
+Currently the YAZ180 is initialised to load either [yabios v1.1](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), and APP (yabios) models.
 
 The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_call_far` capability to allow applications to grow beyond 60kB. There is support for CP/M drives as Fat32 files on an IDE drive.
 

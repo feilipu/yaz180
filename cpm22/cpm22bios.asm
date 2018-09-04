@@ -426,7 +426,7 @@ chgdsk:
 ;read the selected CP/M sector
 read:
     xor     a
-    ld      (unacnt),a		;unacnt = 0
+    ld      (unacnt),a      ;unacnt = 0
     inc     a
     ld      (readop),a      ;read operation
     ld      (rsflag),a      ;must read data
