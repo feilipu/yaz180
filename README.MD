@@ -7,13 +7,13 @@ And so, here it is.
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_left.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_left.JPG"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Left<center></th>
 </tr>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://raw.githubusercontent.com//feilipu/yaz180/blob/master/docs/YAZ180v21_right_low.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_right_low.JPG"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Right<center></th>
@@ -80,7 +80,7 @@ This is the maximum size supported by the Eagle "Hobby Licence", which was used 
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v2.2.png"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png"/></a></td>
 </tr>
 <tr>
 <th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.2 PCB 2018 Layout<center></th>
