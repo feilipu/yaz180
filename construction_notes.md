@@ -22,7 +22,7 @@ Note that the SST39SF020A 256kB flash device is only supported for 128kB, unless
 
 Note that the Am9511A needs to have at least 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A.
 
-Note to operate the YAZ180 at 36.864MHz, and have the Am9511A work at its preferred frequency, the QD (/16) output of the 74LS93 divider needs to be connected to the Am9511A `CLK` rather than the QC (/8) output. In practice, I just lifted Pin 8 of the 74LS93 off the pad, and soldered a tiny jumper from Pin 11 to Pin 8. There's no problem with just breaking off Pin 8 if it is getting in the way.
+Note to operate the YAZ180 at 36.864MHz, and have the Am9511A work at its preferred frequency, the QD (/16) output of the 74LS93 divider needs to be connected to the Am9511A `CLK` rather than the QC (/8) output. In practice, I just lifted Pin 8 of the 74LS93 off the pad, and soldered a tiny jumper from Pin 11 to Pad 8. There's no problem with just breaking off Pin 8 if it is getting in the way.
 
 <a href="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" width="400"/></a>
 
