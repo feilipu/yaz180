@@ -26,6 +26,28 @@ Note to operate the YAZ180 at 36.864MHz, and have the Am9511A work at its prefer
 
 <a href="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" target="_blank"><img src="https://github.com/feilipu/yaz180/raw/master/docs/YAZ180v21%20_APUerrata.png" width="400"/></a>
 
+These two images show a Version 2.1 PCB with both APU modifications, and ESP-01S modification. The Flash address modification has not been made, and would only be visible on the back side.
+
+<div>
+<table style="border: 2px solid #cccccc;">
+<tbody>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/raw/master/docs/IMG_1606.jpg" target="_blank"><img src="https://github.com/feilipu/yaz180/raw/master/docs/IMG_1606.jpg"/></a></td>
+</tr>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Top Perspective View<center></th>
+</tr>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/raw/master/docs/IMG_1607.jpg" target="_blank"><img src="https://github.com/feilipu/yaz180/raw/master/docs/IMG_1607.jpg"/></a></td>
+</tr>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Bottom Perspective View<center></th>
+</tr>
+</tbody>
+</table>
+</div>
+
+
 ## PCB Version 2.2 (2018)
 
 The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown above.
