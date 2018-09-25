@@ -300,4 +300,8 @@ CP/M drive files can be read and written using a host PC with any operating syst
 
 ## Construction Notes
 
-There are some [construction notes](https://github.com/feilipu/yaz180/tree/master/construction_notes.md) with errata, to advise on how to build the YAZ180.
+There are some [construction notes](https://github.com/feilipu/yaz180/tree/master/construction_notes.md) with errata, to advice on how to build the YAZ180.
+
+## Owners Notes
+
+There are some [owners notes](https://github.com/feilipu/yaz180/tree/master/owners_notes.md) advice on how to operate the YAZ180, and its environment.

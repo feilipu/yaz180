@@ -4,8 +4,8 @@ These are some notes taken during implementation, so that the scraps of paper do
 
 ## FIXME
 
-- convert APU driver from storing operand pointers, to actually store operands.<br>
-- implement mutex lock code for apu [ ], asci0 [ ], and asci1 [ ].<br>
+- [x] convert APU driver from storing operand pointers, to actually store operands.<br>
+- [ ] implement mutex lock code for apu [ ], asci0 [ ], and asci1 [ ].<br>
 
 ## Why the `COMMON_AREA_1` shrunk
 
