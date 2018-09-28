@@ -219,37 +219,37 @@ PUBLIC _f_getcwd
 DEFC _f_getcwd                       = $716C
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $7414
+DEFC _f_lseek                        = $7418
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $79B8
+DEFC _f_opendir                      = $79BC
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7AAF
+DEFC _f_closedir                     = $7AB3
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $7AD5
+DEFC _f_readdir                      = $7AD9
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7B46
+DEFC _f_stat                         = $7B4A
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $7BB3
+DEFC _f_getfree                      = $7BB7
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7E76
+DEFC _f_truncate                     = $7E7A
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $809C
+DEFC _f_unlink                       = $80A0
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $823F
+DEFC _f_mkdir                        = $8243
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $8470
+DEFC _f_rename                       = $8474
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $8729
+DEFC _f_expand                       = $872D
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $051B
