@@ -65,13 +65,13 @@ uint8_t * mutex;
 
 
 /*------------------------------------------------------------------------------
- * void lockGive(uint8_t * mutex)
+ * void lock_give(uint8_t * mutex)
  *
  * mutex − This is a pointer to a simple mutex semaphore
  *
  */
 
-void lockGive(mutex)
+void lock_give(mutex)
 uint8_t * mutex;
 {
 #asm

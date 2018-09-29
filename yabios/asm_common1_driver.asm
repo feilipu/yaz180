@@ -822,7 +822,7 @@ lock_got_not:
     ret
 
 ;------------------------------------------------------------------------------
-; void lockGive(uint8_t * mutex)
+; void lock_give(uint8_t * mutex)
 ;
 ; mutex − This is a pointer to a simple mutex semaphore
 
