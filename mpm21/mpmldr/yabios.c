@@ -15,7 +15,7 @@ uint8_t bank_get_abs(int8_t bankRel);
 /* provide memcpy_far function */
 void *memcpy_far( void *str_dest, char bank_dest, void *str_src, char bank_src, size_t n);
 
-/* provide memcpy_far function */
+/* provide jp_far function */
 void jp_far( void *str, int8_t bank);
 
 
@@ -51,16 +51,17 @@ uint8_t * mutex;
 uint8_t lock_try(mutex)
 uint8_t * mutex;
 {
-    register uint8_t ret;
+    uint16_t ret;
 #asm
     global asm_lock_try_fastcall
     ld h,(ix+6+1)
     ld l,(ix+6+0)
     call asm_lock_try_fastcall
+    inc sp
+    inc sp
     push hl
-    pop iy
 #endasm
-    return ret;
+    return (uint8_t)ret;
 }
 
 
@@ -96,15 +97,16 @@ uint8_t * mutex;
 int8_t bank_get_rel(bankAbs)
 uint8_t bankAbs;
 {
-    register int8_t bank;
+    int16_t bank;
 #asm
     global asm_bank_get_rel_fastcall
     ld l,(ix+6+0)
     call asm_bank_get_rel_fastcall
+    inc sp
+    inc sp
     push hl
-    pop iy
 #endasm
-    return bank;
+    return (int8_t)bank;
 }
 
 
@@ -120,15 +122,16 @@ uint8_t bankAbs;
 uint8_t bank_get_abs(bankRel)
 int8_t bankRel;
 {
-    register uint8_t bank;
+    uint16_t bank;
 #asm
     global asm_bank_get_abs_fastcall
     ld l,(ix+6+0)
     call asm_bank_get_abs_fastcall
+    inc sp
+    inc sp
     push hl
-    pop iy
 #endasm
-    return bank;
+    return (uint8_t)bank;
 }
 
 
@@ -166,7 +169,7 @@ void *str_src;
 char bank_src;
 size_t n;
 {
-    register void * addr;
+    void * addr;
 #asm
     global asm_memcpy_far
     ld h,(ix+6+9)    
@@ -185,8 +188,9 @@ size_t n;
     ld l,(ix+6+0)
     push hl
     call asm_memcpy_far
+    inc sp
+    inc sp
     push hl
-    pop iy
 #endasm
     return addr;
 }
