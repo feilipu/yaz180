@@ -733,18 +733,18 @@ _bank_get_rel:
     push hl
     push af
 
-_bank_get_rel_fastcall:  
-    ld a,l
-    and a,$0F           ; limit input to 0 to 15 bank
-    ld l,a
-
+_bank_get_rel_fastcall:
     in0 a,(BBR)         ; get the current bank
     rrca                ; move the current bank to low nibble
     rrca
     rrca
     rrca
+    ld h,a
 
-    sub a,l             ; create source relative far address, from absolute input
+    ld a,l
+    and a,$0F           ; limit input to 0 to 15 bank
+
+    sub a,h             ; create source relative far address, from absolute input
     ld l,a
 
     ret
@@ -765,8 +765,6 @@ _bank_get_abs:
     push af
 
 _bank_get_abs_fastcall:
-    push af
-
     in0 a,(BBR)         ; get the current bank
     rrca                ; move the current bank to low nibble
     rrca
@@ -777,7 +775,6 @@ _bank_get_abs_fastcall:
     and a,$0F           ; convert it to 4 bit positive address
     ld l,a
 
-    pop af
     ret
 
 ;------------------------------------------------------------------------------
@@ -2174,7 +2171,7 @@ ide_write_sector:
 ;
 
 PUBLIC asm_phexwd, asm_phex
-PUBLIC asm_pchar, asm_pstring, asm_pnewline
+PUBLIC asm_pchar, asm_pstring
 
 PUBLIC asm_rhex, asm_rchar
 
@@ -2193,13 +2190,6 @@ asm_pstring:
     call asm_pchar      ; Print it
     inc de              ; Point to next character 
     jr asm_pstring      ; Continue until $00
-
-    ; print CR/LF to asci0/1, modifies AF & HL
-asm_pnewline:
-    ld l,CHAR_CR
-    call asm_pchar
-    ld l,CHAR_LF
-    jr asm_pchar
 
     ; print contents of HL as 16 bit number in ASCII HEX, modifies AF & HL
 asm_phexwd:
