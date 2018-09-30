@@ -18,7 +18,6 @@ extern void lock_give(uint8_t * mutex);
 
 extern uint8_t bankLockBase[];  /* base address for 16 BANK locks */
 
-
 int main(argc, argv)
 int argc;
 char ** argv;
@@ -34,8 +33,10 @@ char ** argv;
 
     uint8_t * page0_template;   /* pointer to Page 0 template */
 
-    uint8_t * load_data;        /* point to data */
-    uint16_t * load_data_uint;  /* pointer to word data */    
+    union {
+      uint8_t  * u8;            /* point to uchar data */
+      uint16_t * u16;           /* pointer to uword data */
+    } load_data;
 
     if( argc == 1 )             /* no arguments on command line */
     {
@@ -51,63 +52,60 @@ char ** argv;
         exit(0); 
     }
     
-    load_data = (uint8_t *)malloc((sizeof(uint8_t))*SYSDAT_SIZE);  /* Get work area */
+    load_data.u8 = (uint8_t *)malloc((sizeof(uint8_t))*SYSDAT_SIZE);  /* Get work area */
     
-    if( load_data != NULL )
+    if( load_data.u8 != NULL )
     {
-        fread(load_data, (sizeof(uint8_t)), SYSDAT_SIZE, fptr);
+        /* Read first two records from MPM.SYS file  */
+       fread(load_data.u8, (sizeof(uint8_t)), SYSDAT_SIZE, fptr);
         if( ferror(fptr) != 0 )
         {
             fputs("Error reading file", stderr);
             fclose(fptr);
-            free(load_data);
+            free(load_data.u8);
             return 0;
         }
 
-        sysdat_page = load_data[0];
-        init_page = load_data[11];
+        sysdat_page = load_data.u8[0];
+        init_page = load_data.u8[11];
         
-        load_data_uint = (uint16_t *)load_data;
-        mpm_records = load_data_uint[60]; /* records in bytes 120-121 */
+        mpm_records = load_data.u16[60]; /* number of records in bytes 120-121 */
 
-        printf("SYSDAT %x INIT %x RECORDS %d\n", sysdat_page, init_page, mpm_records );
-        
-        data_addr = (uint8_t *)(load_data[0]*0x100);
-        
-        /* copy from current Bank into Bank 8, from address in file */
-        memcpy_far(data_addr, -(bank_get_rel(8)), load_data, 0, (sizeof(uint8_t)*SYSDAT_SIZE));
+        data_addr = (uint8_t *)(load_data.u8[0]*0x100);
 
-        free(load_data);
+        printf("SYSDAT: %x INIT: %x RECORDS: %d\n", sysdat_page, init_page, mpm_records );
+
+        /* copy from current Bank into Bank 8, to address from file */
+        memcpy_far(data_addr, -(bank_get_rel(8)), load_data.u8, 0, (sizeof(uint8_t)*SYSDAT_SIZE));
+
+        free(load_data.u8);
     }
 
     /* Read rest of MPM.SYS contents from file */
-    
-    do {
-    
-        fread(load_data, (sizeof(uint8_t)), RECORD_SIZE, fptr);
+    for(mpm_records-=2; mpm_records != 0; --mpm_records)
+    {
+        fread(load_data.u8, (sizeof(uint8_t)), RECORD_SIZE, fptr);
 
         if( ferror(fptr) != 0 )
         {
             fputs("Error reading file", stderr);
             fclose(fptr);
-            free(load_data);
+            free(load_data.u8);
             return 0;
         }
         
         data_addr -= RECORD_SIZE;       /* adjust location for writing data */
-        --mpm_records;                  /* adjust number of records remaining */
 
         /* copy from current Bank into Bank 8, from address in file */
-        memcpy_far(data_addr, -(bank_get_rel(8)), load_data, 0, (sizeof(uint8_t)*RECORD_SIZE));
-
-        printf( "memcpy_far %x %d\n", data_addr, -(bank_get_rel(8)) );
-
-    } while( mpm_records != 0 );
+        memcpy_far(data_addr, -(bank_get_rel(8)), load_data.u8, 0, (sizeof(uint8_t)*RECORD_SIZE));
+    }
 
     /* Close file */
 
     fclose(fptr);
-    free(load_data);
+    free(load_data.u8);
+    
+    printf( "Base Addr: %x\n", data_addr );
     
     page0_template = (uint8_t *)malloc((sizeof(uint8_t))*PAGE0_SIZE);  /* Get work area for the Page 0 */
 
