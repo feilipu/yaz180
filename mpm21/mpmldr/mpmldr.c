@@ -14,6 +14,7 @@ extern void *memcpy_far( void *str_dest, char bank_dest, void *str_src, char ban
 extern void jp_far( void *str, int8_t bank);
 
 extern int8_t bank_get_rel(uint8_t bankAbs);
+extern uint8_t bank_get_abs(int8_t bankRel);
 extern void lock_give(uint8_t * mutex);
 
 extern uint8_t bankLockBase[];  /* base address for 16 BANK locks */
@@ -42,6 +43,12 @@ char ** argv;
     {
      argv = _getargs(0,"MP/M SYS");
      argc = _argc_;
+    }
+    
+    if( bank_get_rel(8) == 0 )
+    {
+        printf("cannot run in bank %d\n", bank_get_abs(0));
+        exit(0);
     }
     
     /* Open file */
@@ -76,7 +83,7 @@ char ** argv;
         printf("SYSDAT: %x INIT: %x RECORDS: %d\n", sysdat_page, init_page, mpm_records );
 
         /* copy from current Bank into Bank 8, to address from file */
-        memcpy_far(data_addr, -(bank_get_rel(8)), load_data.u8, 0, (sizeof(uint8_t)*SYSDAT_SIZE));
+        memcpy_far(data_addr, bank_get_rel(8), load_data.u8, 0, (sizeof(uint8_t)*SYSDAT_SIZE));
 
         free(load_data.u8);
     }
@@ -97,7 +104,7 @@ char ** argv;
         data_addr -= RECORD_SIZE;       /* adjust location for writing data */
 
         /* copy from current Bank into Bank 8, from address in file */
-        memcpy_far(data_addr, -(bank_get_rel(8)), load_data.u8, 0, (sizeof(uint8_t)*RECORD_SIZE));
+        memcpy_far(data_addr, bank_get_rel(8), load_data.u8, 0, (sizeof(uint8_t)*RECORD_SIZE));
     }
 
     /* Close file */
@@ -118,7 +125,7 @@ char ** argv;
         memcpy((void *)page0_template, (void *)0x0000, PAGE0_SIZE);
 
         /* do the FAR copy to the new bank */
-        memcpy_far((void *)0x0000, -(bank_get_rel(8)), page0_template, 0, PAGE0_SIZE);
+        memcpy_far((void *)0x0000, bank_get_rel(8), page0_template, 0, PAGE0_SIZE);
 
         /* set bank referenced from _bankLockBase, so the the bank is noted as warm. */
         lock_give( &bankLockBase[8] );
