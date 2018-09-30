@@ -105,10 +105,10 @@ static void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt);
 
 // external functions
 
-extern uint8_t asci0_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
+extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
 extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
 extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
-extern uint8_t asci1_flush_Rx_di(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
+extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
 extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
 extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
 
@@ -1144,8 +1144,8 @@ void ya_loop(void)
     line = (char *)malloc(sizeof(char)*LINE_SIZE);      /* Get work area for the line buffer */
     if (line == NULL) return;
 
-    asci0_flush_Rx_di();
-    asci1_flush_Rx_di();
+    asci0_flush_Rx();
+    asci1_flush_Rx();
 
     while (1){                                          /* look for ":" to select the valid serial port */
         if (asci0_pollc() != 0) {
@@ -1156,7 +1156,7 @@ void ya_loop(void)
                 bios_ioByte = 1;
                 break;
             } else {
-                asci0_flush_Rx_di();
+                asci0_flush_Rx();
             }
         }
         if (asci1_pollc() != 0) {
@@ -1167,7 +1167,7 @@ void ya_loop(void)
                 bios_ioByte = 0;
                 break;
             } else {
-                asci1_flush_Rx_di();
+                asci1_flush_Rx();
             }
         }
     }

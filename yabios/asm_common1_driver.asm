@@ -27,9 +27,9 @@ _error_handler_rst:     ; RST  8
     pop hl              ; get the originating PC address
     ld e,(hl)           ; get error code in E
     dec hl
-    call phexwd         ; output originating RST address on serial port
+    call asm_phexwd     ; output originating RST address on serial port
     ex de,hl            ; get error code in L
-    call phex           ; output error code on serial port
+    call asm_phex       ; output error code on serial port
     ld b, $00
 error_handler_delay_loop:
     ex (sp), hl
@@ -617,21 +617,21 @@ load_hex_get_lock0:
     ld hl,asci0RxLock
     sra (hl)                    ; take the ASCI0 Rx lock
     ret C                       ; return if we can't get lock
-    call _asci0_flush_Rx_di     ; flush the ASCI0 Rx buffer     
+    call asm_asci0_flush_Rx_di  ; flush the ASCI0 Rx buffer     
     jr load_hex_print_init
 
 load_hex_get_lock1:
     ld hl,asci1RxLock
     sra (hl)                    ; take the ASCI1 Rx lock
     ret C                       ; return if we can't get lock
-    call _asci1_flush_Rx_di     ; flush the ASCI1 Rx buffer
+    call asm_asci1_flush_Rx_di  ; flush the ASCI1 Rx buffer
 
 load_hex_print_init:
     ld de,initString
-    call pstring                ; pstring modifies AF, DE, & HL
+        call asm_pstring        ; asm_pstring modifies AF, DE, & HL
 
 load_hex_wait_colon:
-    call rchar                  ; Rx byte in L (A = char received too)
+    call asm_rchar              ; Rx byte in L (A = char received too)
     cp CHAR_CTRL_C              ; check for CTRL_C
     jr Z,load_hex_done          ; exit done
     cp ':'                      ; wait for ':'
@@ -661,7 +661,7 @@ load_hex_read_chksum:
     or a
     jr NZ,load_hex_bad_chk      ; non zero, we have an issue
     ld l,'#'                    ; "#" per line loaded
-    call pchar                  ; Print it
+    call asm_pchar              ; Print it
     jr load_hex_wait_colon
 
 load_hex_esa_data:
@@ -686,7 +686,7 @@ load_hex_exit:
     xor a
     out0 (BBR),a                ; get our originating BANK0 BBR back, write it to the BBR
 
-    call pstring                ; pstring modifies AF, DE, & HL
+    call asm_pstring            ; asm_pstring modifies AF, DE, & HL
 
     ld a,(_bios_ioByte)         ; get I/O bit
     rrca                        ; put it in Carry
@@ -711,7 +711,7 @@ load_hex_bad_chk:
     jr load_hex_exit
 
 load_hex_read_byte:             ; returns byte in A, checksum in C
-    call rhex
+    call asm_rhex
     ld l,a                      ; put assembled byte into L
     add a,c                     ; add the byte read to C (for checksum)
     ld c,a
@@ -1265,10 +1265,10 @@ EXTERN asci0TxCount, asci0TxIn, asci0TxOut, asci0TxBuffer, asci0TxLock
 EXTERN asci0RxBuffer
 EXTERN asciTxBuffer
 
-PUBLIC _asci0_interrupt
+PUBLIC asm_asci0_interrupt
 
 
-_asci0_interrupt:
+asm_asci0_interrupt:
     push af
     push hl
                                 ; start doing the Rx stuff
@@ -1338,9 +1338,9 @@ ASCI0_TX_END:
     ei
     ret
 
-PUBLIC _asci0_init
+PUBLIC asm_asci0_init
 
-_asci0_init:
+asm_asci0_init:
     ; initialise the ASCI0
                                 ; load the default ASCI CRT configuration
                                 ; BAUD = 115200 8n1
@@ -1369,21 +1369,21 @@ _asci0_init:
 
     ret
 
-PUBLIC _asci0_flush_Rx_di
+PUBLIC asm_asci0_flush_Rx_di
 
-_asci0_flush_Rx_di:
+asm_asci0_flush_Rx_di:
     push af
     push hl
 
     di                          ; di
-    call _asci0_flush_Rx
+    call asm_asci0_flush_Rx
     ei                          ; ei
 
     pop hl
     pop af
     ret
 
-_asci0_flush_Rx:
+asm_asci0_flush_Rx:
     xor a
     ld (asci0RxCount),a         ; reset the Rx counter (set 0)
     ld hl,asci0RxBuffer         ; load Rx buffer pointer home
@@ -1391,21 +1391,21 @@ _asci0_flush_Rx:
     ld (asci0RxOut),hl
     ret
 
-PUBLIC _asci0_flush_Tx_di
+PUBLIC asm_asci0_flush_Tx_di
 
-_asci0_flush_Tx_di:
+asm_asci0_flush_Tx_di:
     push af
     push hl
 
     di                          ; di
-    call _asci0_flush_Tx
+    call asm_asci0_flush_Tx
     ei                          ; ei
 
     pop hl
     pop af
     ret
 
-_asci0_flush_Tx:
+asm_asci0_flush_Tx:
     xor a
     ld (asci0TxCount),a         ; reset the Tx counter (set 0)
     ld hl,asciTxBuffer          ; load Tx buffer pointer home
@@ -1413,18 +1413,18 @@ _asci0_flush_Tx:
     ld (asci0TxOut),hl
     ret
 
-PUBLIC _asci0_reset
+PUBLIC asm_asci0_reset
 
-_asci0_reset:
+asm_asci0_reset:
     ; interrupts should be disabled
-    call _asci0_init
-    call _asci0_flush_Rx
-    call _asci0_flush_Tx
+    call asm_asci0_init
+    call asm_asci0_flush_Rx
+    call asm_asci0_flush_Tx
     ret
 
-PUBLIC _asci0_getc
+PUBLIC asm_asci0_getc
 
-_asci0_getc:
+asm_asci0_getc:
 
     ; exit     : l = char received (a = char received too)
     ;            carry reset if Rx buffer is empty
@@ -1452,9 +1452,9 @@ _asci0_getc:
     scf                         ; indicate char received
     ret
 
-PUBLIC _asci0_peekc
+PUBLIC asm_asci0_peekc
 
-_asci0_peekc:
+asm_asci0_peekc:
 
     ld a,(asci0RxCount)         ; get the number of bytes in the Rx buffer
     ld l,a                      ; and put it in l
@@ -1466,9 +1466,9 @@ _asci0_peekc:
     ld l,a                      ; and put it in l
     ret
 
-PUBLIC _asci0_pollc
+PUBLIC asm_asci0_pollc
 
-_asci0_pollc:
+asm_asci0_pollc:
 
     ; exit     : l = number of characters in Rx buffer
     ;            carry reset if Rx buffer is empty
@@ -1484,9 +1484,9 @@ _asci0_pollc:
     scf                         ; set carry to indicate char received
     ret
 
-PUBLIC _asci0_putc
+PUBLIC asm_asci0_putc
 
-_asci0_putc:
+asm_asci0_putc:
     ; enter    : l = char to output
     ; exit     : l = 1 if Tx buffer is full
     ;            carry reset
@@ -1547,9 +1547,9 @@ EXTERN asci1RxBuffer
 EXTERN asciTxBuffer
 
 
-PUBLIC _asci1_interrupt
+PUBLIC asm_asci1_interrupt
 
-_asci1_interrupt:
+asm_asci1_interrupt:
     push af
     push hl
                                 ; start doing the Rx stuff
@@ -1619,9 +1619,9 @@ ASCI1_TX_END:
     ei
     ret
 
-PUBLIC _asci1_init
+PUBLIC asm_asci1_init
 
-_asci1_init:
+asm_asci1_init:
     ; initialise the ASCI1
                                 ; load the default ASCI TTY configuration
                                 ; BAUD = 9600 8n2
@@ -1650,21 +1650,21 @@ _asci1_init:
 
     ret
 
-PUBLIC _asci1_flush_Rx_di
+PUBLIC asm_asci1_flush_Rx_di
 
-_asci1_flush_Rx_di:
+asm_asci1_flush_Rx_di:
     push af
     push hl
 
     di                          ; di
-    call _asci1_flush_Rx
+    call asm_asci1_flush_Rx
     ei                          ; ei
 
     pop hl
     pop af
     ret
 
-_asci1_flush_Rx:
+asm_asci1_flush_Rx:
     xor a
     ld (asci1RxCount),a         ; reset the Rx counter (set 0)
     ld hl,asci1RxBuffer         ; load Rx buffer pointer home
@@ -1672,21 +1672,21 @@ _asci1_flush_Rx:
     ld (asci1RxOut),hl
     ret
 
-PUBLIC _asci1_flush_Tx_di
+PUBLIC asm_asci1_flush_Tx_di
 
-_asci1_flush_Tx_di:
+asm_asci1_flush_Tx_di:
     push af
     push hl
 
     di                          ; di
-    call _asci1_flush_Tx
+    call asm_asci1_flush_Tx
     ei                          ; ei
 
     pop hl
     pop af
     ret
 
-_asci1_flush_Tx:
+asm_asci1_flush_Tx:
 
     xor a
     ld (asci1TxCount),a         ; reset the Tx counter (set 0)
@@ -1695,18 +1695,18 @@ _asci1_flush_Tx:
     ld (asci1TxOut),hl
     ret
 
-PUBLIC _asci1_reset
+PUBLIC asm_asci1_reset
 
-_asci1_reset:
+asm_asci1_reset:
     ; interrupts should be disabled
-    call _asci1_init
-    call _asci1_flush_Rx
-    call _asci1_flush_Tx
+    call asm_asci1_init
+    call asm_asci1_flush_Rx
+    call asm_asci1_flush_Tx
     ret
 
-PUBLIC _asci1_getc
+PUBLIC asm_asci1_getc
 
-_asci1_getc:
+asm_asci1_getc:
 
     ; exit     : l = char received (a = char received too)
     ;            carry reset if Rx buffer is empty
@@ -1734,9 +1734,9 @@ _asci1_getc:
     scf                         ; indicate char received
     ret
 
-PUBLIC _asci1_peekc
+PUBLIC asm_asci1_peekc
 
-_asci1_peekc:
+asm_asci1_peekc:
 
     ld a,(asci1RxCount)         ; get the number of bytes in the Rx buffer
     ld l,a                      ; and put it in l
@@ -1748,9 +1748,9 @@ _asci1_peekc:
     ld l,a                      ; and put it in l
     ret
 
-PUBLIC _asci1_pollc
+PUBLIC asm_asci1_pollc
 
-_asci1_pollc:
+asm_asci1_pollc:
 
     ; exit     : l = number of characters in Rx buffer
     ;            carry reset if Rx buffer is empty
@@ -1766,9 +1766,9 @@ _asci1_pollc:
     scf                         ; set carry to indicate char received
     ret
 
-PUBLIC _asci1_putc
+PUBLIC asm_asci1_putc
 
-_asci1_putc:
+asm_asci1_putc:
     ; enter    : l = char to output
     ; exit     : l = 1 if Tx buffer is full
     ;            carry reset
@@ -2173,53 +2173,54 @@ ide_write_sector:
 ;       DEBUGGING SUBROUTINES
 ;
 
-PUBLIC rhex, rchar
-PUBLIC phexwd, phex, pchar
-PUBLIC pstring, pnewline
+PUBLIC asm_phexwd, asm_phex
+PUBLIC asm_pchar, asm_pstring, asm_pnewline
+
+PUBLIC asm_rhex, asm_rchar
 
 EXTERN _bios_ioByte
- 
+
 ;==============================================================================
 ;       OUTPUT SUBROUTINES
 ;
 
     ; print string from location in DE to asci0/1, modifies AF, DE, & HL
-pstring: 
+asm_pstring: 
     ld a,(de)           ; Get character from DE address
     or a                ; Is it $00 ?
     ret Z               ; Then return on terminator
     ld l,a
-    call pchar          ; Print it
+    call asm_pchar      ; Print it
     inc de              ; Point to next character 
-    jr pstring          ; Continue until $00
+    jr asm_pstring      ; Continue until $00
 
     ; print CR/LF to asci0/1, modifies AF & HL
-pnewline:
+asm_pnewline:
     ld l,CHAR_CR
-    call pchar
+    call asm_pchar
     ld l,CHAR_LF
-    jr pchar
+    jr asm_pchar
 
     ; print contents of HL as 16 bit number in ASCII HEX, modifies AF & HL
-phexwd:
+asm_phexwd:
     push hl
     ld l,h              ; high byte to L
-    call phex
+    call asm_phex
     pop hl              ; recover HL, for low byte in L  
-    call phex
+    call asm_phex
     ret
 
     ; print contents of L as 8 bit number in ASCII HEX to asci0/1, modifies AF & HL
-phex:
-    ld a,l              ; _asci0_putc / _asci1_putc modifies AF, HL
+asm_phex:
+    ld a,l              ; asm_asci0_putc / asm_asci1_putc modifies AF, HL
     push af
     rrca
     rrca
     rrca
     rrca
-    call  phex_conv
+    call  asm_phex_conv
     pop af
-phex_conv:
+asm_phex_conv:
     and  $0F
     add  a,$90
     daa
@@ -2228,41 +2229,41 @@ phex_conv:
     ld l,a
 
     ; print contents of L to asci0/1, modifies AF & HL
-pchar:
-    ld a,(_bios_ioByte) ; get I/O bit
-    rrca                ; put it in Carry
-    jp NC,_asci1_putc   ; TTY=0 (asci1)
-    jp _asci0_putc      ; CRT=1 (asci0)
+asm_pchar:
+    ld a,(_bios_ioByte)     ; get I/O bit
+    rrca                    ; put it in Carry
+    jp NC,asm_asci1_putc    ; TTY=0 (asci1)
+    jp asm_asci0_putc       ; CRT=1 (asci0)
 
 ;==============================================================================
 ;       INPUT SUBROUTINES
 ;
 
-rhex:                   ; Returns byte in A, modifies HL
-    call rhex_nibble    ; read the first nibble
-    rlca                ; shift it left by 4 bits
+asm_rhex:                   ; Returns byte in A, modifies HL
+    call asm_rhex_nibble    ; read the first nibble
+    rlca                    ; shift it left by 4 bits
     rlca
     rlca
     rlca
-    ld h,a              ; temporarily store the first nibble in H
-    call rhex_nibble    ; get the second (low) nibble
-    or h                ; assemble two nibbles into one byte in A
-    ret                 ; return the byte read in A  
+    ld h,a                  ; temporarily store the first nibble in H
+    call asm_rhex_nibble    ; get the second (low) nibble
+    or h                    ; assemble two nibbles into one byte in A
+    ret                     ; return the byte read in A  
 
-rhex_nibble:
-    call rchar          ; Rx byte in L (A = byte Rx too) SCF if char read
-    jr NC,rhex_nibble   ; keep trying if no characters
+asm_rhex_nibble:
+    call asm_rchar          ; Rx byte in L (A = byte Rx too) SCF if char read
+    jr NC,asm_rhex_nibble   ; keep trying if no characters
     sub '0'
     cp 10
-    ret C               ; if A<10 just return
-    sub 7               ; else subtract 'A'-'0' (17) and add 10
+    ret C                   ; if A<10 just return
+    sub 7                   ; else subtract 'A'-'0' (17) and add 10
     ret
 
-rchar:                  ; Rx byte in L (A = byte Rx too) SCF if char read
-    ld a,(_bios_ioByte) ; get I/O bit
-    rrca                ; put it in Carry
-    jp NC,_asci1_getc   ; TTY=0 (asci1)
-    jp _asci0_getc      ; CRT=1 (asci0)
+asm_rchar:                  ; Rx byte in L (A = byte Rx too) SCF if char read
+    ld a,(_bios_ioByte)     ; get I/O bit
+    rrca                    ; put it in Carry
+    jp NC,asm_asci1_getc    ; TTY=0 (asci1)
+    jp asm_asci0_getc       ; CRT=1 (asci0)
 
 ;==============================================================================
 ;       BIOS STACK CANARY

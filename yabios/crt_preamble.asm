@@ -112,11 +112,11 @@ IF (__page_zero_present)
     ld      hl, _bankLockBase
     ld      (hl), $FF
 
-    EXTERN  _asci0_init
-    call    _asci0_init     ; initialise the asci0 and,
+    EXTERN  asm_asci0_init
+    call    asm_asci0_init  ; initialise the asci0 and,
 
-    EXTERN  _asci1_init    
-    call    _asci1_init     ; the asci1 interfaces
+    EXTERN  asm_asci1_init    
+    call    asm_asci1_init  ; the asci1 interfaces
 
 ENDIF
 
