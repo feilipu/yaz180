@@ -60,11 +60,10 @@ char ** argv;
     }
     
     load_data.u8 = (uint8_t *)malloc((sizeof(uint8_t))*SYSDAT_SIZE);  /* Get work area */
-    
     if( load_data.u8 != NULL )
     {
         /* Read first two records from MPM.SYS file  */
-       fread(load_data.u8, (sizeof(uint8_t)), SYSDAT_SIZE, fptr);
+        fread(load_data.u8, (sizeof(uint8_t)), SYSDAT_SIZE, fptr);
         if( ferror(fptr) != 0 )
         {
             fputs("Error reading file", stderr);
@@ -77,7 +76,6 @@ char ** argv;
         init_page = load_data.u8[11];
         
         mpm_records = load_data.u16[60]; /* number of records in bytes 120-121 */
-
         data_addr = (uint8_t *)(load_data.u8[0]*0x100);
 
         printf("SYSDAT: %x INIT: %x RECORDS: %d\n", sysdat_page, init_page, mpm_records );
@@ -85,37 +83,32 @@ char ** argv;
         /* copy from current Bank into Bank 8, to address from file */
         memcpy_far(data_addr, bank_get_rel(8), load_data.u8, 0, (sizeof(uint8_t)*SYSDAT_SIZE));
 
+        /* Read rest of MPM.SYS contents from file */
+        for(mpm_records-=2; mpm_records != 0; --mpm_records)
+        {
+            fread(load_data.u8, (sizeof(uint8_t)), RECORD_SIZE, fptr);
+            if( ferror(fptr) != 0 )
+            {
+                fputs("Error reading file", stderr);
+                fclose(fptr);
+                free(load_data.u8);
+                return 0;
+            }
+        
+            data_addr -= RECORD_SIZE;       /* adjust location for writing data */
+
+            /* copy from current Bank into Bank 8, from address in file */
+            memcpy_far(data_addr, bank_get_rel(8), load_data.u8, 0, (sizeof(uint8_t)*RECORD_SIZE));
+        }
         free(load_data.u8);
     }
 
-    /* Read rest of MPM.SYS contents from file */
-    for(mpm_records-=2; mpm_records != 0; --mpm_records)
-    {
-        fread(load_data.u8, (sizeof(uint8_t)), RECORD_SIZE, fptr);
-
-        if( ferror(fptr) != 0 )
-        {
-            fputs("Error reading file", stderr);
-            fclose(fptr);
-            free(load_data.u8);
-            return 0;
-        }
-        
-        data_addr -= RECORD_SIZE;       /* adjust location for writing data */
-
-        /* copy from current Bank into Bank 8, from address in file */
-        memcpy_far(data_addr, bank_get_rel(8), load_data.u8, 0, (sizeof(uint8_t)*RECORD_SIZE));
-    }
-
     /* Close file */
-
     fclose(fptr);
-    free(load_data.u8);
     
-    printf( "Base Addr: %x\n", data_addr );
+    printf( "MP/M Base Addr: %x\n", data_addr );
     
     page0_template = (uint8_t *)malloc((sizeof(uint8_t))*PAGE0_SIZE);  /* Get work area for the Page 0 */
-
     if( page0_template != NULL )
     {
         /* existing RST0 trap code is contained in this space at 0x0080, and jumps to __Start at 0x0100. */
@@ -135,4 +128,3 @@ char ** argv;
     }
     return 0;
 }
-
