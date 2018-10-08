@@ -1,4 +1,21 @@
 
+/* a MPMLDR.COM program which runs within the YAZ180 yabios environment.
+ * 
+ * The yabios is present in the 0xF000 CA1 when CP/M is running.
+ * CP/M can be run in any Bank 1 through n, where n is the last RAM Bank.
+ * Depending on how much Flash is configured either Bank 15, and 14, or 12 through 15 are Flash.
+ * 
+ * On CP/M the Hi-Tech C 3.09 is being used to compile this program.
+ * It depends on the header files YABIOS.H and YAZ180.H, and
+ * the glue logic between the z88dk based yabios routines in YABIOS.C, and
+ * the linkage locations in YALIB.AS.
+ *
+ * Note that the compile line looks like this
+ *
+ * C -V -OF MPMLDR.C YABIOS.C YALIB.AS
+ *
+ */
+
 #include <sys.h>
 #include <stdio.h>
 #include <stdlib.h>

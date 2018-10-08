@@ -1,23 +1,24 @@
 ;
-; Converted to z88dk z80asm for YAZ180 by
+; Converted to SLR180 for YAZ180 by
 ; Phillip Stevens @feilipu https://feilipu.me
-; September 2018
+; October 2018
 ;
 
-INCLUDE "config_yaz180_private.inc"
+INCLUDE "YAZ180.INC"
+INCLUDE "MPMEXTRN.INC"
 
-EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
-EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
-EXTERN  _asci0_flush_Rx_di, _asci1_flush_Rx_di
-EXTERN  ide_write_sector, ide_read_sector
+EXTERNAL    _asci0_pollc, _asci0_getc, _asci0_putc
+EXTERNAL    _asci1_pollc, _asci1_getc, _asci1_putc
+EXTERNAL    _asci0_flush_Rx_di, _asci1_flush_Rx_di
+EXTERNAL    ide_write_sector, ide_read_sector
 
-EXTERN  _dmac0Lock          ;mutex for DMA Controller 0
+EXTERNAL    _dmac0Lock          ;mutex for DMA Controller 0
 
-EXTERN  _bank_sp            ;address of initial SP value
+EXTERNAL    _bank_sp            ;address of initial SP value
 
-PUBLIC  _cdisk              ;current disk number 0=a,... 15=p
-PUBLIC  _dsk_base           ;base 32 bit LBA of host file for disk 0 (A:) &
-                            ;3 additional LBA for host files (B:, C:, D:)
+PUBLIC      _cdisk              ;current disk number 0=a,... 15=p
+PUBLIC      _dsk_base           ;base 32 bit LBA of host file for disk 0 (A:) &
+                                ;3 additional LBA for host files (B:, C:, D:)
 ;
 ;*****************************************************
 ;*                                                   *
@@ -25,12 +26,12 @@ PUBLIC  _dsk_base           ;base 32 bit LBA of host file for disk 0 (A:) &
 ;*                                                   *
 ;*****************************************************
 
-EXTERN  _cpm_ccp_tfcb       ;default file control block
-EXTERN  _cpm_ccp_tbuff      ;i/o buffer and command line storage
-EXTERN  _cpm_ccp_tbase      ;transient program storage area
+EXTERNAL    _cpm_ccp_tfcb       ;default file control block
+EXTERNAL    _cpm_ccp_tbuff      ;i/o buffer and command line storage
+EXTERNAL    _cpm_ccp_tbase      ;transient program storage area
 
-DEFC    mpm_cons   =   2    ;XXX DO NOT CHANGE number of consoles
-DEFC    mpm_disks  =   4    ;XXX DO NOT CHANGE number of disks
+mpm_cons:   EQU 2       ;XXX DO NOT CHANGE number of consoles
+mpm_disks:  EQU 4       ;XXX DO NOT CHANGE number of disks
 
 ;
 ;*****************************************************
@@ -39,16 +40,16 @@ DEFC    mpm_disks  =   4    ;XXX DO NOT CHANGE number of disks
 ;*                                                   *
 ;*****************************************************
 
-DEFC    hstalb  =    4096       ;host number of drive allocation blocks
-DEFC    hstsiz  =    512        ;host disk sector size
-DEFC    hstspt  =    32         ;host disk sectors/trk
-DEFC    hstblk  =    hstsiz/128 ;MP/M sects/host buff (4)
+hstalb: EQU  4096       ;host number of drive allocation blocks
+hstsiz: EQU  512        ;host disk sector size
+hstspt: EQU  32         ;host disk sectors/trk
+hstblk: EQU  hstsiz/128 ;MP/M sects/host buff (4)
 
-DEFC    cpmbls  =    4096       ;MP/M allocation block size BLS
-DEFC    cpmdir  =    512        ;MP/M number of directory blocks (each of 32 Bytes)
-DEFC    cpmspt  =    hstspt * hstblk    ;MP/M sectors/track (128 = 32 * 512 / 128)
+cpmbls: EQU  4096       ;MP/M allocation block size BLS
+cpmdir: EQU  512        ;MP/M number of directory blocks (each of 32 Bytes)
+cpmspt: EQU  hstspt * hstblk    ;MP/M sectors/track (128 = 32 * 512 / 128)
 
-DEFC    secmsk  =    hstblk-1   ;sector mask
+secmsk: EQU  hstblk-1   ;sector mask
 
 ;
 ;*****************************************************
@@ -57,9 +58,9 @@ DEFC    secmsk  =    hstblk-1   ;sector mask
 ;*                                                   *
 ;*****************************************************
 
-DEFC    wrall   =    0          ;write to allocated
-DEFC    wrdir   =    1          ;write to directory
-DEFC    wrual   =    2          ;write to unallocated
+wrall:  EQU  0          ;write to allocated
+wrdir:  EQU  1          ;write to directory
+wrual:  EQU  2          ;write to unallocated
 
 ;
 ;*****************************************************
@@ -68,7 +69,7 @@ DEFC    wrual   =    2          ;write to unallocated
 ;*                                                   *
 ;*****************************************************
 
-SECTION mpm_xios    ;origin of the mpm xios
+CSEG                ;origin of the mpm xios
 
 ;
 ;       jump vector for individual subroutines
@@ -95,15 +96,15 @@ PUBLIC  write       ;write disk
 PUBLIC  listst      ;return list status
 PUBLIC  sectran     ;sector translate
 
-PUBLIC  selmemory	;select memory
-PUBLIC  polldevice	;poll device
-PUBLIC  startclock	;start clock
-PUBLIC  stopclock	;stop clock
-PUBLIC  exitregion	;exit region
-PUBLIC  maxconsole	;maximum console number
-PUBLIC  systeminit	;system initialization
+PUBLIC  selmemory    ;select memory
+PUBLIC  polldevice    ;poll device
+PUBLIC  startclock    ;start clock
+PUBLIC  stopclock    ;stop clock
+PUBLIC  exitregion    ;exit region
+PUBLIC  maxconsole    ;maximum console number
+PUBLIC  systeminit    ;system initialization
 PUBLIC  idle        ;idle procedure
-	
+    
     jp  commonbase  ;base of resident (non-bankable) XIOS
 wboot:
     jp  warmstart   ;warm start
@@ -124,14 +125,14 @@ wboot:
     jp  listst      ;return list status
     jp  sectran     ;sector translate
 
-	jp  selmemory	;select memory
-	jp  polldevice	;poll device
-	jp  startclock	;start clock
-	jp  stopclock	;stop clock
-	jp  exitregion	;exit region
-	jp  maxconsole	;maximum console number
-	jp  systeminit	;system initialization
-	jp  idle        ;idle procedure
+    jp  selmemory    ;select memory
+    jp  polldevice    ;poll device
+    jp  startclock    ;start clock
+    jp  stopclock    ;stop clock
+    jp  exitregion    ;exit region
+    jp  maxconsole    ;maximum console number
+    jp  systeminit    ;system initialization
+    jp  idle        ;idle procedure
 
 ;
 ;*****************************************************
@@ -141,24 +142,24 @@ wboot:
 ;*****************************************************
 
 commonbase:                 ;base of resident (non-bankable) XIOS
-    jp  coldstart
+    jp      coldstart
 swtuser:
-    jp  $-$
+    jp      $-$
 swtsys:
-    jp  $-$
+    jp      $-$
 pdisp:
-    jp  $-$
+    jp      $-$
 xdos:
-    jp  $-$
+    jp      $-$
 sysdat:
     DEFW    $-$
 
 coldstart:
 warmstart:
-	ld  a,0		            ;see system init
-				            ;cold & warm start included only
-				            ;for compatibility with cp/m
-	jp  xdos                ;system reset, terminate process
+    ld      a,0             ;see system init
+                            ;cold & warm start included only
+                            ;for compatibility with cp/m
+    jp      xdos            ;system reset, terminate process
 
 ;=============================================================================
 ; Console I/O routines
@@ -172,7 +173,7 @@ const0:
     call    _asci0_pollc    ;check whether any characters are in CRT Rx0 buffer
     jr      NC, dataEmpty
 dataReady:
-    ld      a,$FF
+    ld      a,0FFh
     ret
 
 const1:
@@ -189,13 +190,13 @@ conin:    ;console character into register a
 conin0:
    call     _asci0_getc     ;check whether any characters are in CRT Rx0 buffer
    jr       NC, conin0      ;if Rx buffer is empty
-;  and      $7F             ;strip parity bit - support 8 bit XMODEM
+;  and      07Fh            ;strip parity bit - support 8 bit XMODEM
    ret
 
 conin1:
    call     _asci1_getc     ;check whether any characters are in TTY Rx1 buffer
    jr       NC, conin1      ;if Rx buffer is empty
-;  and      $7F             ;strip parity bit - support 8 bit XMODEM
+;  and      07Fh            ;strip parity bit - support 8 bit XMODEM
    ret
 
 conout:    ;console character output from register c
@@ -212,14 +213,14 @@ list:
     jp      NZ,_asci1_putc 
     jp      _asci0_putc
 
-punch:	    ;punch not implemented in MP/M
+punch:        ;punch not implemented in MP/M
     ret
 
 reader:     ;reader not implemented in MP/M
     ret
 
 listst:     ;return list status
-    ld      a,$FF           ;Return list status of 0xFF (ready).
+    ld      a,0FFh          ;Return list status of 0xFF (ready).
     ret
 
 ;
@@ -235,7 +236,7 @@ home:       ;move to the track 00 position of current drive
     jr      NZ,homed
     ld      (hstact),a      ;clear host active flag
 homed:
-    ld      bc,$0000
+    ld      bc,0000h
 
 settrk:     ;set track passed from BDOS in register BC.
     ld      (sektrk),bc
@@ -264,7 +265,7 @@ seldsk:    ;select disk given by register c
     xor     a               ;reset default disk back to 0 (A:)
     ld      (cdisk),a
     ld      (sekdsk),a      ;and set the seeked disk
-    ld      hl,$0000        ;return error code in HL
+    ld      hl,0000h        ;return error code in HL
     ret
 
 chgdsk:
@@ -560,7 +561,7 @@ writehst:
     ;return carry on success, no carry for an error
     call    ide_write_sector
     ret     C
-    ld      a,$01
+    ld      a,01h
     ld      (erflag),a
     ret
 
@@ -581,7 +582,7 @@ readhst:
     ;return carry on success, no carry for an error
     call    ide_read_sector
     ret     C
-    ld      a,$01
+    ld      a,01h
     ld      (erflag),a
     ret
 
@@ -639,12 +640,12 @@ setLBAaddr:
 
     inc     hl
     ld      a,(hl)          ;get disk LBA 2SB
-    adc     a,$00           ;get disk LBA 2SB, with carry
+    adc     a,00h           ;get disk LBA 2SB, with carry
     ld      c,a             ;write LBA 2SB, put it in C
 
     inc     hl
     ld      a,(hl)          ;get disk LBA MSB
-    adc     a,$00           ;get disk LBA MSB, with carry
+    adc     a,00h           ;get disk LBA MSB, with carry
     ld      b,a             ;write LBA MSB, put it in B
 
     ret
@@ -671,11 +672,11 @@ getLBAbase:
 ; Select / Protect Memory
 ;
 selmemory:
-			; Reg BC = adr of mem descriptor
-			; BC ->  base   1 byte,
-			;        size   1 byte,
-			;        attrib 1 byte,
-			;        bank   1 byte.
+            ; Reg BC = adr of mem descriptor
+            ; BC ->  base   1 byte,
+            ;        size   1 byte,
+            ;        attrib 1 byte,
+            ;        bank   1 byte.
 
     ret
 
@@ -683,48 +684,48 @@ selmemory:
 ; Poll Devices
 ;
 polldevice:
-			; Reg C = device # to be polled
-			; return 0ffh if ready,
-			;        000h if not
+            ; Reg C = device # to be polled
+            ; return 0ffh if ready,
+            ;        000h if not
     ret
     
 ;
 ; Start Clock
 ;
 startclock:
-			; will cause flag #1 to be set
-			;  at each system time unit tick
-	ld  a,0ffh
-	ld	(tickn),a
-	ret
+            ; will cause flag #1 to be set
+            ;  at each system time unit tick
+    ld  a,0ffh
+    ld    (tickn),a
+    ret
 
 ;
 ; Stop Clock
 ;
 stopclock:
-			; will stop flag #1 setting at
-			;  system time unit tick
-	xor a
-	LD	(tickn),a
-	ret
+            ; will stop flag #1 setting at
+            ;  system time unit tick
+    xor a
+    LD    (tickn),a
+    ret
 
 ;
 ; Exit Region
 ;
 exitregion:
-			; EI if not preempted or in dispatcher
-	ld  a,(preemp)
-	or  a
-	ret NZ
-	ei
-	ret
+            ; EI if not preempted or in dispatcher
+    ld  a,(preemp)
+    or  a
+    ret NZ
+    ei
+    ret
 
 ;
 ; Maximum Console Number
 ;
 maxconsole:
-	ld  a,mpm_cons
-	ret
+    ld  a,mpm_cons
+    ret
 
 ;
 ; System Initialization
@@ -735,28 +736,28 @@ systeminit:
 ;  the time of day clock, if it is desired on each
 ;  booting of the system.
 ;
-	ld 	a,0c3h
-	ld	(0038h),A
-	ld    HL,inthnd
-	ld	(0039h),HL		;JMP INTHND at 0038H
+    ld a,0C3h
+    ld (0038h),a
+    ld hl,inthnd
+    ld (0039h),hl           ;JMP INTHND at 0038H
 
-	ld 	c,create
-	if    debug
-	ld    DE,c2inpd
-	else
-	ld    DE,c0inpd
-	endif
-	call xdos
+    ld c,create
+    if debug
+    ld  de,c2inpd
+    else
+    ld de,c0inpd
+    endif
+    call xdos
 
-	ld    A,(intmsk)
-	out	(60h),A		    ;init interrupt mask
+    ld a,(intmsk)
+    out (60h),a             ;init interrupt mask
 
-	im  1	            ;Interrupt Mode 1
-	ei
-	call    home
-	ld 	c,flagwait
-	ld 	e,5
-	jp    xdos		    ;clear first disk interrupt
+    im 1                    ;Interrupt Mode 1
+    ei
+    call home
+    ld c,flagwait
+    ld e,5
+    jp xdos                 ;clear first disk interrupt
 
 
 ;=============================================================================
@@ -801,27 +802,27 @@ systeminit:
 ;   out0    (DAR0H),h
 ;   out0    (DAR0L),l
 
-;   ld      hl,DMODE_MMOD*$100+DSTAT_DE0
+;   ld      hl,DMODE_MMOD*0100h+DSTAT_DE0
 ;   out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
 ;   out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
                             ;in burst mode the Z180 CPU stops until the DMA completes
-;   ld      a,$FE
+;   ld      a,0FEh
 ;   ld      (_dmac0Lock), a ;give DMAC0 free
 
 ;   jp      gocpm           ;transfer to MP/M if all have been loaded
 
 
 gompm:
-    ld      a,$C3           ;C3 is a jmp instruction
-    ld      ($0000),a       ;for jmp to wboot
+    ld      a,0C3h          ;C3 is a jmp instruction
+    ld      (0000h),a       ;for jmp to wboot
     ld      hl,wboot        ;wboot entry point
-    ld      ($0001),hl      ;set address field for jmp at 0 to wboot
+    ld      (0001h),hl      ;set address field for jmp at 0 to wboot
 
-    ld      ($0005),a       ;C3 for jmp to bdos entry point
+    ld      (0005h),a       ;C3 for jmp to bdos entry point
     ld      hl,__cpm_bdos_head   ;bdos entry point
-    ld      ($0006),hl      ;set address field of Jump at 5 to bdos
+    ld      (0006h),hl      ;set address field of Jump at 5 to bdos
 
-    ld      bc,$0080        ;default dma address is 0x0080
+    ld      bc,0080h        ;default dma address is 0x0080
     call    setdma
 
     xor     a               ;0 accumulator
@@ -870,7 +871,7 @@ diskchk:
 idle:
     ei
     halt
-    ret			        ;for full interrupt system
+    ret                    ;for full interrupt system
 
 
 ;------------------------------------------------------------------------------
@@ -878,9 +879,7 @@ idle:
 ;------------------------------------------------------------------------------
 ;
 
-SECTION mpm_xios_data
-
-ALIGN 0x0008                ;align the bios data
+DEFS 0008h-($ MOD 0008h)  ;align the bios data to allow for patching
 
 ;    fixed data tables for four-drive standard drives
 ;    no translations
@@ -916,8 +915,8 @@ dpblk:
     defb    1           ;EXM - Extent mask
     defw    hstalb-1    ;DSM - Storage size (blocks - 1)
     defw    cpmdir-1    ;DRM - Number of directory entries - 1
-    defb    $F0         ;AL0 - 1 bit set per directory block (ALLOC0)
-    defb    $00         ;AL1 - 1 bit set per directory block (ALLOC0)
+    defb    0F0h        ;AL0 - 1 bit set per directory block (ALLOC0)
+    defb    00h         ;AL1 - 1 bit set per directory block (ALLOC0)
     defw    0           ;CKS - DIR check vector size (DRM+1)/4 (0=fixed disk) (ALLOC1)
     defw    0           ;OFF - Reserved tracks offset
 
@@ -966,4 +965,6 @@ hstbuf:     defs    hstsiz  ;buffer for host disk sector
 
 tickn       defb    0       ;ticking boolean, true = delayed
 preempt:    defb    0       ;preempted boolean & ensure HEX file is complete
+
+END
 
