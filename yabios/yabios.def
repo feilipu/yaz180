@@ -189,64 +189,64 @@ PUBLIC _common1_phase_end
 DEFC _common1_phase_end              = $FE61
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $5E9C
+DEFC _f_mount                        = $5F45
 
 PUBLIC _f_open
-DEFC _f_open                         = $5F09
+DEFC _f_open                         = $5FB2
 
 PUBLIC _f_read
-DEFC _f_read                         = $6404
+DEFC _f_read                         = $64C1
 
 PUBLIC _f_write
-DEFC _f_write                        = $6915
+DEFC _f_write                        = $69CA
 
 PUBLIC _f_sync
-DEFC _f_sync                         = $6F04
+DEFC _f_sync                         = $6FBE
 
 PUBLIC _f_close
-DEFC _f_close                        = $7067
+DEFC _f_close                        = $7112
 
 PUBLIC _f_chdrive
-DEFC _f_chdrive                      = $709D
+DEFC _f_chdrive                      = $7149
 
 PUBLIC _f_chdir
-DEFC _f_chdir                        = $70BB
+DEFC _f_chdir                        = $7167
 
 PUBLIC _f_getcwd
-DEFC _f_getcwd                       = $7172
+DEFC _f_getcwd                       = $7222
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $741E
+DEFC _f_lseek                        = $74DB
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $79C2
+DEFC _f_opendir                      = $7A76
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7AB9
+DEFC _f_closedir                     = $7B6D
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $7ADF
+DEFC _f_readdir                      = $7B94
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7B50
+DEFC _f_stat                         = $7C03
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $7BBD
+DEFC _f_getfree                      = $7C70
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7E80
+DEFC _f_truncate                     = $7F36
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $80A6
+DEFC _f_unlink                       = $8153
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $8249
+DEFC _f_mkdir                        = $82F4
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $847A
+DEFC _f_rename                       = $850E
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $8733
+DEFC _f_expand                       = $87C8
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0521
