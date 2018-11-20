@@ -73,5 +73,8 @@ The Am9511A `CLK` fix above needs to be made too.
 The Single Step `B` fix above needs to be made too.
 
 
+## PCB Version 2.3 (2019)
 
+All of the above errata have been incorporated, and issue #4 has also been incorporated.
+Files for this version have been released in this repository.
 
