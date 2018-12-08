@@ -556,9 +556,6 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
 
         f_close(&File[0]);
 
-        // set bank referenced from _bankLockBase, so the the bank is noted as warm.
-        lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] );
-
         if(finishTimeFraction < startTimeFraction) {
             finishTime -= (startTime+1);
             finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
