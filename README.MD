@@ -112,7 +112,7 @@ The Z180 data lines are also buffered by an ABT logic bus transceiver. This is t
 
 ## BOM
 
-The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V23_ListByValues.csv" target="_blank">Bill of Material</a> is available from DigiKey by modifying this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
+The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V23_ListByValues.csv" target="_blank">Bill of Material</a> is available from DigiKey by modifying this [Shopping Cart](https://www.digikey.com.au/short/j103pz).
 
 Note that there are two significant items missing from the Shopping Cart.
 
@@ -123,8 +123,6 @@ Both of these products are readily available from second tier sources, but due t
 
 Some other smaller pin-outs and connectors are not included:
 
-- 1 of 2x4 0.1 inch female for ESP-01S
-- 2 of 1x4 0.1 inch male for Sparkfun I2C
 - 2 of Seeed Studio Grove I2C connectors
 
 ## Memory & I/O Address Layout
