@@ -80,10 +80,10 @@ This is the maximum size supported by the Eagle "Hobby Licence", which was used 
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.3.png"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.2 PCB 2018 Layout<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.3 PCB 2019 Layout<center></th>
 </tr>
 <tr>
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG"/></a></td>
@@ -112,7 +112,7 @@ The Z180 data lines are also buffered by an ABT logic bus transceiver. This is t
 
 ## BOM
 
-The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V21_BOM_PARTS.csv" target="_blank">Bill of Material</a> is available from DigiKey using this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8), or possibly most accurately from [this repository](https://github.com/feilipu/yaz180/blob/master/docs/2017-10-30T22_14_47.csv).
+The <a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180_V23_ListByValues.csv" target="_blank">Bill of Material</a> is available from DigiKey by modifying this [Shopping Cart](http://www.digikey.com.au/short/q7nnr8).
 
 Note that there are two significant items missing from the Shopping Cart.
 
