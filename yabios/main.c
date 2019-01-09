@@ -27,7 +27,7 @@
 #pragma output CRT_ENABLE_RST          = 0x00FE
 #pragma output CRT_ENABLE_TRAP         = 1
 
-#pragma output CLIB_MALLOC_HEAP_SIZE   = 8192
+#pragma output CLIB_MALLOC_HEAP_SIZE   = 9984   // 0x2700 measured maximum free
 
 // DEFINES
 
