@@ -61,7 +61,6 @@ These four images show a Version 2.1 PCB with both APU and Single Step modificat
 </table>
 </div>
 
-
 ## PCB Version 2.2 (2018)
 
 The ESP-01S won't boot with its IO held high. Therefore the two IO pins need to be removed from the connector before it is soldered into the PCB. This modification together with fix for PCB v2.1 (2017) is shown above.
@@ -72,9 +71,11 @@ The Am9511A `CLK` fix above needs to be made too.
 
 The Single Step `B` fix above needs to be made too.
 
-
 ## PCB Version 2.3 (2019)
 
 All of the above errata have been incorporated, and resolution of issue #4 has also been incorporated.
 Files for this version have been released in this repository.
 
+## PCB Version 2.4 (2019)
+
+Bad order somehow. Version 2.3 gerbers didn't produce working board. So revised with some minor fixes and try again.

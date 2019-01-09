@@ -80,10 +80,10 @@ This is the maximum size supported by the Eagle "Hobby Licence", which was used 
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.3.png"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.2.png" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v2.4.png"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.3 PCB 2019 Layout<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.4 PCB 2019 Layout<center></th>
 </tr>
 <tr>
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG" target="_blank"><img src="https://github.com/feilipu/yaz180/blob/master/docs/YAZ180v21_pcb.JPG"/></a></td>
