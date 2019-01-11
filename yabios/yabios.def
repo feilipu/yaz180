@@ -243,10 +243,10 @@ PUBLIC _f_mkdir
 DEFC _f_mkdir                        = $828F
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $84C3
+DEFC _f_rename                       = $84EB
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $878E
+DEFC _f_expand                       = $87B6
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0521
