@@ -245,8 +245,14 @@ DEFC _f_mkdir                        = $828F
 PUBLIC _f_rename
 DEFC _f_rename                       = $84EB
 
+PUBLIC _f_chmod
+DEFC _f_chmod                        = $87B6
+
+PUBLIC _f_utime
+DEFC _f_utime                        = $8863
+
 PUBLIC _f_expand
-DEFC _f_expand                       = $87B6
+DEFC _f_expand                       = $8935
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0521

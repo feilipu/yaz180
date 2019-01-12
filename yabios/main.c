@@ -246,7 +246,7 @@ int8_t ya_mkcpmb(char **args)   // initialise CP/M bank with up to 4 drives
             lock_give( &bankLockBase[ destBank ] );
 
             fprintf(output,"Initialised Bank: %01X, for CP/M", destBank);
-            free(page0Template);            
+            free(page0Template);
         }
     }
     return 1;
@@ -327,7 +327,7 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] );
         fprintf(output,"Initialised Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
-        free(page0Template);        
+        free(page0Template);
     }
     return 1;
 }
@@ -809,13 +809,13 @@ int8_t ya_pwd(char **args)      // show the current working directory
     directory = (uint8_t *)malloc(sizeof(uint8_t)*LINE_SIZE);     /* Get area for directory buffer */
 
     if (directory != NULL) {
-        res = f_getcwd(directory, sizeof(directory));
+        res = f_getcwd(directory, sizeof(uint8_t)*LINE_SIZE);
         if (res != FR_OK) {
             put_rc(res);
         } else {
             fprintf(output, "%s", directory);
         }
-        free(directory);        
+        free(directory);
     }
     return 1;
 }
@@ -1208,7 +1208,7 @@ void main(int argc, char **argv)
 
     fprintf(stdout, "\n\nYAZ180 - yabios - CRT\n\n> :?");
     fprintf(ttyout, "\n\nYAZ180 - yabios - TTY\n\n> :?");
- 
+
     // Run command loop if we got all the memory allocations we need.
     if ( fs && dir && buffer)
         ya_loop();
