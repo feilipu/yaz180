@@ -36,20 +36,20 @@ FIELD IO_ADDRESS =  [A15..13]      ; /* Most significant bits of IO (memory) add
 
 CONDITION {
 	IF (            MREQ & !IORQ & MEM_ADDRESS:[0C000..0FFFF] )      OUT RAM_CS ;  /* BANK_0 12kB and COMMON1 4kB (COMMON1 base address is flexible) */
-	IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..DFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK13 SRAM */
-	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT RAM_CS ;  /* BANK14 SRAM in Run State (not Programme State) */
-/*	IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..BFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK11 SRAM */
-/*	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT RAM_CS ;  /* BANK12 SRAM in Run State (not Programme State) */
+/*	IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..DFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK13 SRAM */
+/*	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT RAM_CS ;  /* BANK14 SRAM in Run State (not Programme State) */
+	IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..BFFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK11 SRAM */
+	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT RAM_CS ;  /* BANK12 SRAM in Run State (not Programme State) */
 /*	IF (            MREQ & !IORQ & MEM_ADDRESS:[10000..7FFFF] )      OUT RAM_CS ;  /* BANK_1 through BANK_7 SRAM */
 /*	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT RAM_CS ;  /* BANK08 SRAM in Run State (not Programme State) */
 	}
 
 CONDITION {
 	IF ( !PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[00000..0BFFF] )      OUT FLASH_CS ; /* BANK_0 YABIOS and system libraries */
-	IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK14 - SST39SF010A 128kB */
-	IF (            MREQ & !IORQ & MEM_ADDRESS:[F0000..FFFFF] )      OUT FLASH_CS ; /* BANK15 (Snapshot storage) SST39SF010A 128kB*/
-/*	IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK12 - SST39SF020A 256kB */
-/*	IF (            MREQ & !IORQ & MEM_ADDRESS:[D0000..FFFFF] )      OUT FLASH_CS ; /* BANK13, BANK14, BANK15 (Snapshot storage) - SST39SF020A 256kB */
+/*	IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[E0000..EFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK14 - SST39SF010A 128kB */
+/*	IF (            MREQ & !IORQ & MEM_ADDRESS:[F0000..FFFFF] )      OUT FLASH_CS ; /* BANK15 (Snapshot storage) SST39SF010A 128kB*/
+	IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[C0000..CFFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK12 - SST39SF020A 256kB */
+	IF (            MREQ & !IORQ & MEM_ADDRESS:[D0000..FFFFF] )      OUT FLASH_CS ; /* BANK13, BANK14, BANK15 (Snapshot storage) - SST39SF020A 256kB */
 /*	IF (  PROGRAM & MREQ & !IORQ & MEM_ADDRESS:[80000..8FFFF] )      OUT FLASH_CS ; /* In Programming State, force BANK_0 to appear as BANK_8 - SST39SF040A 512kB */
 /*	IF (            MREQ & !IORQ & MEM_ADDRESS:[90000..FFFFF] )      OUT FLASH_CS ; /* BANK_9, BANK10,... BANK15 (Snapshot storage) - SST39SF040A 512kB */
 	}

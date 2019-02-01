@@ -35,10 +35,11 @@ DIO_CS =>
     !A13 & A14 & !A15 & !IORQ & MREQ
 
 FLASH_CS =>
-    A16 & A17 & A18 & A19 & IORQ & !MREQ
-  # A17 & A18 & A19 & IORQ & !MREQ & !PROGRAM
-  # !A14 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
-  # !A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
+    !A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
+  # !A14 & A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & PROGRAM
+  # !A16 & !A17 & A18 & A19 & IORQ & !MREQ & !PROGRAM
+  # !A16 & A17 & A18 & A19 & IORQ & !MREQ
+  # A16 & A18 & A19 & IORQ & !MREQ
 
 I2C_CS1 =>
     A13 & !A14 & A15 & !IORQ & MREQ
@@ -47,16 +48,17 @@ I2C_CS2 =>
     !A13 & !A14 & A15 & !IORQ & MREQ
 
 RAM_CS =>
-    A16 & !A17 & IORQ & !MREQ
-  # !A17 & A18 & IORQ & !MREQ
+    A14 & A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ
+  # A16 & !A18 & !A19 & IORQ & !MREQ
+  # !A16 & A17 & !A19 & IORQ & !MREQ
+  # !A17 & A18 & !A19 & IORQ & !MREQ
   # !A18 & A19 & IORQ & !MREQ
-  # A17 & !A19 & IORQ & !MREQ
-  # A14 & A15 & !A17 & IORQ & !MREQ
-  # !A16 & A17 & IORQ & !MREQ & PROGRAM
+  # A16 & A17 & A18 & !A19 & IORQ & !MREQ
+  # !A16 & !A17 & A18 & A19 & IORQ & !MREQ & PROGRAM
 
 USB_CS =>
-    !A14 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
-  # !A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
+    !A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
+  # !A14 & A15 & !A16 & !A17 & !A18 & !A19 & IORQ & !MREQ & !PROGRAM
 
 APU_CS.oe  =>
     1 
