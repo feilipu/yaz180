@@ -215,7 +215,7 @@
 <rectangle x1="5.715" y1="44.7675" x2="24.13" y2="54.2925" layer="41"/>
 <rectangle x1="58.1025" y1="39.6875" x2="66.04" y2="45.4025" layer="41"/>
 <rectangle x1="89.2175" y1="61.595" x2="93.0275" y2="70.485" layer="41"/>
-<text x="143.35125" y="3.96875" size="1.27" layer="21" ratio="11">IDE</text>
+<text x="143.35125" y="2.38125" size="1.27" layer="21" ratio="11">IDE</text>
 <wire x1="158.75" y1="25.7175" x2="158.75" y2="46.78375" width="0.6096" layer="21"/>
 <text x="141.44625" y="54.054375" size="1.27" layer="21" ratio="11">1</text>
 <rectangle x1="30.48" y1="45.87875" x2="43.259375" y2="53.18125" layer="41"/>
@@ -3460,7 +3460,7 @@ design rules under a new name.</description>
 <attribute name="MPN" value="LM2596S-ADJ/NOPB" x="150.1775" y="70.8025" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="MF" value="NATIONAL SEMICONDUCTOR" x="150.1775" y="70.8025" size="1.778" layer="27" rot="R270" display="off"/>
 <attribute name="OC_FARNELL" value="9494367" x="150.1775" y="70.8025" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="160.147" y="69.0245" size="1.27" layer="25" rot="R90"/>
+<attribute name="NAME" x="152.8445" y="69.0245" size="1.27" layer="25" rot="R90"/>
 <attribute name="VALUE" x="146.4945" y="63.627" size="1.27" layer="27"/>
 </element>
 <element name="U5" library="OPL Eagle Library" package="SOT89" value="CJ1117-3.3-1310120P1" x="126.0475" y="80.01" smashed="yes">
@@ -3519,15 +3519,15 @@ design rules under a new name.</description>
 <attribute name="VALUE" x="126.0475" y="89.8525" size="0.635" layer="27" ratio="10"/>
 <attribute name="NAME" x="126.0475" y="89.916" size="0.635" layer="33" ratio="10"/>
 </element>
-<element name="R8" library="Seeed-OPL-Resistor" package="R0603" value="270R" x="143.66875" y="7.3025" smashed="yes">
-<attribute name="MPN" value="RC0603FR-07270RL" x="140.17625" y="11.43" size="1.778" layer="27" display="off"/>
-<attribute name="NAME" x="144.0815" y="6.6675" size="0.889" layer="25" ratio="11" rot="R90"/>
-<attribute name="VALUE" x="144.145" y="6.19125" size="0.635" layer="27" ratio="10" rot="R90"/>
+<element name="R8" library="Seeed-OPL-Resistor" package="R0603" value="270R" x="143.66875" y="6.0325" smashed="yes">
+<attribute name="MPN" value="RC0603FR-07270RL" x="140.17625" y="10.16" size="1.778" layer="27" display="off"/>
+<attribute name="NAME" x="144.0815" y="5.3975" size="0.889" layer="25" ratio="11" rot="R90"/>
+<attribute name="VALUE" x="144.145" y="4.92125" size="0.635" layer="27" ratio="10" rot="R90"/>
 </element>
-<element name="D8" library="Seeed-OPL-Diode" package="LED-0805" value="SMD-LED-CLEAR-RED(0805)" x="145.57375" y="7.3025" smashed="yes" rot="R270">
-<attribute name="MPN" value="17-215SURC/S530-A2/TR8" x="149.38375" y="10.795" size="1.778" layer="27" rot="R270" display="off"/>
-<attribute name="NAME" x="145.208625" y="8.255" size="0.889" layer="25" font="vector" ratio="11" rot="R270"/>
-<attribute name="VALUE" x="147.6375" y="3.762375" size="0.635" layer="27" ratio="10" rot="R90"/>
+<element name="D8" library="Seeed-OPL-Diode" package="LED-0805" value="SMD-LED-CLEAR-RED(0805)" x="145.57375" y="6.0325" smashed="yes" rot="R270">
+<attribute name="MPN" value="17-215SURC/S530-A2/TR8" x="149.38375" y="9.525" size="1.778" layer="27" rot="R270" display="off"/>
+<attribute name="NAME" x="145.208625" y="6.985" size="0.889" layer="25" font="vector" ratio="11" rot="R270"/>
+<attribute name="VALUE" x="147.6375" y="2.492375" size="0.635" layer="27" ratio="10" rot="R90"/>
 </element>
 <element name="R16" library="Seeed-OPL-Resistor-V2" package="R0603" value="10K" x="154.94" y="26.51125" smashed="yes" rot="R180">
 <attribute name="MPN" value="RC0603FR-0710KL" x="158.4325" y="22.38375" size="1.778" layer="27" rot="R180" display="off"/>
@@ -4425,9 +4425,9 @@ design rules under a new name.</description>
 <wire x1="82.1309" y1="76.835" x2="86.6775" y2="76.835" width="0.3048" layer="1"/>
 <wire x1="86.6775" y1="76.835" x2="87.63" y2="77.7875" width="0.3048" layer="1" curve="90"/>
 <wire x1="87.63" y1="77.7875" x2="87.63" y2="78.4225" width="0.3048" layer="1"/>
-<wire x1="147.32" y1="12.90875" x2="147.32" y2="9.4615" width="0.3048" layer="1"/>
-<wire x1="147.32" y1="9.4615" x2="146.05" y2="8.1915" width="0.3048" layer="1" curve="-90"/>
-<wire x1="146.05" y1="8.1915" x2="145.57375" y2="8.1915" width="0.3048" layer="1"/>
+<wire x1="147.32" y1="12.90875" x2="147.32" y2="8.1915" width="0.3048" layer="1"/>
+<wire x1="147.32" y1="8.1915" x2="146.05" y2="6.9215" width="0.3048" layer="1" curve="-90"/>
+<wire x1="146.05" y1="6.9215" x2="145.57375" y2="6.9215" width="0.3048" layer="1"/>
 </signal>
 <signal name="ADDR0">
 <contactref element="IC4" pad="5"/>
@@ -7790,17 +7790,17 @@ design rules under a new name.</description>
 <signal name="N$6">
 <contactref element="R8" pad="2"/>
 <contactref element="D8" pad="-"/>
-<wire x1="143.66875" y1="6.5405" x2="143.79575" y2="6.4135" width="0.3048" layer="1" curve="90"/>
-<wire x1="143.79575" y1="6.4135" x2="145.57375" y2="6.4135" width="0.3048" layer="1"/>
+<wire x1="143.66875" y1="5.2705" x2="143.79575" y2="5.1435" width="0.3048" layer="1" curve="90"/>
+<wire x1="143.79575" y1="5.1435" x2="145.57375" y2="5.1435" width="0.3048" layer="1"/>
 </signal>
 <signal name="!ACT">
 <contactref element="R8" pad="1"/>
 <contactref element="IDE" pad="39"/>
 <wire x1="142.71625" y1="15.3827" x2="143.088225" y2="16.280725" width="0.3048" layer="1" curve="-45"/>
 <wire x1="143.088225" y1="16.280725" x2="143.78" y2="16.9725" width="0.3048" layer="1"/>
-<wire x1="142.71625" y1="15.3827" x2="142.71625" y2="9.54305" width="0.3048" layer="1"/>
-<wire x1="142.71625" y1="9.54305" x2="143.088225" y2="8.645025" width="0.3048" layer="1" curve="45"/>
-<wire x1="143.088225" y1="8.645025" x2="143.66875" y2="8.0645" width="0.3048" layer="1"/>
+<wire x1="142.71625" y1="15.3827" x2="142.71625" y2="7.32055" width="0.3048" layer="1"/>
+<wire x1="142.71625" y1="7.32055" x2="143.405725" y2="7.057525" width="0.3048" layer="1" curve="45"/>
+<wire x1="143.405725" y1="7.057525" x2="143.66875" y2="6.7945" width="0.3048" layer="1"/>
 </signal>
 <signal name="PA0">
 <contactref element="IC9" pad="5"/>
@@ -9065,12 +9065,12 @@ design rules under a new name.</description>
 <approved hash="5,1,f5caa4dda4d5b5d1"/>
 <approved hash="5,1,4906ac839cbf7934"/>
 <approved hash="5,1,8fa42a09886ad424"/>
-<approved hash="5,1,757ce8f9d8c98542"/>
 <approved hash="5,1,cbde6e05086a345e"/>
+<approved hash="5,1,757ce8f9d8c98542"/>
 <approved hash="4,1,356ded15be0d6079"/>
-<approved hash="4,1,7e5eaf793ea9d90a"/>
-<approved hash="4,1,cfbc2dc83c6feb29"/>
 <approved hash="4,1,c16533615ffdb1b8"/>
+<approved hash="4,1,cfbc2dc83c6feb29"/>
+<approved hash="4,1,7e5eaf793ea9d90a"/>
 <approved hash="4,1,874b6f4fbd727018"/>
 <approved hash="5,1,f5d394a764be35d4"/>
 <approved hash="5,1,f5de6caaecb3b5d9"/>
