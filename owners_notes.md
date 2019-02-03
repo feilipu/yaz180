@@ -116,7 +116,7 @@ The z88dk is my development system of choice. There is much information about ho
 
 For the YAZ180 the command line of choice is
 ```bash
-zcc +yaz180 -subtype=app -v -m -SO3 --list --max-allocs-per-node400000 test.c -o test -create-app
+zcc +yaz180 -subtype=app -m -SO3 --max-allocs-per-node400000 test.c -o test -create-app
 ```
 The YAZ180 has both `app` and `rom` subtypes.
 
@@ -144,7 +144,7 @@ Breaking down the above command line
 To use z88dk to compile for CP/M for the Z180 processor, then the following commands can be used
 
 ```bash
-zcc +cpm -mz180 -clib=sdcc_iy -v -m --list -Ca-D_Z180 test.c -o test
+zcc +cpm -mz180 -clib=sdcc_iy -m --list -Ca-D_Z180 test.c -o test
 appmake +glue --ihex --clean -b test -c test
 ```
 Breaking this down
@@ -158,6 +158,8 @@ Breaking this down
 * `--clean` - removes byproducts of the build process
 
 Note that this method of obtaining CP/M builds doesn't provide access to YAZ180 specific hardware or capabilities, but that is not really a problem, as CP/M provides access to all the hardware via BDOS calls anyway.
+
+The intention is to build a CP/M subtype for the YAZ180 target, which will support the Z180 specific instructions more completely, and avoid the potential inclusion of Z80 undocumented instructions.
 
 To be continued.
 

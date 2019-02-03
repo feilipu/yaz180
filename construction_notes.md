@@ -10,6 +10,8 @@ Finally, I use a TL866 to program the Lattice GAL devices, and the Flash with th
 
 Also, please note that the soldering for the TSSOP SMD devices is quite hard. I have a bit of trouble with these myself and I still don't have a perfect workflow for getting the RAM and FTDI devices soldered right every time.
 
+If you solder in stages, leaving the FT245, I2C, and 82C55 devices off the bus initially, it is easiest to trouble shoot the board. 9 out of 10 times, it is the RAM device that causes me problems. Either with dry feet, or whisker shorts.
+
 ## PCB Version 2.1 (2017)
 
 I found the ESP-01S doesn't need to have a level converter, because it has 5V tolerant I/O. Therefore the expensive level converter component is not needed. The footprint can be repaired by three small cuts, as shown. The Z80 ASCI1 TX line can be bridged with a resistor, between 0 Ohms and 1000 Ohms. I used 220 Ohms. The Z80 ASCI1 RX line can be bridged with a very short piece of wire, as shown.
@@ -20,7 +22,7 @@ I found the ESP-01S doesn't need to have a level converter, because it has 5V to
 
 Note that the SST39SF020A 256kB flash device is only supported for 128kB, unless the A17 pin is connected from the Memory GAL to the flash device. This means that `BANK15` is loaded at `0x10000`, rather than at `0x30000` as might be expected. In the default CUPL code `BANK13` and `BANK14` are defined as RAM also because of this issue.
 
-Note that the Am9511A needs to have at least 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A.
+Note that the Am9511A needs to have at least 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A. The 74LS93 Reset should be tied to ground, so that it doesn't float.
 
 Note to operate the YAZ180 at 36.864MHz, and have the Am9511A work at its preferred frequency, the QD (/16) output of the 74LS93 divider needs to be connected to the Am9511A `CLK` rather than the QC (/8) output. In practice, I just lifted Pin 8 of the 74LS93 off the pad, and soldered a tiny jumper from Pin 11 to Pad 8. There's no problem with just breaking off Pin 8 if it is getting in the way.
 
@@ -76,6 +78,9 @@ The Single Step `B` fix above needs to be made too.
 All of the above errata have been incorporated, and resolution of issue #4 has also been incorporated.
 Files for this version have been released in this repository.
 
+Bad order somehow. Dimension information missing from the gerbers.
+Version 2.3 gerbers didn't produce working board.
+
 ## PCB Version 2.4 (2019)
 
-Bad order somehow. Version 2.3 gerbers didn't produce working board. So revised with some minor fixes and try again.
+So Version 2.4 has been revised with some minor fixes and is now the basis going forward. This version  has no errata at February 2019.

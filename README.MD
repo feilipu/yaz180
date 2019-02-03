@@ -7,22 +7,22 @@ And so, here it is.
 <table style="border: 2px solid #cccccc;">
 <tbody>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_left.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_left.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v24_left.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v24_left.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Left<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.4 2019 Left<center></th>
 </tr>
 <tr>
-<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_right_low.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v21_right_low.JPG"/></a></td>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v24_right.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/YAZ180v24_right.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Right<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.4 2019 Right<center></th>
 </tr>
 <tr>
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/P1090697.JPG" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/P1090697.JPG"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Live with yabios and CP/M<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 Version 2.1 2017 Live with YABIOS and CP/M<center></th>
 </tr>
 </tbody>
 </table>
@@ -280,11 +280,11 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 ## YABIOS
 
-Please see here for status of yabios [work in progress](https://github.com/feilipu/yaz180/tree/master/yabios).
+Please see here for the status of [YABIOS](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load either [yabios v1.1](https://github.com/feilipu/yaz180/tree/master/yabios) or [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), and APP (yabios) models.
+Currently the YAZ180 is initialised to load preferably [YABIOS v1.1](https://github.com/feilipu/yaz180/tree/master/yabios) or alternatively [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), and APP (yabios) models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and will include a `_call_far` capability to allow applications to grow beyond 60kB. There is support for CP/M drives as Fat32 files on an IDE drive.
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 16 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
 
 ## Z88dk
 
@@ -292,7 +292,7 @@ The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying Fat32 File
 
 ## CP/M
 
-CP/M is complete with the console I/O, and the underlying disk sub-system working. Integration of CP/M disks as FAT32 files has also been completed. CP/M can be booted off the Flash snapshot and can load transient programs from FATFS files (read as CP/M drives).
+CP/M is complete with console and teletype I/O, and the underlying disk sub-system working. Integration of CP/M disks as FAT32 files has also been completed. CP/M can be booted off the Flash snapshot and can load transient programs from FAT32 files (read as CP/M drives).
 
 CP/M drive files can be read and written using a host PC with any operating system, by using the [`cpmtools`](http://www.moria.de/~michael/cpmtools/) utilities, simply by inserting the IDE drive in a USB drive caddy.
 
