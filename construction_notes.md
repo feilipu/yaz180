@@ -22,7 +22,7 @@ I found the ESP-01S doesn't need to have a level converter, because it has 5V to
 
 Note that the SST39SF020A 256kB flash device is only supported for 128kB, unless the A17 pin is connected from the Memory GAL to the flash device. This means that `BANK15` is loaded at `0x10000`, rather than at `0x30000` as might be expected. In the default CUPL code `BANK13` and `BANK14` are defined as RAM also because of this issue.
 
-Note that the Am9511A needs to have at least 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A. The 74LS93 Reset should be tied to ground, so that it doesn't float.
+Note that the Am9511A needs to have at least 5 clock cycles under Reset, to initialise itself properly. As the Reset pins on the 74LS93 are controlled by the same Reset as the Am9511A this doesn't happen. The Reset signal needs to be disconnected from the 74LS93, so that the Phi/8 signal can be provided continually to the Am9511A. Use a sharp knife to make a tiny cut to disconnect Pin 2 and 3, which are bridged from the Reset via. Be careful not to cut on the left side of the via, as this is the Reset signal to the Am9511A. The 74LS93 Reset pins should be tied to ground, so that they don't float.
 
 Note to operate the YAZ180 at 36.864MHz, and have the Am9511A work at its preferred frequency, the QD (/16) output of the 74LS93 divider needs to be connected to the Am9511A `CLK` rather than the QC (/8) output. In practice, I just lifted Pin 8 of the 74LS93 off the pad, and soldered a tiny jumper from Pin 11 to Pad 8. There's no problem with just breaking off Pin 8 if it is getting in the way.
 
@@ -83,4 +83,5 @@ Version 2.3 gerbers didn't produce working board.
 
 ## PCB Version 2.4 (2019)
 
-So Version 2.4 has been revised with some minor fixes and is now the basis going forward. This version  has no errata at February 2019.
+So Version 2.4 has been revised and is now the basis going forward.
+This version  has no errata at 1 February 2019.

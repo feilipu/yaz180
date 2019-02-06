@@ -33,7 +33,7 @@ The [YAZ180](https://feilipu.me/?s=yaz180) is a modern single board computer, bu
 
 It is my attempt to create a perfect mix of "ancient" and  modern computing technology. Specifically, it is an attempt to marry CPU/APU technology from 40 years ago, with modern I2C, USB, and WiFi capabilities, and make an powerful 8-bit computer that can either be embedded into an application, or operate as a stand-alone computer (with some accessories).
 
-The YAZ180 is supported by the Z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern Z88dk C compiled programs.
+The YAZ180 is supported by the z88dk and it is designed to work with both traditional CP/M v2.2 applications and modern z88dk C compiled programs.
 
 The YAZ180 is fully open source. All documentation and design is available from this repository. I have made the raw PCBs available on [Tindie](https://www.tindie.com/products/feilipu/yaz180-pcb-modern-single-board-z180-computer/). I will find a way to get finished YAZ180 computers available shortly.
 
@@ -173,9 +173,9 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 
 There is no need to follow this logical address space mapping. This is what I prefer. You can do whatever you want.
 
-The organisation below is an attempt to provide a BANK_0 containing YABIOS (CRT0, boot code, and Z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
+The organisation below is an attempt to provide a BANK_0 containing YABIOS (CRT0, boot code, and z88dk library code) together with a RAM system heap. The COMMON AREA 1 space from 0xF000 to 0xFFFF is intended to hold banking code, system call forwarding, interrupt service routines, system buffers, and a system stack.
 
-Additional BANK_1 through BANK14 are intended to hold user code, whether CP/M or Z88dk C programs, both are supported through system calls to BANK_0.
+Additional BANK_1 through BANK14 are intended to hold user code, whether CP/M or z88dk C programs, both are supported through system calls to BANK_0.
 
 Flash found in (BANK13, BANK14, and) BANK15 is intended to be used for snapshots of default or frequently used applications. For example a CP/M snapshot would enable a "diskless" CP/M initialisation, using DMA to load within fractions of a second. Suggested default snapshots could be: CP/M CCP/BDOS, CP/M + BASIC, or Webserver, for example.
 
@@ -282,13 +282,13 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 Please see here for the status of [YABIOS](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load preferably [YABIOS v1.1](https://github.com/feilipu/yaz180/tree/master/yabios) or alternatively [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [Z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), and APP (yabios) models.
+Currently the YAZ180 is initialised to load preferably [YABIOS v1.2](https://github.com/feilipu/yaz180/tree/master/yabios) or alternatively [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), APP (yabios I/O), and CP/M (BDOS I/O) models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to Z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 16 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 16 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
 
-## Z88dk
+## z88dk
 
-[Z88dk support](https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180) has been completed, and improvement work continues daily.
+[z88dk support](https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180) has been completed, and improvement work continues daily.
 
 ## CP/M
 
@@ -303,3 +303,7 @@ There are some [construction notes](https://github.com/feilipu/yaz180/tree/maste
 ## Owners Notes
 
 There are some [owners notes](https://github.com/feilipu/yaz180/tree/master/owners_notes.md) advice on how to operate the YAZ180, and its environment.
+
+## Release Notes
+
+The [release notes](https://github.com/feilipu/yaz180/tree/master/release/release_notes.md) for each major release cover any issues in software relating to the release.
