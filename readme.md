@@ -306,4 +306,4 @@ There are some [owners notes](https://github.com/feilipu/yaz180/tree/master/owne
 
 ## Release Notes
 
-The [release notes](https://github.com/feilipu/yaz180/tree/master/release/release_notes.md) for each major release cover any issues in software relating to the release.
+The [release notes](https://github.com/feilipu/yaz180/tree/master/release/readme.md) for each major release cover any issues in software relating to the release.
