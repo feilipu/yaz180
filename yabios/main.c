@@ -615,7 +615,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v1.1\n");
+    fprintf(output,"YAZ180 - yabios v1.2 2019\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -961,7 +961,9 @@ int8_t ya_dd(char **args)       // disk dump
  */
 int8_t ya_clock(char **args)    // set the time (using UNIX epoch)
 {
-    set_system_time(atol(args[1]) - UNIX_OFFSET);
+    if (args[1] != NULL ) {
+        set_system_time(atol(args[1]) - UNIX_OFFSET);
+    }
     return 1;
 }
 
@@ -973,7 +975,9 @@ int8_t ya_clock(char **args)    // set the time (using UNIX epoch)
  */
 int8_t ya_tz(char **args)       // set timezone (no daylight savings, so adjust manually)
 {
-    set_zone(atol(args[1]) * ONE_HOUR);
+    if (args[1] != NULL ) {
+        set_zone(atol(args[1]) * ONE_HOUR);
+    }
     return 1;
 }
 
@@ -1198,7 +1202,7 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1535760000 - UNIX_OFFSET);      /* Initial time: September 1, 2018 UTC */
+    set_system_time(1548979200 - UNIX_OFFSET);      /* Initial time: February 1, 2019 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
