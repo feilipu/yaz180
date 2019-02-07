@@ -3,12 +3,18 @@ use Time::HiRes qw(gettimeofday);
 
 # Set programmer FTDI device name here:
 
-# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A704DIVK-if00-port0'; # YaZ180v1
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A704DIVK-if00-port0'; # YAZ180v1
 # $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A104Q1AM-if00-port0'; # YAZ180v2
 
-# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ7-if00-port0'; # v2.1
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ7-if00-port0'; # v2.1 Phillip Ok
 # $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ8-if00-port0'; # v2.1
-$device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ9-if00-port0'; # v2.1 Alvin
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ9-if00-port0'; # v2.1 Alvin Ok
+
+$device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB35-if00-port0' ; # v2.4 Phillip Ok
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB36-if00-port0' ; # v2.4 Klaus Ok
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB37-if00-port0' ; # v2.4
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB38-if00-port0' ; # v2.4
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB39-if00-port0' ; # v2.4 Ok
 
 # Note that in recent versions of Linux, the devices also show up in
 # /dev/serial/by-id/name where the device name includes the serial number,
@@ -20,8 +26,11 @@ $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_A105LKZ9-if00-port0'; # v2
 # Whatever the cause, limiting the maximum amount of data exchanged in a
 # single read or write call solved the problems I was having.
 
-$max_read_size = 15;
-$max_write_size = 15;
+# $max_read_size = 15;
+# $max_write_size = 15;
+
+$max_read_size = 1;
+$max_write_size = 1;
 
 # If you run into issues, try changing both to 1 just in case.
 # I once had a flaky USB hub which would make the process fail
@@ -53,9 +62,6 @@ select STDOUT; $| = 1;
 print "Switching Z80 to 'program' mode...\n";
 $code  = pack('H*', '00000000000000'); # NOPs
 $code .= pack('H*', 'C30000'); # jp $0000
-
-# print $code . "\n"; # DEBUG feilipu
-
 special_write($code);
 
 # If this is our second attempt, let's wait a second and make sure there's
@@ -160,7 +166,7 @@ for ($j = 3; $j < 4; $j++) {
   # memory contents, we must be prepared to receive them while we send the
   # instructions, thus we can't use the special read & write functions.
 
-#  print "...\n";
+  print "...\n";
   $sent = 0; $receive = '';
   while ('whatever') {
     $read = $write = $what = '';
@@ -180,7 +186,7 @@ for ($j = 3; $j < 4; $j++) {
       die "FTDI device disappeared!" if $result == 0;
       $sent += $result;
     };
-#    print "\e[1ASent $sent bytes, received " . length($receive) . " bytes...\n";
+  print "\e[1ASent $sent bytes, received " . length($receive) . " bytes...\n";
   };
 
   # If the memory contents match what we wrote to them, we have working SRAM.
