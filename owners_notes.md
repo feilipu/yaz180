@@ -132,7 +132,7 @@ The z88dk is my development system of choice. There is much information about ho
 
 For the YAZ180 the command line of choice is
 ```bash
-zcc +yaz180 -subtype=app -SO3 -m --max-allocs-per-node400000 test.c -o test -create-app
+zcc +yaz180 -subtype=app -SO3 -m --allow-unsafe-read --max-allocs-per-node400000 test.c -o test -create-app
 ```
 The YAZ180 has three main options,being `app`, `rom`, and 'cpm` subtypes.
 
@@ -152,6 +152,7 @@ Breaking down the above command line
 * `-m` - build a map file, needed for `-create-app`
 * `-SO3` - stongly optimise using the aggressive peephole optimiser
 * `--list` - generate list files
+* `--allow-unsafe-read` - don't reserve memory addresses for I/O space.
 * `--max-allocs-per-node` - depth of sdcc code optimisation, reduce for faster compilation
 * `-create-app` - generate finalised HEX code, also a BIN file which can be used directly.
 
