@@ -189,70 +189,70 @@ PUBLIC _common1_phase_end
 DEFC _common1_phase_end              = $FE61
 
 PUBLIC _f_mount
-DEFC _f_mount                        = $5EFE
+DEFC _f_mount                        = $5D1A
 
 PUBLIC _f_open
-DEFC _f_open                         = $5F6B
+DEFC _f_open                         = $5D87
 
 PUBLIC _f_read
-DEFC _f_read                         = $6482
+DEFC _f_read                         = $62A1
 
 PUBLIC _f_write
-DEFC _f_write                        = $6982
+DEFC _f_write                        = $67A1
 
 PUBLIC _f_sync
-DEFC _f_sync                         = $6F79
+DEFC _f_sync                         = $6D9E
 
 PUBLIC _f_close
-DEFC _f_close                        = $70CD
+DEFC _f_close                        = $6EF2
 
 PUBLIC _f_chdrive
-DEFC _f_chdrive                      = $7104
+DEFC _f_chdrive                      = $6F29
 
 PUBLIC _f_chdir
-DEFC _f_chdir                        = $7122
+DEFC _f_chdir                        = $6F47
 
 PUBLIC _f_getcwd
-DEFC _f_getcwd                       = $71E1
+DEFC _f_getcwd                       = $7006
 
 PUBLIC _f_lseek
-DEFC _f_lseek                        = $748E
+DEFC _f_lseek                        = $72B3
 
 PUBLIC _f_opendir
-DEFC _f_opendir                      = $7A25
+DEFC _f_opendir                      = $784E
 
 PUBLIC _f_closedir
-DEFC _f_closedir                     = $7B1C
+DEFC _f_closedir                     = $7945
 
 PUBLIC _f_readdir
-DEFC _f_readdir                      = $7B43
+DEFC _f_readdir                      = $796C
 
 PUBLIC _f_stat
-DEFC _f_stat                         = $7BB2
+DEFC _f_stat                         = $79DB
 
 PUBLIC _f_getfree
-DEFC _f_getfree                      = $7C1F
+DEFC _f_getfree                      = $7A48
 
 PUBLIC _f_truncate
-DEFC _f_truncate                     = $7ED2
+DEFC _f_truncate                     = $7CFD
 
 PUBLIC _f_unlink
-DEFC _f_unlink                       = $80EF
+DEFC _f_unlink                       = $7F1A
 
 PUBLIC _f_mkdir
-DEFC _f_mkdir                        = $8288
+DEFC _f_mkdir                        = $80B1
 
 PUBLIC _f_rename
-DEFC _f_rename                       = $84E4
+DEFC _f_rename                       = $8328
 
 PUBLIC _f_chmod
-DEFC _f_chmod                        = $87AF
+DEFC _f_chmod                        = $85F3
 
 PUBLIC _f_utime
-DEFC _f_utime                        = $885C
+DEFC _f_utime                        = $86A0
 
 PUBLIC _f_expand
-DEFC _f_expand                       = $892E
+DEFC _f_expand                       = $8772
 
 PUBLIC _free_fastcall
 DEFC _free_fastcall                  = $0521
@@ -282,40 +282,40 @@ PUBLIC __modulong_callee
 DEFC __modulong_callee               = $0FA8
 
 PUBLIC __mullong_callee
-DEFC __mullong_callee                = $0FC4
+DEFC __mullong_callee                = $0FB5
 
 PUBLIC _fflush_fastcall
-DEFC _fflush_fastcall                = $1142
+DEFC _fflush_fastcall                = $1133
 
 PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $1148
+DEFC _fputc_callee                   = $1139
 
 PUBLIC _getline_callee
-DEFC _getline_callee                 = $1150
+DEFC _getline_callee                 = $1141
 
 PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $17DF
+DEFC _atoi_fastcall                  = $17D0
 
 PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $17FD
+DEFC _atol_fastcall                  = $17EE
 
 PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $181E
+DEFC _exit_fastcall                  = $180F
 
 PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $17D7
+DEFC _strtoul_callee                 = $17C8
 
 PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $1938
+DEFC _memcmp_callee                  = $1929
 
 PUBLIC _memcpy_callee
-DEFC _memcpy_callee                  = $1940
+DEFC _memcpy_callee                  = $1931
 
 PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $1948
+DEFC _strcmp_callee                  = $1939
 
 PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $194E
+DEFC _strtok_callee                  = $193F
 
 PUBLIC _asci0_flush_Rx
 DEFC _asci0_flush_Rx                 = $FAE6
