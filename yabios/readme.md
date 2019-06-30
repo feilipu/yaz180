@@ -542,7 +542,7 @@ Following execution `_error` call, the operation returns to the Command Line int
 
 ```
 RST08:
-    pop hl              ; get return address in hl
+    pop hl             ; get return address in hl
     call _error        ; user provided function, minimum is `ret`
     jp _warm_start     ; YABIOS provided warm restart function
 ```

@@ -4,7 +4,7 @@
   @author       Phillip Stevens, inspired by Stephen Brennan
   @brief        YASH (Yet Another SHell)
 
-  This programme was reached working state on Melbourne Cup Day, 2017.
+  This programme reached working state on Melbourne Cup Day, 2017.
 
 *******************************************************************************/
 
@@ -1202,7 +1202,7 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1548979200 - UNIX_OFFSET);      /* Initial time: February 1, 2019 UTC */
+    set_system_time(1561903200 - UNIX_OFFSET);      /* Initial time: July 1, 2019 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
