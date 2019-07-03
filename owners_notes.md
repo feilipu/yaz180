@@ -132,15 +132,15 @@ The z88dk is my development system of choice. There is much information about ho
 
 For the YAZ180 the command line of choice is
 ```bash
-zcc +yaz180 -subtype=app -SO3 -m --allow-unsafe-read --max-allocs-per-node400000 test.c -o test -create-app
+zcc +yaz180 -subtype=app -SO3 -m --max-allocs-per-node400000 test.c -o test -create-app
 ```
-The YAZ180 has three main options,being `app`, `rom`, and 'cpm` subtypes.
+The YAZ180 has three main options,being `app`, `rom`, and `cpm` subtypes.
 
 The `rom` subtype is only useful where you are compiling a YABIOS, or you wish to run your YAZ180 without the yabios from the metal. In this situation all the drivers available for the YAZ180 are maintained within the z88dk, and (with the exception of I2C) everything should work.
 
 The `app` subtype is the go to for native applications. Everything you're running directly on YABIOS should be compiled with this subtype.
 
-Within the CP/M environment, then the `cpm` subtype should be selected. Alternatively the z88dk `cpm` target can be selected, although this doesn't allow access to YAZ180 specific libraries and header files, nor does it use the Z180 specific functions, such as `mul` to accelerate array access and integer arithmetic.
+Within the CP/M environment, then the `cpm` subtype should be selected. Alternatively the z88dk `cpm` target can be selected, although this doesn't allow access to YAZ180 specific libraries and header files, nor does it use the Z180 specific functions, such as `mlt nn` to accelerate array access and integer arithmetic.
 
 Details of each build type for the YAZ180 can be found within the configuration files of the z88dk. For the beginning user, the defaults are quite acceptable.
 
@@ -152,7 +152,6 @@ Breaking down the above command line
 * `-m` - build a map file, needed for `-create-app`
 * `-SO3` - stongly optimise using the aggressive peephole optimiser
 * `--list` - generate list files
-* `--allow-unsafe-read` - don't reserve memory addresses for I/O space.
 * `--max-allocs-per-node` - depth of sdcc code optimisation, reduce for faster compilation
 * `-create-app` - generate finalised HEX code, also a BIN file which can be used directly.
 
