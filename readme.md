@@ -146,24 +146,24 @@ The PROGRAMMING MODE hardware recognises that data is available on the USB paral
 <th style="border: 2px solid #cccccc; padding: 6px;">Programming Mode</th>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$00000 - $0BFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB of 128kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$00000 -> $0BFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (48kB of 256kB)</td>
 <td style="border: 1px solid #cccccc; padding: 6px;">USB pseudo RAM (48kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 - $DFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (848kB of 1MB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$0C000 -> $BFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (736kB of 1MB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">SRAM (736kB of 1MB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$E0000 - $EFFFF</th>
+<th style="border: 1px solid #cccccc; padding: 6px;">$C0000 -> $CFFFF</th>
 <td style="border: 1px solid #cccccc; padding: 6px;">SRAM (64kB of 1MB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 256kB)</td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;">$F0000 - $FFFFF</th>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
-<td style="border: 1px solid #cccccc; padding: 6px;">Flash (64kB of 128kB)</td>
+<th style="border: 1px solid #cccccc; padding: 6px;">$D0000 -> $FFFFF</th>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
+<td style="border: 1px solid #cccccc; padding: 6px;">Flash (192kB of 256kB)</td>
 </tr>
 </tbody>
 </table>
