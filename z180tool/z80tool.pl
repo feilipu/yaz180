@@ -13,7 +13,7 @@ use Time::HiRes qw(gettimeofday);
 $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB35-if00-port0' ; # v2.4 Phillip Ok
 # $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB36-if00-port0' ; # v2.4 Klaus Ok
 # $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB37-if00-port0' ; # v2.4
-# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB38-if00-port0' ; # v2.4
+# $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB38-if00-port0' ; # v2.4 Frank Ok
 # $device = '/dev/serial/by-id/usb-FTDI_FT245R_USB_FIFO_AI05EB39-if00-port0' ; # v2.4 Ok
 
 # Note that in recent versions of Linux, the devices also show up in
