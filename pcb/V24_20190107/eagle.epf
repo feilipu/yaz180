@@ -402,12 +402,18 @@ UsedLibrary="/home/phillip/eagle/external_lbrs/z80lbr/Z80FAMIL.lbr"
 UsedLibrary="/home/phillip/eagle/FX-Z180A/FX-Z180 Rev A.lbr"
 
 [Win_1]
+Type="Control Panel"
+Loc="1204 24 2252 1046"
+State=2
+Number=0
+
+[Win_2]
 Type="Schematic Editor"
-Loc="65 24 664 451"
+Loc="55 -13 654 414"
 State=1
 Number=1
 File="YAZ180_V24.sch"
-View="-201.311 -104.791 202.373 166.813"
+View="-221.631 -140.351 182.053 131.253"
 WireWidths=" 0 0.3048 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0.4064 0.1524"
 PadDiameters=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
 PadDrills=" 0.5 0.6 0.7 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 2 2.2 2.8 3.2 0.8"
@@ -446,14 +452,8 @@ ArcDirection=0
 AddLevel=2
 PadsSameType=0
 Layer=91
-Views=" 1: -201.311 -104.791 202.373 166.813 5: -201.311 -109.871 202.373 161.733 7: -221.631 -140.351 182.053 131.253"
-Sheet=1
-
-[Win_2]
-Type="Control Panel"
-Loc="747 24 1795 1051"
-State=2
-Number=0
+Views=" 1: -201.311 -104.791 202.373 166.813"
+Sheet=7
 
 [Win_3]
 Type="Board Editor"
@@ -462,7 +462,7 @@ State=1
 Number=2
 File="YAZ180_V24.brd"
 View="-3.8608 -2.94158 163.881 117.001"
-WireWidths=" 0 0.254 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0.4064 0.3048"
+WireWidths=" 0 0.254 0.3048 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0.4064"
 PadDiameters=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
 PadDrills=" 0.5 0.6 0.7 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 2 2.2 2.8 3.2 0.8"
 ViaDiameters=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
@@ -471,7 +471,7 @@ HoleDrills=" 0.5 0.7 0.8 0.9 1 1.1 1.2 1.3 1.4 1.5 1.6 2 2.2 2.8 3.2 0.6"
 TextSizes=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.9304 2.1844 2.54 3.81 5.08 6.4516 1.778"
 PolygonSpacings=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 5.08 6.4516 1.27"
 PolygonIsolates=" 0.254 0.3048 0.4064 0.6096 0.8128 1.016 1.27 1.4224 1.6764 1.778 1.9304 2.1844 2.54 3.81 6.4516 0"
-MiterRadiuss=" 0.254 0.3175 0.635 2.54 1 2 2.5 5 7.5 10 0 1.27"
+MiterRadiuss=" 0.254 0.3175 0.635 1.27 2.54 1 2 2.5 5 7.5 10 0"
 DimensionWidths=" 0 0.127 0.254 0.1 0.26 0.13"
 DimensionExtWidths=" 0.127 0.254 0.1 0.13 0.26 0"
 DimensionExtLengths=" 1.27 2.54 1 2 3 0"
@@ -499,10 +499,19 @@ SwapLevel=0
 ArcDirection=0
 AddLevel=2
 PadsSameType=0
-Layer=1
+Layer=16
+
+[Win_4]
+Type="CAM Processor"
+Loc="0 0 1421 969"
+State=2
+Number=3
+File="YAZ180_V24.brd"
+Job="/home/phillip/eagle/gerber/Seeed_Gerber_Generater_4-layer_1-2-15-16.cam"
 
 [Desktop]
 Screen="2560 1080"
 Window="Win_1"
 Window="Win_2"
 Window="Win_3"
+Window="Win_4"
