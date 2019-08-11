@@ -1,5 +1,7 @@
 + _bios_
 
++ z180_int_
+
 - ideLock
 + Lock
 
@@ -15,11 +17,8 @@
 - _interrupt
 - rc_01_input_
 - rc_01_output_
-+ _asci[01]_
 
 + asm_am9511a_
-
-+ _f_
 
 + ide_write_sector
 + ide_read_sector
