@@ -1,13 +1,4 @@
 
-PUBLIC _bank_cpm_iobyte
-DEFC _bank_cpm_iobyte                = $0003
-
-PUBLIC _bank_cpm_default_drive
-DEFC _bank_cpm_default_drive         = $0004
-
-PUBLIC _bank_cpm_bdos_addr
-DEFC _bank_cpm_bdos_addr             = $0006
-
 PUBLIC z180_int_int1
 DEFC z180_int_int1                   = $FFE0
 
@@ -65,9 +56,6 @@ DEFC _csioLock                       = $F515
 PUBLIC APULock
 DEFC APULock                         = $F527
 
-PUBLIC _bios_ioByte
-DEFC _bios_ioByte                    = $F528
-
 PUBLIC asci0RxLock
 DEFC asci0RxLock                     = $F52E
 
@@ -98,14 +86,8 @@ DEFC _memcpy_far                     = $F713
 PUBLIC _load_hex_fastcall
 DEFC _load_hex_fastcall              = $F7AF
 
-PUBLIC _bank_get_rel
-DEFC _bank_get_rel                   = $F860
-
 PUBLIC _bank_get_rel_fastcall
 DEFC _bank_get_rel_fastcall          = $F864
-
-PUBLIC _bank_get_abs
-DEFC _bank_get_abs                   = $F872
 
 PUBLIC _bank_get_abs_fastcall
 DEFC _bank_get_abs_fastcall          = $F876
