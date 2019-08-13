@@ -9,12 +9,18 @@
 + Lock
 
 + _lock_
++ _bank_
 + _far
 
 - _unlocked_fastcall
 - _unlocked_callee
 + _fastcall
 + _callee
+
+- _interrupt
+- rc_01_input_
+- rc_01_output_
++ _asci[01]_
 
 + asm_am9511a_
 
