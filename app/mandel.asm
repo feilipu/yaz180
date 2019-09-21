@@ -4,6 +4,10 @@
 ; From https://rosettacode.org/wiki/Mandelbrot_set#Z80_Assembly
 ; Adapted to CP/M and colorzied by J.B. Langston
 ;
+; Assemble with z88dk for RC2014 CP/M
+; zcc +rc2014 -subtype=cpm -clib=sdcc_iy -v -m --list mandel.asm -o mandel
+; appmake +glue --ihex --clean -b mandel -c mandel
+;
 ; Assemble with z88dk for YAZ180 CP/M, for example:
 ; zcc +yaz180 -subtype=cpm -v -m --list mandel.asm -o mand180
 ; appmake +glue --ihex --clean -b mand180 -c mand180
@@ -128,7 +132,7 @@ SECTION code_user
 
 PUBLIC _main
 
-_main:
+._main
         ld      de, welcome             ; Print a welcome message
 IF _CPM                                 ; cp/m ram model 
         call    prtmesg
@@ -153,7 +157,7 @@ ENDIF
 ; {
         ld      hl, (y_start)           ; y = y_start
         ld      (y), hl
-outer_loop:
+.outer_loop
         ld      hl, (y_end)             ; Is y <= y_end?
         ld      de, (y)
         and     a                       ; Clear carry
@@ -164,7 +168,7 @@ outer_loop:
 ;    {
         ld      hl, (x_start)           ; x = x_start
         ld      (x), hl
-inner_loop:
+.inner_loop
         ld      hl, (x_end)             ; Is x <= x_end?
         ld      de, (x)
         and     a
@@ -195,7 +199,7 @@ inner_loop:
 ;      {
         ld      a, (iteration_max)
         ld      b, a
-iteration_loop:
+.iteration_loop
         push    bc                      ; iteration -> stack
         
 IF _APU
@@ -283,11 +287,11 @@ ENDIF                                   ; IF _APU
         jr      iteration_end           ; Exit loop
 
 ;        iteration++;
-iteration_dec:
+.iteration_dec
         pop     bc                      ; Get iteration counter
         djnz    iteration_loop          ; We might fall through!
 ;      }
-iteration_end:
+.iteration_end
 ;      printf("%c", display[iteration % 7]);
 ;       call    asciipixel              ; Print the character
         call    colorpixel              ; Print the character
@@ -328,7 +332,7 @@ ENDIF
         jp      inner_loop
 ;    }
 ;    printf("\n");
-inner_loop_end:
+.inner_loop_end
 IF _CPM                                 ; cp/m ram model 
         ld      de, crlf                ; Print a CR/LF pair
         call    prtmesg
@@ -346,7 +350,7 @@ ENDIF
         jp      outer_loop
 ; }
 
-mandel_end:
+.mandel_end
         call    delay
         call    delay
 
@@ -364,7 +368,7 @@ ELSE
 ENDIF
         ret                             ; Return to CP/M or yabios
                 
-colorpixel:
+.colorpixel
         ld      a,b                     ; iter count in B -> C
         and     $1F                     ; lower five bits only
         ld      c,a
@@ -376,7 +380,7 @@ colorpixel:
         ld      e, pixel                ; show pixel
         ret
                 
-asciipixel:
+.asciipixel
         ld      a, b                    ; iter count in B -> L
         and     $07                     ; lower three bits only
         sbc     hl, hl
@@ -386,7 +390,7 @@ asciipixel:
         ld      e, (hl)                 ; character to be printed
         ret
 
-setcolor:
+.setcolor
         push    af                      ; save accumulator
         ld      de,ansifg               ; start ANSI control sequence to set foreground color
 IF _CPM                                 ; cp/m ram model 
@@ -406,15 +410,15 @@ ELSE
 ENDIF
         ret
                 
-printdec:
+.printdec
         ld      c,-100                  ; print 100s place
         call    pd1
         ld      c,-10                   ; 10s place
         call    pd1
         ld      c,-1                    ; 1s place
-pd1:
+.pd1
         ld      e,'0'-1                 ; start ASCII right before 0
-pd2:
+.pd2
         inc     e                       ; increment ASCII code
         add     a,c                     ; subtract 1 place value
         jr      C,pd2                   ; loop until negative
@@ -426,7 +430,7 @@ pd2:
         ld      a,'0'                   ; don't print leading 0s
         cp      e
         jr      Z,pd4
-pd3:
+.pd3
 IF _CPM                                 ; cp/m ram model 
         ld      c, condio
         call    bdos
@@ -434,13 +438,13 @@ ELSE
         ld      l,e
         call    asm_pchar
 ENDIF
-pd4:
+.pd4
         pop     af                      ; restore accumulator
         ret
 
 ;   Print message pointed to by (DE). It will end with a '$'.
 ;   modifies AF, DE, & HL
-prtmesg:
+.prtmesg
         ld      a,(de)      ; Get character from DE address
         cp      '$'
         ret     Z
@@ -454,7 +458,7 @@ prtmesg:
 
 IF _APU
 
-apu_calc:
+.apu_calc
 
 IF _DOUBLE
 
@@ -789,7 +793,7 @@ IF __Z180
    ;
    ; uses  : af, bc, de, hl
 
-mul_16:
+.mul_16
    ld b,d                       ; d = MSB of multiplicand
    ld c,h                       ; h = MSB of multiplier
    push bc                      ; save sign info
@@ -805,7 +809,7 @@ mul_16:
    ld d,a
    inc de
 
-l_pos_de:
+.l_pos_de
    bit 7,h
    jr Z,l_pos_hl                ; take absolute value of multiplier
 
@@ -817,7 +821,7 @@ l_pos_de:
    ld h,a
    inc hl
 
-l_pos_hl:
+.l_pos_hl
                                 ; prepare unsigned dehl = de x hl
    ld b,l                       ; xl
    ld c,d                       ; yh
@@ -887,7 +891,7 @@ ELSE                                ; IF !__Z180
 ; multiplication takes place, followed by negating the result if necessary.
 ;
 
-mul_16:
+.mul_16
        ld b,d                       ; d = MSB of multiplicand
        ld c,h                       ; h = MSB of multiplier
        push bc                      ; save sign info
@@ -903,7 +907,7 @@ mul_16:
        ld d,a
        inc de
 
-l_pos_de:
+.l_pos_de
        bit 7,h
        jr Z,l_pos_hl                ; take absolute value of multiplier
 
@@ -1092,10 +1096,10 @@ ENDIF                           ; IF __Z180
 
 ENDIF                           ; IF _APU
 
-delay:
+.delay
         push bc
         ld b, $00
-delay_loop:
+.delay_loop
         ex (sp), hl
         ex (sp), hl
         djnz delay_loop
