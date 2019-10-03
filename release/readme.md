@@ -42,3 +42,7 @@ If no IDE disk is available for testing, most of the system can be tested by run
 ### V1.3
 
 There is little change to the yaz180 code in this release, but the underlying `zsdcc` compiler has been developed significantly. This release has been compiled with `r11311` of sdcc, using the patch file included in z88dk.
+
+### V1.4
+
+There is little change to the yaz180 code in this release, except a few tweaks to the far functions and ASCI drivers. This release has been compiled with `r11369` of sdcc, using the patch file included in z88dk. This release changes the location of most functions, so the [linkage file](https://github.com/z88dk/z88dk/blob/master/libsrc/_DEVELOPMENT/target/yaz180/crt_yabios_def.inc) in z88dk has been updated.
