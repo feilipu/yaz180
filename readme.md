@@ -55,10 +55,22 @@ A single step circuitry has been implemented, which is enabled by a switch, and 
 
 To interface with modern sensors and devices, two separate I2C interface PCA9665 devices have been provided. This enables one I2C device to be running at 800kHz in Fast-mode Plus (or even Plaid at 1MHz) driving a LCD controller for a screen (for example FTDI EVE), and have the other I2C interface connected over longer distances to sensors or keyboard running at 100kHz in Standard mode. The PCA9665 has deep 68 byte hardware buffers, and can operate in buffered or streaming mode, enabling complete I2C sentences to be transmitted or received without CPU interaction. A complete GLX graphics command can be sent with one CPU interrupt transaction, for example.
 
+<div>
+<table style="border: 2px solid #cccccc;">
+<tbody>
+<tr>
+<td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://www.youtube.com/embed/6-p7kZrgalg" target="_blank"><img src="https://youtu.be/6-p7kZrgalg"/></a></td>
+</tr>
+<tr>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 I2C-2 Conway's Life & I2C-1 Temperature / Humidity Sensing<center></th>
+</tr>
+</tbody>
+</table>
+</div>
+
 To interface with TCP/IP networks, using WiFi, an ESP8266 pin-out for the ESP-01S is provided, connected to ASCI1. This enables the YAZ180 to operate as an Internet server (with attached IDE hard drive), and / or to be controlled using Secure Shell from anywhere.
 
 A USB parallel interface is provided to enable "tool-less" programming of the YAZ180. A perl script is provided to upload Intel HEX code and program it into the system Flash memory. To enable this feature hardware is provided to reconfigure the memory map to allow boot from USB.
-
 
 ## PCB
 
