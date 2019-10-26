@@ -62,7 +62,7 @@ To interface with modern sensors and devices, two separate I2C interface PCA9665
 <td style="border: 1px solid #cccccc; padding: 6px;"><a href="https://www.youtube.com/embed/6-p7kZrgalg" target="_blank"><img src="https://raw.githubusercontent.com/feilipu/yaz180/master/docs/conway_life.png"/></a></td>
 </tr>
 <tr>
-<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 I2C-2 Conway's Life & I2C-1 Temperature / Humidity Sensing<center></th>
+<th style="border: 1px solid #cccccc; padding: 6px;"><centre>YAZ180 I2C#2 Conway's Life & I2C#1 Temperature / Humidity Sensing - CLICK FOR VIDEO<center></th>
 </tr>
 </tbody>
 </table>
