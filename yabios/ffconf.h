@@ -12,6 +12,8 @@
 #define FF_FS_READONLY  1
 #elif __YAZ180
 #define FF_FS_READONLY  0
+#elif __SCZ180
+#define FF_FS_READONLY  0
 #else
 #define FF_FS_READONLY  0
 #endif
@@ -22,7 +24,9 @@
 
 #if __RC2014
 #define FF_FS_MINIMIZE  0
-#elif __YAZ180
+#elif __YAZ180 
+#define FF_FS_MINIMIZE  0
+#elif __SCZ180
 #define FF_FS_MINIMIZE  0
 #else
 #define FF_FS_MINIMIZE  0
@@ -63,7 +67,9 @@
 
 #if __RC2014
 #define FF_USE_CHMOD    0
-#elif __YAZ180
+#elif __YAZ180 
+#define FF_USE_CHMOD    1
+#elif __SCZ180
 #define FF_USE_CHMOD    1
 #else
 #define FF_USE_CHMOD    0
@@ -170,6 +176,8 @@
 #define FF_FS_RPATH     1
 #elif __YAZ180
 #define FF_FS_RPATH     2
+#elif __SCZ180
+#define FF_FS_RPATH     2
 #else
 #define FF_FS_RPATH     2
 #endif
@@ -260,6 +268,8 @@
 #define FF_FS_NORTC     1
 #elif __YAZ180
 #define FF_FS_NORTC     0
+#elif  __SCZ180
+#define FF_FS_NORTC     0
 #else
 #define FF_FS_NORTC     1
 #warning - Check whether you have get_fattime() available.
@@ -289,7 +299,7 @@
 */
 
 
-#define FF_FS_LOCK      0
+#define FF_FS_LOCK        0
 /* The option FF_FS_LOCK switches file lock function to control duplicated file open
 /  and illegal operation to open objects. This option must be 0 when FF_FS_READONLY
 /  is 1.

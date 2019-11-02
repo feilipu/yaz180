@@ -1201,7 +1201,7 @@ void main(int argc, char **argv)
     (void)argc;
     (void *)argv;
 
-    set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
+    set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
     set_system_time(1569888000 - UNIX_OFFSET);      /* Initial time: 10.00 October 1, 2019 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
@@ -1221,7 +1221,5 @@ void main(int argc, char **argv)
     free(buffer);
     free(dir);
     free(fs);
-
-    return;
 }
 
