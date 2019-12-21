@@ -6,9 +6,9 @@
 
 INCLUDE "config_yaz180_private.inc"
 
-EXTERN  _asci0_pollc, _asci0_getc, _asci0_putc
-EXTERN  _asci1_pollc, _asci1_getc, _asci1_putc
-EXTERN  _asci0_flush_Rx, _asci1_flush_Rx
+EXTERN  asm_asci0_pollc, asm_asci0_getc, asm_asci0_putc
+EXTERN  asm_asci1_pollc, asm_asci1_getc, asm_asci1_putc
+;EXTERN  asm_asci0_flush_Rx, asm_asci1_flush_Rx
 EXTERN  ide_write_sector, ide_read_sector
 
 EXTERN  _dmac0Lock
@@ -223,8 +223,8 @@ gocpm:
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
 
-    call    _asci0_flush_Rx
-    call    _asci1_flush_Rx
+;   call    asm_asci0_flush_Rx
+;   call    asm_asci1_flush_Rx
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
@@ -266,14 +266,14 @@ const:      ;console status, return 0ffh if character ready, 00h if not
     cp      00000001b
     jr      NZ,const1
 const0:
-    call    _asci0_pollc    ;check whether any characters are in CRT Rx0 buffer
+    call    asm_asci0_pollc ;check whether any characters are in CRT Rx0 buffer
     jr      NC, dataEmpty
 dataReady:
     ld      a,$FF
     ret
 
 const1:
-    call    _asci1_pollc    ;check whether any characters are in TTY Rx1 buffer
+    call    asm_asci1_pollc ;check whether any characters are in TTY Rx1 buffer
     jr      C, dataReady
 dataEmpty:
     xor     a
@@ -287,15 +287,15 @@ conin:    ;console character into register a
     cp      00000001b
     jr      NZ,conin1
 conin0:
-   call     _asci0_getc     ;check whether any characters are in CRT Rx0 buffer
+   call     asm_asci0_getc  ;check whether any characters are in CRT Rx0 buffer
    jr       NC, conin0      ;if Rx buffer is empty
-;  and      $7F             ;strip parity bit - support 8 bit XMODEM
+;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
    ret
 
 conin1:
-   call     _asci1_getc     ;check whether any characters are in TTY Rx1 buffer
+   call     asm_asci1_getc  ;check whether any characters are in TTY Rx1 buffer
    jr       NC, conin1      ;if Rx buffer is empty
-;  and      $7F             ;strip parity bit - support 8 bit XMODEM
+;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
    ret
 
 reader:
@@ -315,17 +315,17 @@ conout:    ;console character output from register c
     cp      00000010b
     jr      Z,list          ;"BAT:" redirect
     cp      00000001b
-    jp      NZ,_asci1_putc
-    jp      _asci0_putc
+    jp      NZ,asm_asci1_putc
+    jp      asm_asci0_putc
 
 list:
     ld      l,c             ;Store character
     ld      a,(_cpm_iobyte)
     and     11000000b
     cp      01000000b
-    jp      Z,_asci0_putc
+    jp      Z,asm_asci0_putc
     cp      00000000b
-    jp      Z,_asci1_putc
+    jp      Z,asm_asci1_putc
     ret
 
 punch:
@@ -333,9 +333,9 @@ punch:
     ld      a,(_cpm_iobyte)
     and     00110000b
     cp      00010000b
-    jp      Z,_asci0_putc
+    jp      Z,asm_asci0_putc
     cp      00000000b
-    jp      Z,_asci1_putc
+    jp      Z,asm_asci1_putc
     ret
 
 listst:     ;return list status
