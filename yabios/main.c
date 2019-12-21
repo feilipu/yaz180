@@ -8,18 +8,20 @@
 
 *******************************************************************************/
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <arch.h>
 #include <arch/yaz180.h>
-#include <arch/yaz180/diskio.h>
+
+#include <time.h>
+#include <sys/time.h>
+#include <lib/yaz180/time.h>
 
 #include "ffconf.h"
 #include <lib/yaz180/ff.h>
-#include <lib/yaz180/time.h>
+#include <arch/yaz180/diskio.h>
 
 // PRAGMAS
 
@@ -55,8 +57,19 @@ static FILE *error;             /* defined input */
 
 const static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+// EXTERNAL FUNCTIONS
+
+extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
+
+
 /*
-  Function Declarations for builtin shell commands:
+  Function Declarations for built-in shell commands:
  */
 
 // CP/M related functions
@@ -103,18 +116,10 @@ int8_t ya_date(char **args);    // print the local time in US: Sun Mar 23 01:03:
 static void put_rc (FRESULT rc);        // print error codes to defined error IO
 static void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt);
 
-// external functions
-
-extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 flush routine
-extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
-extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
-extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 flush routine
-extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,h,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
-extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,h,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
-
 /*
   List of builtin commands.
  */
+
 struct Builtin {
   const char *name;
   int8_t (*func) (char** args);
@@ -346,7 +351,7 @@ int8_t ya_mvb(char **args)      // move or clone the nominated bank
         memcpy_far((void *)0x0000, (int8_t)atoi(args[2]), (void *)0x0000, (int8_t)atoi(args[1]), (__COMMON_AREA_1_BASE-0)); // copy it all
         // set bank referenced from _bankLockBase, so the clone bank is noted as the same state as its parent.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] = bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ];
-        fprintf(output,"Cloned Bank:%01X into Bank:%01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
+        fprintf(output,"Cloned Bank: %01X into Bank: %01X", bank_get_abs((int8_t)atoi(args[1])), bank_get_abs((int8_t)atoi(args[2])));
     }
     return 1;
 }
@@ -364,7 +369,7 @@ int8_t ya_rmb(char **args)      // remove the nominated bank (to cold state)
     } else {
         // set bank referenced from _bankLockBase, so the the bank is noted as cold.
         bankLockBase[ bank_get_abs((int8_t)atoi(args[1])) ] = 0x00;
-        fprintf(output,"Deleted Bank:%01X", bank_get_abs((int8_t)atoi(args[1])) );
+        fprintf(output,"Deleted Bank: %01X", bank_get_abs((int8_t)atoi(args[1])) );
     }
    return 1;
 }
@@ -442,8 +447,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
     uint32_t p1;
     uint16_t s1;
 
-    time_t startTime, finishTime;
-    uint8_t startTimeFraction, finishTimeFraction;
+    struct timespec startTime, endTime, resTime;
 
     if (args[1] == NULL || args[2] == NULL) {
         fprintf(output, "yash: expected 3 arguments to \"loadb\"\n");
@@ -459,11 +463,8 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
 
         fprintf(output,"Loading \"%s\" to %01X:%04X...", args[1], bank_get_abs((int8_t)atoi(args[2])), (uint16_t)dest );
 
-        __critical
-        {
-            startTimeFraction = _system_time_fraction;
-            startTime = _system_time;
-        }
+        clock_gettime( CLOCK_MONOTONIC, &startTime );
+
         p1 = 0;
         while ((uint16_t)dest < (__COMMON_AREA_1_BASE-0)) {
             res = f_read(&File[0], buffer, sizeof(char)*BUFFER_SIZE, &s1);
@@ -476,25 +477,17 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
             dest += s1;
             p1 += s1;
         }
-        __critical
-        {
-            finishTimeFraction = _system_time_fraction;
-            finishTime = _system_time;
-        }
+
+        clock_gettime( CLOCK_MONOTONIC, &endTime );
 
         f_close(&File[0]);
 
         // set bank referenced from _bankLockBase, so the the bank is noted as warm.
         lock_give( &bankLockBase[ bank_get_abs((int8_t)atoi(args[2])) ] );
 
-        if(finishTimeFraction < startTimeFraction) {
-            finishTime -= (startTime+1);
-            finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
-        } else {
-            finishTime -= startTime;
-            finishTimeFraction -= startTimeFraction;
-        }
-        fprintf(output, "\nLoaded %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        timersub(&endTime, &startTime, &resTime);
+
+        fprintf(output, "\nLoaded %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
     }
     return 1;
 }
@@ -512,8 +505,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
     uint32_t p1;
     uint16_t s1, s2;
 
-    time_t startTime, finishTime;
-    uint8_t startTimeFraction, finishTimeFraction;
+    struct timespec startTime, endTime, resTime;
 
     if (args[1] == NULL || args[2] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"saveb\"\n");
@@ -526,11 +518,8 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
 
         fprintf(output,"Saving Bank %01X to \"%s\"", bank_get_abs((int8_t)atoi(args[1])), args[2] );
 
-        __critical
-        {
-            startTimeFraction = _system_time_fraction;
-            startTime = _system_time;
-        }
+        clock_gettime( CLOCK_MONOTONIC, &startTime );
+
         p1 = 0;
         while ((uint16_t)origin < (__COMMON_AREA_1_BASE-0)) {
             memcpy_far(buffer, 0, (void *)origin, (uint8_t)atoi(args[1]), sizeof(char)*BUFFER_SIZE);   // read sizeof(buffer) bytes from ram
@@ -548,22 +537,14 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
             p1 += s2;
             if (res != FR_OK || s2 < s1) break; /* error or disk full */
         }
-        __critical
-        {
-            finishTimeFraction = _system_time_fraction;
-            finishTime = _system_time;
-        }
+
+        clock_gettime( CLOCK_MONOTONIC, &endTime );
 
         f_close(&File[0]);
 
-        if(finishTimeFraction < startTimeFraction) {
-            finishTime -= (startTime+1);
-            finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
-        } else {
-            finishTime -= startTime;
-            finishTimeFraction -= startTimeFraction;
-        }
-        fprintf(output, "\nSaved %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        timersub(&endTime, &startTime, &resTime);
+
+        fprintf(output, "\nSaved %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
     }
     return 1;
 }
@@ -615,7 +596,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v1.4 2019\n");
+    fprintf(output,"YAZ180 - yabios v1.5 2020\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -725,8 +706,7 @@ int8_t ya_mv(char **args)       // copy a file
     uint32_t p1;
     uint16_t s1, s2;
 
-    time_t startTime, finishTime;
-    uint8_t startTimeFraction, finishTimeFraction;
+    struct timespec startTime, endTime, resTime;
 
     if (args[1] == NULL && args[2] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"mv\"\n");
@@ -743,11 +723,8 @@ int8_t ya_mv(char **args)       // copy a file
         }
         fprintf(output,"Copying file...");
 
-        __critical
-        {
-            startTimeFraction = _system_time_fraction;
-            startTime = _system_time;
-        }
+        clock_gettime( CLOCK_MONOTONIC, &startTime );
+
         p1 = 0;
         while (1) {
             res = f_read(&File[0], buffer, sizeof(char)*BUFFER_SIZE, &s1);
@@ -756,23 +733,15 @@ int8_t ya_mv(char **args)       // copy a file
             p1 += s2;
             if (res != FR_OK || s2 < s1) break;   /* error or disk full */
         }
-        __critical
-        {
-            finishTimeFraction = _system_time_fraction;
-            finishTime = _system_time;
-        }
+
+        clock_gettime( CLOCK_MONOTONIC, &endTime );
 
         f_close(&File[1]);
         f_close(&File[0]);
 
-        if(finishTimeFraction < startTimeFraction) {
-            finishTime -= (startTime+1);
-            finishTimeFraction += (uint8_t)(256-(uint16_t)startTimeFraction);
-        } else {
-            finishTime -= startTime;
-            finishTimeFraction -= startTimeFraction;
-        }
-        fprintf(output, "\nCopied %lu bytes, the time taken was %lu + %d/256 seconds", p1, finishTime, finishTimeFraction);
+        timersub(&endTime, &startTime, &resTime);
+
+        fprintf(output, "\nCopied %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
     }
     return 1;
 }
@@ -1202,7 +1171,7 @@ void main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
-    set_system_time(1569888000 - UNIX_OFFSET);      /* Initial time: 10.00 October 1, 2019 UTC */
+    set_system_time(1577836800 - UNIX_OFFSET);      /* Initial time: 00.00 January 1, 2020 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */

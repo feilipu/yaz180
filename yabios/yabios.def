@@ -186,70 +186,79 @@ PUBLIC asm_asci1_putc
 DEFC asm_asci1_putc                  = $FC58
 
 PUBLIC ide_read_sector
-DEFC ide_read_sector                 = $FD9E
+DEFC ide_read_sector                 = $FD92
 
 PUBLIC ide_write_sector
-DEFC ide_write_sector                = $FDCE
+DEFC ide_write_sector                = $FDC2
 
 PUBLIC asm_phexwd
-DEFC asm_phexwd                      = $FE05
+DEFC asm_phexwd                      = $FDF9
 
 PUBLIC asm_phex
-DEFC asm_phex                        = $FE0F
+DEFC asm_phex                        = $FE03
 
 PUBLIC asm_pchar
-DEFC asm_pchar                       = $FE22
+DEFC asm_pchar                       = $FE16
 
 PUBLIC asm_pstring
-DEFC asm_pstring                     = $FDFB
+DEFC asm_pstring                     = $FDEF
 
 PUBLIC asm_rhex
-DEFC asm_rhex                        = $FE2C
+DEFC asm_rhex                        = $FE20
+
+PUBLIC asm_rchar
+DEFC asm_rchar                       = $FE3A
 
 PUBLIC _common1_phase_end
-DEFC _common1_phase_end              = $FE52
+DEFC _common1_phase_end              = $FE46
 
 PUBLIC _free_fastcall
-DEFC _free_fastcall                  = $0521
+DEFC _free_fastcall                  = $0581
 
 PUBLIC _malloc_fastcall
-DEFC _malloc_fastcall                = $056E
+DEFC _malloc_fastcall                = $05CE
 
 PUBLIC _realloc_callee
-DEFC _realloc_callee                 = $051A
+DEFC _realloc_callee                 = $057A
+
+PUBLIC __divulong_callee
+DEFC __divulong_callee               = $0FFE
+
+PUBLIC __mullong_callee
+DEFC __mullong_callee                = $103F
 
 PUBLIC _fflush_fastcall
-DEFC _fflush_fastcall                = $1075
+DEFC _fflush_fastcall                = $11A7
 
 PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $107B
+DEFC _fputc_callee                   = $11AD
 
 PUBLIC _getline_callee
-DEFC _getline_callee                 = $1083
+DEFC _getline_callee                 = $11B5
 
 PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $1712
+DEFC _atoi_fastcall                  = $1844
 
 PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $1730
+DEFC _atol_fastcall                  = $1862
 
 PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $1751
+DEFC _exit_fastcall                  = $1883
 
 PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $170A
+DEFC _strtoul_callee                 = $183C
 
 PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $186B
+DEFC _memcmp_callee                  = $199D
 
 PUBLIC _memcpy_callee
-DEFC _memcpy_callee                  = $1873
+DEFC _memcpy_callee                  = $19A5
 
 PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $187B
+DEFC _strcmp_callee                  = $19AD
 
 PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $1881
+DEFC _strtok_callee                  = $19B3
 
 PUBLIC _z180_int_asci0
 DEFC _z180_int_asci0                 = $FA5E
@@ -263,9 +272,6 @@ DEFC _z180_int_prt0                  = $F88F
 PUBLIC _asci0_flush_Rx
 DEFC _asci0_flush_Rx                 = $FAD7
 
-PUBLIC asm_asci0_need
-DEFC asm_asci0_need                  = $FABD
-
 PUBLIC _asci0_getc
 DEFC _asci0_getc                     = $FB11
 
@@ -275,9 +281,6 @@ DEFC _asci0_pollc                    = $FB33
 PUBLIC _asci1_flush_Rx
 DEFC _asci1_flush_Rx                 = $FBF4
 
-PUBLIC asm_asci1_need
-DEFC asm_asci1_need                  = $FBDA
-
 PUBLIC _asci1_getc
 DEFC _asci1_getc                     = $FC2E
 
@@ -285,31 +288,37 @@ PUBLIC _asci1_pollc
 DEFC _asci1_pollc                    = $FC50
 
 PUBLIC _disk_initialize_fastcall
-DEFC _disk_initialize_fastcall       = $022F
+DEFC _disk_initialize_fastcall       = $0229
 
 PUBLIC _disk_ioctl_callee
-DEFC _disk_ioctl_callee              = $020A
+DEFC _disk_ioctl_callee              = $0204
 
 PUBLIC _disk_status_fastcall
-DEFC _disk_status_fastcall           = $038F
+DEFC _disk_status_fastcall           = $0389
 
 PUBLIC _disk_read_callee
-DEFC _disk_read_callee               = $0211
+DEFC _disk_read_callee               = $020B
 
 PUBLIC _disk_write_callee
-DEFC _disk_write_callee              = $0220
+DEFC _disk_write_callee              = $021A
 
 PUBLIC asm_disk_initialize
-DEFC asm_disk_initialize             = $022F
+DEFC asm_disk_initialize             = $0229
 
 PUBLIC asm_disk_ioctl
-DEFC asm_disk_ioctl                  = $029F
+DEFC asm_disk_ioctl                  = $0299
 
 PUBLIC asm_disk_status
-DEFC asm_disk_status                 = $038F
+DEFC asm_disk_status                 = $0389
 
 PUBLIC asm_disk_read
-DEFC asm_disk_read                   = $03A0
+DEFC asm_disk_read                   = $039A
 
 PUBLIC asm_disk_write
-DEFC asm_disk_write                  = $03BF
+DEFC asm_disk_write                  = $03B9
+
+PUBLIC _clock_gettime_callee
+DEFC _clock_gettime_callee           = $03D8
+
+PUBLIC _clock_settime_callee
+DEFC _clock_settime_callee           = $03DF

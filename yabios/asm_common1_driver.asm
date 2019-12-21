@@ -1833,9 +1833,9 @@ PUBLIC ide_read_block, ide_write_block
 
     ;Read a block of 512 bytes (one sector) from the drive
     ;16 bit data register and store it in memory at (HL++)
+    ;Uses BC, DE
+
 .ide_read_block
-    push bc
-    push de
     ld bc,__IO_PIO_IDE_CTL
     ld d,__IO_IDE_DATA
     out (c),d               ;drive address onto control lines
@@ -1871,15 +1871,14 @@ ELSE
 
 ENDIF
 ;   ld bc,__IO_PIO_IDE_CTL  ;remembering what's in bc
-    ld d,$0
-    out (c),d               ;deassert all control pins
-    pop de
-    pop bc
+;   ld e,$0
+    out (c),e               ;deassert all control pins
     ret
 
     ;Do a write bus cycle to the drive, via the 8255
     ;input A = ide register address
     ;input E = lsb to write to IDE drive
+
 .ide_write_byte
     push bc
     push de
@@ -1907,9 +1906,9 @@ ENDIF
 
     ;Write a block of 512 bytes (one sector) from (HL++) to
     ;the drive 16 bit data register
+    ;Uses BC, DE
+
 .ide_write_block
-    push bc
-    push de
     ld bc,__IO_PIO_IDE_CONFIG
     ld d,__IO_PIO_IDE_WR
     out (c),d               ;config 8255 chip, write mode
@@ -1948,13 +1947,11 @@ ELSE
 
 ENDIF
 ;   ld bc,__IO_PIO_IDE_CTL  ;remembering what's in bc
-    ld d,$0
-    out (c),d               ;deassert all control pins
+;   ld e,$0
+    out (c),e               ;deassert all control pins
     ld bc,__IO_PIO_IDE_CONFIG
     ld d,__IO_PIO_IDE_RD
     out (c),d               ;config 8255 chip, read mode
-    pop de
-    pop bc
     ret
 
 ;------------------------------------------------------------------------------

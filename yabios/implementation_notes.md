@@ -90,7 +90,7 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
 
 ```bash
-> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --max-allocs-per-node400000 @yabios.lst -gpf yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32_z180 --max-allocs-per-node400000 @yabios.lst -gpf yabios.rex -o yabios -create-app
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
@@ -105,7 +105,7 @@ It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code 
 The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT and ASCI1 being the TTY. The CCP/BDOS is now running, and the disk interface has been completed.
 
 ```bash
-> zcc +yaz180 --no-crt -m --list @cpm22.lst -o cpm22; appmake +glue -b cpm22 --ihex --clean
+> zcc +yaz180 -subtype=app --no-crt -m --list @cpm22.lst -o cpm22; appmake +glue -b cpm22 --ihex --clean
 > cat > /dev/ttyUSB0 < cpm22__.ihx
 ```
 
