@@ -487,7 +487,7 @@ int8_t ya_loadb(char **args)    // load the nominated bank and address with bina
 
         timersub(&endTime, &startTime, &resTime);
 
-        fprintf(output, "\nLoaded %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
+        fprintf(output, "\nLoaded %lu bytes, the time taken was %li.%.4lu seconds", p1, resTime.tv_sec, resTime.tv_nsec/100000);
     }
     return 1;
 }
@@ -544,7 +544,7 @@ int8_t ya_saveb(char **args)    // save the nominated bank from 0x0100 to CBAR 0
 
         timersub(&endTime, &startTime, &resTime);
 
-        fprintf(output, "\nSaved %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
+        fprintf(output, "\nSaved %lu bytes, the time taken was %li.%.4lu seconds", p1, resTime.tv_sec, resTime.tv_nsec/100000);
     }
     return 1;
 }
@@ -741,7 +741,7 @@ int8_t ya_mv(char **args)       // copy a file
 
         timersub(&endTime, &startTime, &resTime);
 
-        fprintf(output, "\nCopied %lu bytes, the time taken was %li + %lu mseconds", p1, resTime.tv_sec, resTime.tv_nsec/1000000);
+        fprintf(output, "\nCopied %lu bytes, the time taken was %li.%.4lu seconds", p1, resTime.tv_sec, resTime.tv_nsec/100000);
     }
     return 1;
 }
