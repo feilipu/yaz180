@@ -46,3 +46,7 @@ There is little change to the yaz180 code in this release, but the underlying `z
 ### V1.4
 
 There is little change to the yaz180 code in this release, except a few tweaks to the far functions and ASCI drivers. This release has been compiled with `r11369` of sdcc, using the patch file included in z88dk. This release changes the location of most functions, so the [linkage file](https://github.com/z88dk/z88dk/blob/master/libsrc/_DEVELOPMENT/target/yaz180/crt_yabios_def.inc) in z88dk has been updated.
+
+### V1.5
+
+There is little change to the yaz180 code in this release, except a few tweaks to the IDE drivers and time reporting. This release has been compiled with `r11502` of sdcc, using the patch file included in z88dk. This release changes the location of some functions, so the [linkage file](https://github.com/z88dk/z88dk/blob/master/libsrc/_DEVELOPMENT/target/yaz180/crt_yabios_def.inc) in z88dk has been updated.
