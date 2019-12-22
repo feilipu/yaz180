@@ -8,7 +8,7 @@ INCLUDE "config_yaz180_private.inc"
 
 EXTERN  asm_asci0_pollc, asm_asci0_getc, asm_asci0_putc
 EXTERN  asm_asci1_pollc, asm_asci1_getc, asm_asci1_putc
-;EXTERN  asm_asci0_flush_Rx, asm_asci1_flush_Rx
+EXTERN  asm_asci0_flush_Rx, asm_asci1_flush_Rx
 EXTERN  ide_write_sector, ide_read_sector
 
 EXTERN  _dmac0Lock
@@ -223,8 +223,8 @@ gocpm:
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
 
-;   call    asm_asci0_flush_Rx
-;   call    asm_asci1_flush_Rx
+    call    asm_asci0_flush_Rx
+    call    asm_asci1_flush_Rx
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number

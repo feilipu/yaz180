@@ -143,8 +143,14 @@ DEFC asm_asci0_init                  = $FABD
 PUBLIC asm_asci0_flush_Rx_di
 DEFC asm_asci0_flush_Rx_di           = $FAD7
 
+PUBLIC asm_asci0_flush_Rx
+DEFC asm_asci0_flush_Rx              = $FAE1
+
 PUBLIC asm_asci0_flush_Tx_di
 DEFC asm_asci0_flush_Tx_di           = $FAEF
+
+PUBLIC asm_asci0_flush_Tx
+DEFC asm_asci0_flush_Tx              = $FAF9
 
 PUBLIC asm_asci0_reset
 DEFC asm_asci0_reset                 = $FB07
@@ -167,8 +173,14 @@ DEFC asm_asci1_init                  = $FBDA
 PUBLIC asm_asci1_flush_Rx_di
 DEFC asm_asci1_flush_Rx_di           = $FBF4
 
+PUBLIC asm_asci1_flush_Rx
+DEFC asm_asci1_flush_Rx              = $FBFE
+
 PUBLIC asm_asci1_flush_Tx_di
 DEFC asm_asci1_flush_Tx_di           = $FC0C
+
+PUBLIC asm_asci1_flush_Tx
+DEFC asm_asci1_flush_Tx              = $FC16
 
 PUBLIC asm_asci1_reset
 DEFC asm_asci1_reset                 = $FC24

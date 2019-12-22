@@ -1365,6 +1365,8 @@ PUBLIC asm_asci0_flush_Rx_di
     pop af
     ret
 
+PUBLIC asm_asci0_flush_Rx
+
 .asm_asci0_flush_Rx
     xor a
     ld (asci0RxCount),a         ; reset the Rx counter (set 0)
@@ -1386,6 +1388,8 @@ PUBLIC asm_asci0_flush_Tx_di
     pop hl
     pop af
     ret
+
+PUBLIC asm_asci0_flush_Tx
 
 .asm_asci0_flush_Tx
     xor a
@@ -1646,6 +1650,8 @@ PUBLIC asm_asci1_flush_Rx_di
     pop af
     ret
 
+PUBLIC asm_asci1_flush_Rx
+
 .asm_asci1_flush_Rx
     xor a
     ld (asci1RxCount),a         ; reset the Rx counter (set 0)
@@ -1667,6 +1673,8 @@ PUBLIC asm_asci1_flush_Tx_di
     pop hl
     pop af
     ret
+
+PUBLIC asm_asci1_flush_Tx
 
 .asm_asci1_flush_Tx
 
