@@ -78,7 +78,7 @@ int8_t ya_mkcpmd(char **args);  // create a FATFS file for CP/M drive
 
 // bank related functions
 int8_t ya_mkb(char **args);     // initialise the nominated bank (to warm state)
-int8_t ya_mvb(char **args);     // move or clone the nominated bank
+int8_t ya_cpb(char **args);     // copy or clone the nominated bank
 int8_t ya_rmb(char **args);     // remove the nominated bank (to cold state)
 int8_t ya_lsb(char **args);     // list the usage of banks, and whether they are cold, warm, or hot
 int8_t ya_initb(char **args);   // jump to and begin executing the nominated bank at nominated address
@@ -94,7 +94,7 @@ int8_t ya_exit(char **args);    // exit and restart
 // fat related functions
 int8_t ya_ls(char **args);      // directory listing
 int8_t ya_rm(char **args);      // delete a file
-int8_t ya_mv(char **args);      // copy a file
+int8_t ya_cp(char **args);      // copy a file
 int8_t ya_cd(char **args);      // change the current working directory
 int8_t ya_pwd(char **args);     // show the current working directory
 int8_t ya_mkdir(char **args);   // create a new directory
@@ -133,7 +133,7 @@ struct Builtin builtins[] = {
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
-    { "mvb", &ya_mvb, "[src][dest] - move or clone the nominated bank"},
+    { "cpb", &ya_cpb, "[src][dest] - copy or clone the nominated bank"},
     { "rmb", &ya_rmb, "[bank] - remove the nominated bank (to cold state)"},
     { "lsb", &ya_lsb, "- list the usage of banks, and whether they are cold, warm, or hot"},
     { "initb", &ya_initb, "[bank][origin] - begin executing the nominated bank at nominated address"},
@@ -150,7 +150,7 @@ struct Builtin builtins[] = {
     { "mount", &ya_mount, "[option] - mount a FAT file system"},
     { "ls", &ya_ls, "[path] - directory listing"},
     { "rm", &ya_rm, "[file] - delete a file"},
-    { "mv", &ya_mv, "[src][dest] - copy a file"},
+    { "cp", &ya_cp, "[src][dest] - copy a file"},
     { "cd", &ya_cd, "[path] - change the current working directory"},
     { "pwd", &ya_pwd, "- show the current working directory"},
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
@@ -340,10 +340,10 @@ int8_t ya_mkb(char **args)      // initialise the nominated bank (to warm state)
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "mvb".  args[1] is source bank. args[2] is the destination bank.
+   @param args List of args.  args[0] is "cpb".  args[1] is source bank. args[2] is the destination bank.
    @return Always returns 1, to continue executing.
  */
-int8_t ya_mvb(char **args)      // move or clone the nominated bank
+int8_t ya_cpb(char **args)      // move or clone the nominated bank
 {
     if ( (args[2] != NULL) && (bank_get_abs((int8_t)atoi(args[1])) != 0) && (bank_get_abs((int8_t)atoi(args[2])) != 0) )   // the source and destination can never be BANK0
     {
@@ -697,10 +697,10 @@ int8_t ya_rm(char **args)       // delete a directory or file
 
 /**
    @brief Builtin command:
-   @param args List of args.  args[0] is "mv".  args[1] is the src, args[2] is the dst
+   @param args List of args.  args[0] is "cp".  args[1] is the src, args[2] is the dst
    @return Always returns 1, to continue executing.
  */
-int8_t ya_mv(char **args)       // copy a file
+int8_t ya_cp(char **args)       // copy a file
 {
     FRESULT res;
     uint32_t p1;
@@ -709,7 +709,7 @@ int8_t ya_mv(char **args)       // copy a file
     struct timespec startTime, endTime, resTime;
 
     if (args[1] == NULL && args[2] == NULL) {
-        fprintf(output, "yash: expected 2 arguments to \"mv\"\n");
+        fprintf(output, "yash: expected 2 arguments to \"cp\"\n");
     } else {
         fprintf(output,"Opening \"%s\"\n", args[1]);
         res = f_open(&File[0], (const TCHAR*)args[1], FA_OPEN_EXISTING | FA_READ);
@@ -839,7 +839,7 @@ int8_t ya_mkfs(char **args)     // create a FAT file system
     char *line = NULL;
     ssize_t bufsize = 0;        // have getline allocate a buffer for us
 
-    if (args[1] == NULL && args[2] == NULL ) {
+    if (args[1] == NULL && args[2] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"mkfs\"\n");
     } else {
         fprintf(output, "The drive will be erased and formatted. Are you sure [y/N]\n");
@@ -908,15 +908,16 @@ int8_t ya_dd(char **args)       // disk dump
     uint32_t ofs;
     uint8_t * ptr;
 
-    if (args[1] != NULL ) {
+    if (args[1] != NULL) {
         sect = strtoul(args[1], NULL, 10);
     }
 
+    fprintf(output, "LBA:%lu\n", sect);
     res = disk_read( 0, buffer, sect, 1);
     if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
-    fprintf(output, "LBA:%lu\n", sect++);
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
         put_dump(ptr, ofs, 16);
+    ++sect;
     return 1;
 }
 
@@ -930,7 +931,7 @@ int8_t ya_dd(char **args)       // disk dump
  */
 int8_t ya_clock(char **args)    // set the time (using UNIX epoch)
 {
-    if (args[1] != NULL ) {
+    if (args[1] != NULL) {
         set_system_time(atol(args[1]) - UNIX_OFFSET);
     }
     return 1;
@@ -944,7 +945,7 @@ int8_t ya_clock(char **args)    // set the time (using UNIX epoch)
  */
 int8_t ya_tz(char **args)       // set timezone (no daylight savings, so adjust manually)
 {
-    if (args[1] != NULL ) {
+    if (args[1] != NULL) {
         set_zone(atol(args[1]) * ONE_HOUR);
     }
     return 1;
@@ -1011,7 +1012,7 @@ void put_rc (FRESULT rc)
 
     res = (uint8_t)rc;
 
-    for (i = 0; i != res && *str; i++) {
+    for (i = 0; i != res && *str; ++i) {
         while (*str++) ;
     }
     fprintf(error,"\r\nrc=%u FR_%s\r\n", res, str);
@@ -1025,11 +1026,11 @@ void put_dump (const uint8_t *buff, uint32_t ofs, uint8_t cnt)
 
     fprintf(output,"%08lX:", ofs);
 
-    for(i = 0; i < cnt; i++) {
+    for(i = 0; i < cnt; ++i) {
         fprintf(output," %02X", buff[i]);
     }
     fputc(' ', output);
-    for(i = 0; i < cnt; i++) {
+    for(i = 0; i < cnt; ++i) {
         fputc((buff[i] >= ' ' && buff[i] <= '~') ? buff[i] : '.', output);
     }
     fputc('\n', output);
@@ -1156,6 +1157,8 @@ void ya_loop(void)
         free(args);
 
     } while (status);
+
+    free(line);
 }
 
 
@@ -1165,7 +1168,7 @@ void ya_loop(void)
    @param argv Argument vector.
    @return status code
  */
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     (void)argc;
     (void *)argv;
@@ -1190,5 +1193,7 @@ void main(int argc, char **argv)
     free(buffer);
     free(dir);
     free(fs);
+
+    return 0;
 }
 
