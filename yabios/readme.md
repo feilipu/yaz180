@@ -68,20 +68,20 @@ Note: `_memset_far` was deleted as there was insufficient space in CA1 memory.
 ### Phase 3 - Flash Snapshot support
 
 - [x] add flash read support into `_ memcpy_far`.
-- [ ] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
+- [-] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
 - [x] support CP/M to warm boot from flash
 - [x] integrate CLI support
 
 ### Phase 4 - RTOS multi-tasking
 
-- [ ] port FreeRTOS within an application (single BANK)
+- [x] port FreeRTOS within an application (single BANK) see [z88dk-libs/freertos](https://github.com/feilipu/z88dk-libraries/tree/master/freertos).
 - [ ] integrate FreeRTOS with YABIOS (Page 0 `TCB*`)
 
 ### Phase 5 - Multi-bank application support
 
 - [x] [`RST+DEFW+DEFB` `_call_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_call_far)
 - [x] [`RST` `_jp_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_jp_far)
-- [ ] finalise and test
+- [x] finalise and test
 - [ ] additional features to be added
 
 ## Memory Map
