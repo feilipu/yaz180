@@ -132,7 +132,7 @@ The z88dk is my development system of choice. There is much information about ho
 
 For the YAZ180 the command line of choice is
 ```bash
-zcc +yaz180 -subtype=app -SO3 -m --max-allocs-per-node400000 test.c -o test -create-app
+zcc +yaz180 -subtype=app -SO3 -m --math32 --max-allocs-per-node400000 test.c -o test -create-app
 ```
 The YAZ180 has three main options,being `app`, `rom`, and `cpm` subtypes.
 
@@ -160,7 +160,7 @@ Breaking down the above command line
 To use z88dk to compile for CP/M for the Z180 processor, then the following commands can be used
 
 ```bash
-zcc +yaz180 -subtype=cpm -SO3 -m --list -test.c -o test
+zcc +yaz180 -subtype=cpm -SO3 -m --list --math32 -test.c -o test
 appmake +glue --ihex --clean -b test -c test
 ```
 Breaking this down

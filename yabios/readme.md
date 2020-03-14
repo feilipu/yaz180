@@ -68,7 +68,7 @@ Note: `_memset_far` was deleted as there was insufficient space in CA1 memory.
 ### Phase 3 - Flash Snapshot support
 
 - [x] add flash read support into `_ memcpy_far`.
-- [-] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
+- [ ] add flash write support into `_ memcpy_far` (very hard, DMAC won't do it).
 - [x] support CP/M to warm boot from flash
 - [x] integrate CLI support
 
@@ -82,7 +82,6 @@ Note: `_memset_far` was deleted as there was insufficient space in CA1 memory.
 - [x] [`RST+DEFW+DEFB` `_call_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst10defwdefb-_call_far)
 - [x] [`RST` `_jp_far`](https://github.com/feilipu/yaz180/tree/master/yabios#rst18-_jp_far)
 - [x] finalise and test
-- [ ] additional features to be added
 
 ## Memory Map
 
@@ -557,7 +556,7 @@ The command line interface is implemented in C, with the underlying functions ei
 
 #### Bank Functions
 - `mkb [bank]` - initialise the nominated bank (to warm state)
-- `mvb [src][dest]` - move or clone the nominated src bank
+- `cpb [src][dest]` - copy or clone the nominated src bank
 - `rmb [bank]` - remove the nominated bank (to cold state)
 - `lsb` - list the usage of banks, and whether they are cold, warm, or hot
 - `initb [bank][origin]` - begin executing the nominated bank at nominated address
@@ -574,7 +573,7 @@ The command line interface is implemented in C, with the underlying functions ei
 #### File System Functions
 - `ls [path]` - directory listing
 - `rm [path]` - delete a file
-- `mv [src][dest]` - copy a file
+- `cp [src][dest]` - copy a file
 - `cd [path]` - change the current working directory
 - `pwd` - show the current working directory
 - `mkdir [path]` - create a new directory
