@@ -234,46 +234,43 @@ PUBLIC _realloc_callee
 DEFC _realloc_callee                 = $057A
 
 PUBLIC __divulong_callee
-DEFC __divulong_callee               = $0FEF
+DEFC __divulong_callee               = $0F49
 
 PUBLIC __modulong_callee
-DEFC __modulong_callee               = $1010
+DEFC __modulong_callee               = $0F6A
 
 PUBLIC __mullong_callee
-DEFC __mullong_callee                = $101D
+DEFC __mullong_callee                = $0F77
 
 PUBLIC _fflush_fastcall
-DEFC _fflush_fastcall                = $1185
+DEFC _fflush_fastcall                = $10F2
 
 PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $118B
+DEFC _fputc_callee                   = $10F8
 
 PUBLIC _getline_callee
-DEFC _getline_callee                 = $1193
+DEFC _getline_callee                 = $1100
 
 PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $1822
+DEFC _atoi_fastcall                  = $178F
 
 PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $1840
+DEFC _atol_fastcall                  = $17AD
 
 PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $1861
+DEFC _exit_fastcall                  = $17CE
 
 PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $181A
+DEFC _strtoul_callee                 = $1787
 
 PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $197B
-
-PUBLIC _memcpy_callee
-DEFC _memcpy_callee                  = $1983
+DEFC _memcmp_callee                  = $18E8
 
 PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $198B
+DEFC _strcmp_callee                  = $18F0
 
 PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $1991
+DEFC _strtok_callee                  = $18F6
 
 PUBLIC _z180_int_asci0
 DEFC _z180_int_asci0                 = $FA5E

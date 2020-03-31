@@ -15,10 +15,6 @@ IF (__page_zero_present)
     ld      a,OMCR_M1E      ; Enable M1 for single step, disable 64180 I/O _RD Mode
     out0    (OMCR),a        ; X80 Mode (M1 Disabled, IOC Disabled)
 
-                            ; DMA/Wait Control Reg Set I/O Wait States
-    ld      a,DCNTL_MWI0|DCNTL_IWI1
-    out0    (DCNTL),a       ; 1 Memory Wait & 3 I/O Wait
-
                             ; Set PHI = CCR x 2 = 36.864MHz
                             ; if using ZS8180 or Z80182 at High-Speed
     ld      a,CMR_X2        ; Set Hi-Speed flag
@@ -28,6 +24,10 @@ IF (__page_zero_present)
                             ; if using ZS8180 or Z80182 at High-Speed
     ld      a,CCR_XTAL_X2   ; Set Hi-Speed flag
     out0    (CCR),a         ; CPU Control Reg (CCR)
+
+                            ; DMA/Wait Control Reg Set I/O Wait States
+    ld      a,DCNTL_MWI0|DCNTL_IWI0
+    out0    (DCNTL),a       ; 1 Memory Wait & 2 I/O Wait
 
                             ; Set Logical RAM Addresses
                             ; $F000-$FFFF RAM   CA1  -> $F.

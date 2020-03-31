@@ -1174,7 +1174,7 @@ int main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1583020800 - UNIX_OFFSET);      /* Initial time: 00.00 March 1, 2020 UTC */
+    set_system_time(1585699200 - UNIX_OFFSET);      /* Initial time: 00.00 April 1, 2020 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
