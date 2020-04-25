@@ -67,7 +67,6 @@ extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 fl
 extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
 extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
 
-
 /*
   Function Declarations for built-in shell commands:
  */
@@ -596,13 +595,12 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v1.6 2020\n");
+    fprintf(output,"YAZ180 - yabios v2.0 2020\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
         fprintf(output,"  %s %s\n", builtins[i].name, builtins[i].help);
     }
-
     return 1;
 }
 
@@ -674,7 +672,6 @@ int8_t ya_ls(char **args)
     } else {
         put_rc(res);
     }
-
     return 1;
 }
 
@@ -1056,7 +1053,6 @@ int8_t ya_execute(char **args)
             return (*builtins[i].func)(args);
         }
     }
-
     return 1;
 }
 
@@ -1094,7 +1090,6 @@ char **ya_split_line(char *line)
                     exit(EXIT_FAILURE);
                 }
             }
-
             token = strtok(NULL, YA_TOK_DELIM);
         }
         tokens[position] = NULL;

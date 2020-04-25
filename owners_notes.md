@@ -2,7 +2,7 @@
 
 These are a few notes for owners of a YAZ180, which should help to make using the board for fun and profit easier.
 
-Please also read the [implementation notes](https://github.com/feilipu/yaz180/blob/master/yabios/implementation_notes.md), and the [construction notes](https://github.com/feilipu/yaz180/blob/master/construction_notes.md). The information in both these documents won't be repeated here.
+Please also read the [implementation notes](https://github.com/feilipu/yaz180/blob/master/implementation_notes.md), and the [construction notes](https://github.com/feilipu/yaz180/blob/master/construction_notes.md). The information in both these documents won't be repeated here.
 
 Note that the YAZ180 is a very capable and multifaceted tool. I've not stretched any of its capabilities, and therefore you might find stuff (bugs) that I've never seen.
 
@@ -29,7 +29,7 @@ Providing a lower source voltage is less wasteful and the PCB power supplies run
 
 ## USB Cables and Connections
 
-I selected male A type sockets for the USB because the plug is quite robust, and doesn't mind a few insertion cycles.
+I selected male A type sockets for the USB because the connector is quite robust, and doesn't mind a few insertion cycles.
 
 The FTDI chips are powered by the USB side, but their IO on the digital side is powered by the board. This means that during a power cycle it should be possible to leave the USB cable plugged, and not re-enumerate the USB interface. But, this doesn't always work. Often the host computer will move the USB interface to new device on power cycle, which means that the serial terminal will loose connection with the YAZ180 if it is not re-plugged.
 
