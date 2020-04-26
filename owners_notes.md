@@ -96,7 +96,7 @@ Often used binary files can be stored in flash. For example in the Release 1.2, 
 
 ## CP/M Functions
 
-There are two CP/M functions. The `mkcpmd` function builds a properly extended CP/M drive file on the IDE or CF drive attached to YAZ180. This is necessary because the CPM tools do not build the fully extended 16777216 Byte files required. But, if you have a file you can use as a template already then this comand is pretty useless (obsolete). Just do a file copy, and then within CP/M delete the contents of the drive.
+There are two CP/M functions. The `mkcpmd` function builds a properly extended CP/M drive file on the IDE or CF drive attached to YAZ180. This is necessary because the CPM tools do not build the fully extended 8388608 Byte files required. But, if you have a file you can use as a template already then this comand is pretty useless (obsolete). Just do a file copy, and then within CP/M delete the contents of the drive.
 
 The `mkcpmb` command will be used all the time. This combines both the `mkb` and `loadb` actions, and will load the contents of the flash in Bank 15 into the Bank you choose, and will prepare the bank with the LBA of each of up to 4 drive files. Then a `initb` command is required to kick off CP/M.
 

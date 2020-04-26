@@ -122,20 +122,20 @@ The CP/M TOOLS package v2.20 is available from debian repositories.
 Check the disk image, `ls` a CP/M image, copy a file (in this case `bbcbasic.com`).
 
 ```bash
-> fsed.cpm -f yaz180-16MB a.cpm
-> cpmls -f yaz180-16MB a.cpm
-> cpmcp -f yaz180-16MB a.cpm ~/Desktop/CPM/bbcbasic.com 0:BBCBASIC.COM
+> fsed.cpm -f yaz180-8MB a.cpm
+> cpmls -f yaz180-8MB a.cpm
+> cpmcp -f yaz180-8MB a.cpm ~/Desktop/CPM/bbcbasic.com 0:BBCBASIC.COM
 ```
 
 The contents of the `/etc/cpmtools/diskdefs` file need to be augmented with disk information specific to the YAZ180.
 
 ```
-diskdef yaz180-16MB
+diskdef yaz180-8MB
   seclen 512
-  tracks 1024
+  tracks 512
   sectrk 32
   blocksize 4096
-  maxdir 1024
+  maxdir 2048
   skew 0
   boottrk -
   os 2.2
@@ -158,7 +158,10 @@ The ESP-01S can't have the DIO lines pull high when booting. This means that the
 
 ## Legacy CP/M Drive - 512 Directory Entries
 
-Note that for yaz180 CP/M v2.0 the maximum directory entries were increased to 1024. These cpmtools entries below are for the v1.x releases of yaz180 CP/M.
+Note that for yaz180 CP/M v2.0 the maximum directory entries were increased to 2048, and the file size reduced to 8MB.
+CP/M 2.2 BDOS uses 16 bit registers to calculate the ARECORD location, which overflows beyond 8 MB files.
+
+These cpmtools entries below are for the v1.x releases of yaz180 CP/M.
 
 ```
 diskdef yaz180v1-16MB

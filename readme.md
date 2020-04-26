@@ -296,7 +296,7 @@ Please see here for the status of [YABIOS](https://github.com/feilipu/yaz180/tre
 
 Currently the YAZ180 is initialised to load [YABIOS v2.0](https://github.com/feilipu/yaz180/tree/master/yabios) or alternatively [NASCOM Basic](https://github.com/feilipu/NASCOM_BASIC_4.7/tree/master/yaz180_NascomBasic56k). Applications can be built the [z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (raw metal), APP (yabios I/O), and CP/M (BDOS I/O) models.
 
-The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 16 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
+The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 8 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
 
 ## z88dk
 
