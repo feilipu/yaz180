@@ -57,6 +57,6 @@ There is little change to the yaz180 code in this release, except a few tweaks t
 
 ### V2.0
 
-__NOTE WELL__ This release __v2.0 changes the number of directory entries in CP/M drives to 1024 directory entries__. If you don't convert __your old drives__ to this new configuration, __they will be destroyed__.
+__NOTE WELL__ This release __v2.0 changes the number of directory entries in CP/M drives to 2048 directory entries__. If you don't convert __your old drives__ to this new configuration, __they will be destroyed__.
 
 There is no change to the yaz180 code in this release, except to change the directory structure. This release has been compiled with `r11556` of sdcc, using the patch file included in z88dk.
