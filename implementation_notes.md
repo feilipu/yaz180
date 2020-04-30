@@ -132,8 +132,8 @@ The contents of the `/etc/cpmtools/diskdefs` file need to be augmented with disk
 ```
 diskdef yaz180-8MB
   seclen 512
-  tracks 512
-  sectrk 32
+  tracks 64
+  sectrk 256
   blocksize 4096
   maxdir 2048
   skew 0

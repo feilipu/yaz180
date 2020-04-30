@@ -2096,11 +2096,11 @@ TRKSEC4:
     LD    A,B
     SBC    A,D
     LD    B,A
-    LD    HL,(XLATE)    ;translate this sector according to this table.
-    EX    DE,HL
-    CALL    SECTRN        ;let the bios translate it.
-    LD    C,L
-    LD    B,H
+;   LD    HL,(XLATE)    ;translate this sector according to this table.
+;   EX    DE,HL
+;   CALL    SECTRN      ;let the bios translate it.
+;   LD    C,L
+;   LD    B,H
     JP    SETSEC        ;and select it.
 ;
 ;   Compute block number from record number (SAVNREC) and
@@ -3356,7 +3356,7 @@ WTSEQ6:
     OR    A
     RET    NZ
     PUSH    BC        ;yes, save write flag for bios (register C).
-    CALL    LOGICAL        ;convert (BLKNMBR) over to loical sectors.
+    CALL    LOGICAL     ;convert (BLKNMBR) over to logical sectors.
     LD    A,(MODE)    ;get access mode flag (1=sequential,
     DEC    A        ;0=random, 2=special?).
     DEC    A
