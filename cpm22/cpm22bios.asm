@@ -162,10 +162,6 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     jr      Z,gocpm         ;jp to gocpm, if there's nothing to load
                             ;cross fingers that the CCP/BDOS still exists
 
-    ld      hl, _dmac0Lock
-    sra     (hl)            ;take the DMAC0 lock
-    jr      C, wboot
-
     out0    (SAR0B),a       ;set source bank for CP/M CCP/BDOS loading
 
     in0     a,(BBR)         ;get the current bank
@@ -189,8 +185,6 @@ wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start
     out0    (DMODE),h       ;DMODE_MMOD - memory++ to memory++, burst mode
     out0    (DSTAT),l       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
                             ;in burst mode the Z180 CPU stops until the DMA completes
-    ld      a,$FE
-    ld      (_dmac0Lock), a ;give DMAC0 free
 
 ;   jp      gocpm           ;transfer to cp/m if all have been loaded
 
@@ -221,9 +215,6 @@ gocpm:
     inc     de
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
-
-    call    asm_asci0_flush_Rx
-    call    asm_asci1_flush_Rx
 
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
@@ -606,10 +597,8 @@ match:
 ;           HL has relative host buffer address
     ld      de,hstbuf
     add     hl,de           ;HL = host address
-    ex      de,hl           ;now in DE
-    ld      hl,(dmaadr)     ;get/put CP/M data
+    ld      de,(dmaadr)     ;get/put CP/M data destination in DE
     ld      bc,128          ;length of move
-    ex      de,hl           ;source in HL, destination in DE
     ld      a,(readop)      ;which way?
     or      a
     jr      NZ,rwmove       ;skip if read
@@ -620,7 +609,26 @@ match:
     ex      de,hl           ;source/dest swap
 
 rwmove:
-    ldir
+    in0     a,(BBR)         ;get the current bank
+    rrca                    ;move the current bank to low nibble
+    rrca
+    rrca
+    rrca                    ;save current bank in address format
+    out0    (SAR0B),a       ;(SAR0B has only 4 bits)
+    out0    (DAR0B),a       ;(DAR0B has only 4 bits)
+
+    out0    (SAR0H),h
+    out0    (SAR0L),l
+    out0    (DAR0H),d
+    out0    (DAR0L),e
+
+    out0    (BCR0H),b       ;set up the transfer size   
+    out0    (BCR0L),c
+
+    ld      bc,+(DMODE_MMOD)*$100+DSTAT_DE0
+    out0    (DMODE),b       ;DMODE_MMOD - memory++ to memory++, burst mode
+    out0    (DSTAT),c       ;DSTAT_DE0 - enable DMA channel 0, no interrupt
+                            ;in burst mode the Z180 CPU stops until the DMA completes
 
 ;           data has been moved to/from host buffer
     ld      a,(wrtype)      ;write type
@@ -628,7 +636,7 @@ rwmove:
     ld      a,(erflag)      ;in case of errors
     ret     Z               ;no further processing
 
-;        clear host buffer for directory write
+;            clear host buffer for directory write
     or      a               ;errors?
     ret     NZ              ;skip if so
     xor     a               ;0 to accum
@@ -743,7 +751,6 @@ getLBAbase:
     inc     h
     ret                     ;LBA base address in HL
 
-
 ;
 ;    the remainder of the cbios is reserved uninitialized
 ;    data area, and does not need to be a part of the
@@ -751,8 +758,6 @@ getLBAbase:
 ;
 
 SECTION cpm_bios_data
-
-ALIGN 0x0008                ;align the bios data
 
 ;------------------------------------------------------------------------------
 ; start of fixed tables - non aligned rodata
