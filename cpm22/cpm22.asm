@@ -1955,12 +1955,10 @@ SELECT:
     LD    (XLATE),HL
     LD    HL,DIRBUF     ;put the next 8 bytes in DIRBUF.
     EX    DE,HL
-    LD    BC,8          ;they consist of the directory buffer
-    LDIR                ;pointer, parameter block pointer,
+    CALL  LDI_8         ;they consist of the directory buffer, pointer, parameter block pointer.
     LD    HL,(DISKPB)   ;check and allocation vectors.
     LD    DE,SECTORS    ;move parameter block into our ram.
-    LD    BC,15         ;it is 15 bytes long.
-    LDIR
+    CALL  LDI_15        ;it is 15 bytes long.
     LD    HL,(DSKSIZE)  ;check disk size.
     LD    A,H           ;more than 256 blocks on this?
     LD    HL,BIGDISK
@@ -2014,7 +2012,6 @@ TRKSEC:
     SRL   H
     RR    L
     LD    (BLKNMBR),HL      ;save this as the block number of interest.
-;   LD    (CKSUMTBL),HL     ;what's it doing here too?
 ;
 ;   If the sector number has already been set (BLKNMBR), enter
 ;   at this point.
@@ -2507,8 +2504,54 @@ DIRDMA1:
 MOVEDIR:
     LD    HL,(DIRBUF)   ;buffer is located here, and
     LD    DE,(USERDMA)  ;put it here.
-    LD    BC,128        ;this is its length.
-    LDIR                ;move it now and return.
+;
+;   Load (HL)->(DE) 128 times.
+;
+LDI_128:
+    LD    BC,LDI_32     ;do the LDI 32 times,
+    PUSH  BC            ;a total of 4 times,
+    PUSH  BC            ;for a total of 128.
+    PUSH  BC
+;
+;   Load (HL)->(DE) 32 times.
+;
+LDI_32:
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+;
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+;
+    LDI
+LDI_15:
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+LDI_8:
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
+    LDI
     RET
 ;
 ;   Check (FILEPOS) and set the zero flag if it equals 0ffffh.
@@ -3818,7 +3861,7 @@ GETFST1:
     CALL    FINDFST        ;find an entry and then move it into
     JP    MOVEDIR        ;the users dma space.
 ;
-;   Function to return the next occurence of a file name.
+;   Function to return the next occurrence of a file name.
 ;
 GETNXT:
     LD    HL,(SAVEFCB)    ;restore pointers. note that no
@@ -4022,8 +4065,9 @@ SECTION     cpm_bdos_data
 EMPTYFCB:   DEFB    $E5     ;empty directory segment indicator.
 USERDMA:    DEFW    $0080   ;user's dma address (defaults to 80h).
 ;
-OUTFLAG:    DEFB    0       ;output flag (non zero means no output).
 STARTING:   DEFB    2       ;starting position for cursor.
+;
+OUTFLAG:    DEFB    0       ;output flag (non zero means no output).
 CURPOS:     DEFB    0       ;cursor position (0=start of line).
 PRTFLAG:    DEFB    0       ;printer flag (control-p toggle). List if non zero.
 CHARBUF:    DEFB    0       ;single input character buffer.
@@ -4082,19 +4126,17 @@ BLKNMBR:    DEFW    0       ;block number (physical sector) used within a file o
 LOGSECT:    DEFW    0       ;starting logical (128 byte) sector of block (physical sector).
 FCBPOS:     DEFB    0       ;relative position within buffer for fcb of file of interest.
 FILEPOS:    DEFW    0       ;files position within directory (0 to max entries -1).
+USRSTACK:   DEFW    0       ;save users stack pointer here.
 ;
 ;   Disk directory buffer checksum bytes. One for each of the
-;   16 possible drives.
+;   16 possible drives. Maximum 4 drives configured in BIOS.
 ;
 CKSUMTBL:   DEFS    16,0
 ;
 ;   Stack area for BDOS calls.
 ;
-            DEFS    48,0
+            DEFS    42,0
 STKAREA:                    ;top of stack area.
-USRSTACK:   DEFW    0       ;save users stack pointer here.
-;
-
 ;
 ;**************************************************************
 ;*
@@ -4139,7 +4181,6 @@ DEFC    READ    =   read
 DEFC    WRITE   =   write
 DEFC    PRSTAT  =   listst
 DEFC    SECTRN  =   sectran
-
 ;
 ;*
 ;******************   E N D   O F   C P / M   *****************

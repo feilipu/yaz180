@@ -78,7 +78,7 @@ EXTERN  __cpm_bdos_data_tail    ;end of bdos
 ;
 ;*****************************************************
 ;*                                                   *
-;*           CP/M to host disk constants             *
+;*          CP/M to host disk constants              *
 ;*                                                   *
 ;*****************************************************
 
@@ -96,7 +96,7 @@ DEFC    secmsk  =    hstblk-1   ;sector mask
 ;
 ;*****************************************************
 ;*                                                   *
-;*         BDOS constants on entry to write          *
+;*          BDOS constants on entry to write         *
 ;*                                                   *
 ;*****************************************************
 
@@ -365,8 +365,8 @@ seldsk:    ;select disk given by register c
     ld      a,c
     cp      _cpm_disks      ;must be between 0 and 3
     jr      C,chgdsk        ;if invalid drive will result in BDOS error
-    
- seldskreset:
+
+seldskreset:
     xor     a               ;reset default disk back to 0 (A:)
     ld      (_cpm_cdisk),a
     ld      (sekdsk),a      ;and set the seeked disk
@@ -584,7 +584,7 @@ match:
 ;           copy data to or from buffer
     ld      a,(seksec)      ;mask buffer number LSB
     and     secmsk          ;least significant bits, shifted off in sekhst calculation
-    ld      h,0             ;double count    
+    ld      h,0             ;double count
     ld      l,a             ;ready to shift
 
     xor     a               ;shift left 7, for 128 bytes x seksec LSBs
@@ -636,7 +636,7 @@ rwmove:
     ld      a,(erflag)      ;in case of errors
     ret     Z               ;no further processing
 
-;            clear host buffer for directory write
+;           clear host buffer for directory write
     or      a               ;errors?
     ret     NZ              ;skip if so
     xor     a               ;0 to accum

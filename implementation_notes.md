@@ -90,7 +90,7 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
 
 ```bash
-> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32 --max-allocs-per-node400000 @yabios.lst -gpf yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32 --max-allocs-per-node2000000 @yabios.lst -gpf yabios.rex -o yabios -create-app
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
@@ -111,7 +111,7 @@ The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT 
 
 I've added the `_f_expand()` function into the FATFs implementation, as this will allow the YABIOS command line to create a correctly sized CP/M drive, which can then be added / or exchanged for other drives simply by renaming it. Formatting and other CP/M "disk" management will be done from within CP/M, using the YABIOS tools.
 
-I've added an `EXIT` function into the CP/M CCP. This is to allow the CP/M system to terminate and return to yabios in `BANK_0` successfully. CP/M can be reinitialised, simply with the `initb x 0` command.
+I've added an `EXIT` function into the CP/M CCP. This is to allow the CP/M system to terminate and return to yabios in `BANK_0` successfully. CP/M can be reinitialised, simply with the `initb n` command.
 
 ## CP/M TOOLS Usage
 
