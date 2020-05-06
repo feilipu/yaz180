@@ -304,7 +304,7 @@ GETINP:
     LD    DE,INBUFF+1
     LD    HL,TBUFF      ;data was read into buffer here.
     LD    BC,128        ;all 128 characters may be used.
-    LDIR                ;(HL) to (DE), (BC) bytes.
+    LDIR                ;(HL++)->(DE++), BC times.
     LD    HL,BATCHFCB+14
     LD    (HL),0        ;zero out the 's2' byte.
     INC    HL        ;and decrement the record count.
@@ -2341,10 +2341,6 @@ CHKWPRT:
 FCB2HL:
     LD      HL,(DIRBUF)     ;get address of buffer.
     LD      A,(FCBPOS)      ;relative position of file.
-;
-;   Routine to add (A) to (HL).
-;
-ADDA2HL:
     ADD     A,L
     LD      L,A
     RET     NC
@@ -2404,17 +2400,6 @@ CHKNMBR:
     LD      (HL),E
     RET    
 ;
-;   Compute (HL)=(DE)-(HL)
-;
-SUBHL:
-    LD      A,E             ;compute difference.
-    SUB     L
-    LD      L,A             ;store low byte.
-    LD      A,D
-    SBC     A,H
-    LD      H,A             ;and then high byte.
-    RET    
-;
 ;   Set the directory checksum byte.
 ;
 SETDIR:
@@ -2427,9 +2412,9 @@ SETDIR:
 ;
 CHECKDIR:
     LD      HL,(CKSUMTBL)
-    EX      DE,HL
-    LD      HL,(ALLOC1)
-    CALL    SUBHL
+    LD      DE,(ALLOC1)
+    OR      A               ;clear carry
+    SBC     HL,DE           ;HL=(CKSUMTBL)-(ALLOC1)
     RET     NC              ;ok if (CKSUMTBL) > (ALLOC1), so return.
     PUSH    BC
     CALL    CHECKSUM        ;else compute checksum.
@@ -2491,7 +2476,7 @@ MOVEDIR:
     LD      HL,(DIRBUF)     ;buffer is located here, and
     LD      DE,(USERDMA)    ;put it here.
 ;
-;   Load (HL)->(DE) 128 times.
+;   Load (HL++)->(DE++), 128 times.
 ;
 LDI_128:
     LD      BC,LDI_32       ;do the LDI 32 times,
@@ -2499,7 +2484,7 @@ LDI_128:
     PUSH    BC              ;for a total of 128.
     PUSH    BC
 ;
-;   Load (HL)->(DE) 32 times.
+;   Load (HL++)->(DE++), 32 times.
 ;
 LDI_32:
     LDI
@@ -2521,7 +2506,7 @@ LDI_32:
     LDI
 ;
     LDI
-LDI_15:
+LDI_15:                     ;(HL++)->(DE++), 15 times.
     LDI
     LDI
     LDI
@@ -2529,7 +2514,7 @@ LDI_15:
     LDI
     LDI
     LDI
-LDI_8:
+LDI_8:                     ;(HL++)->(DE++), 8 times.
     LDI
     LDI
     LDI
@@ -2567,12 +2552,13 @@ STFILPOS:
 ;   be read).
 ;
 NXENTRY:
-    LD      HL,(DIRSIZE)    ;get directory entry size limit.
-    EX      DE,HL
     LD      HL,(FILEPOS)    ;get current count.
     INC     HL              ;go on to the next one.
     LD      (FILEPOS),HL
-    CALL    SUBHL           ;(HL)=(DIRSIZE)-(FILEPOS)
+    EX      DE,HL
+    LD      HL,(DIRSIZE)    ;get directory entry size limit.
+    OR      A               ;clear carry
+    SBC     HL,DE           ;HL=(DIRSIZE)-(FILEPOS)
     JP      NC,NXENT1       ;is there more room left?
     JP      STFILPOS        ;no. Set this flag and return.
 NXENT1:
@@ -2911,7 +2897,7 @@ ERAFIL1:
 ;   at the front and search some more.
 ;
 ;   On return, (DE)= block number that is empty and (HL) =0
-;   if no empry block was found.
+;   if no empty block was found.
 ;
 FNDSPACE:
     LD      D,B             ;set (DE) as the block that is checked.
@@ -3002,7 +2988,7 @@ UPDATE:
     EX      DE,HL
     CALL    FCB2HL          ;get address of fcb to update in directory.
     EX      DE,HL
-    LDIR
+    LDIR                    ;(HL++)->(DE++), BC times.
 UPDATE1:
     CALL    TRKSEC          ;determine the track and sector affected.
     JP      DIRWRITE        ;then write this sector out.
@@ -3337,7 +3323,7 @@ WTSEQ1:
     CALL    COMBLK          ;compute block number.
     CALL    CHKBLK          ;check number.
     LD      C,0             ;is there one to write to?
-    JP      NZ,WTSEQ6       ;yes, go do it.
+    JP      NZ,WTSEQ7       ;yes, go do it.
     CALL    GETBLOCK        ;get next block number within fcb to use.
     LD      (RELBLOCK),A    ;and save.
     LD      BC,0            ;start looking for space from the start
@@ -3364,11 +3350,15 @@ WTSEQ3:
     LD      A,(BIGDISK)     ;8 or 16 bit block numbers?
     OR      A
     LD      A,(RELBLOCK)    ;(* update this entry *)
-    JP      Z,WTSEQ4        ;zero means 16 bit ones.
-    CALL    ADDA2HL         ;(HL)=(HL)+(A)
-    LD      (HL),E          ;store new block number.
-    JP      WTSEQ5
+    JP      Z,WTSEQ5        ;zero means 16 bit ones.
+    ADD     A,L             ;(HL)=(HL)+(A)
+    LD      L,A
+    JP      NC,WTSEQ4
+    INC     H               ;take care of any carry.
 WTSEQ4:
+    LD      (HL),E          ;store new block number.
+    JP      WTSEQ6
+WTSEQ5:
     LD      C,A             ;compute spot in this 16 bit table.
     LD      B,0
     ADD     HL,BC
@@ -3376,9 +3366,9 @@ WTSEQ4:
     LD      (HL),E          ;stuff block number (DE) there.
     INC     HL
     LD      (HL),D
-WTSEQ5:
-    LD      C,2             ;set (C) to indicate writing to un-used disk space.
 WTSEQ6:
+    LD      C,2             ;set (C) to indicate writing to un-used disk space.
+WTSEQ7:
     LD      A,(STATUS)      ;are we ok so far?
     OR      A
     RET     NZ
@@ -4017,7 +4007,7 @@ CKSUMTBL:   DEFS    16,0
 ;
 ;   Stack area for BDOS calls.
 ;
-            DEFS    177,0   ;XXX floating align STKAREA to BIOS head. XXX
+            DEFS    181,0   ;XXX floating align STKAREA to BIOS head. XXX
 STKAREA:                    ;top of STKAREA stack area.
 ;
 ;**************************************************************
@@ -4026,7 +4016,6 @@ STKAREA:                    ;top of STKAREA stack area.
 ;*
 ;**************************************************************
 ;
-
 EXTERN    boot      ;cold start
 EXTERN    wboot     ;warm start
 EXTERN    const     ;console status
@@ -4044,8 +4033,7 @@ EXTERN    read      ;read disk
 EXTERN    write     ;write disk
 EXTERN    listst    ;return list status
 EXTERN    sectran   ;sector translate
-
-
+;
 DEFC    BOOT    =   boot
 DEFC    WBOOT   =   wboot
 DEFC    CONST   =   const
