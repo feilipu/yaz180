@@ -82,7 +82,7 @@ EXTERN  __cpm_bdos_data_tail    ;end of bdos
 ;*                                                   *
 ;*****************************************************
 
-DEFC    hstalb  =    4096       ;host number of drive allocation blocks
+DEFC    hstalb  =    2048       ;host number of drive allocation blocks
 DEFC    hstsiz  =    512        ;host disk sector size
 DEFC    hstspt  =    256        ;host disk sectors/trk
 DEFC    hstblk  =    hstsiz/128 ;CP/M sects/host buff (4)

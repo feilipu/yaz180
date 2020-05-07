@@ -27,7 +27,7 @@ SECTION     cpm_tpa     ;transitory program area
 ORG         0x0100
 
 SECTION     cpm_ccp     ;base of ccp
-ORG         0xCC00
+ORG         0xD000
 
 SECTION     cpm_ccp_data
 ORG         -1
@@ -39,7 +39,7 @@ SECTION     cpm_bdos_data
 ORG         -1
 
 SECTION     cpm_bios    ;base of bios
-ORG         0xE200
+ORG         0xE600
 
 
 SECTION     cpm_bios_data
