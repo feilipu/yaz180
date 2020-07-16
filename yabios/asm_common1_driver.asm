@@ -1092,8 +1092,8 @@ PUBLIC asm_am9511a_reset
     ld bc,__APU_CMD_SIZE-1
     ldir
 
-    LD (APUPTRBuf),a        ; clear OPERAND POINTER Buffer
-    LD hl,APUPTRBuf
+    ld (APUPTRBuf),a        ; clear OPERAND POINTER Buffer
+    ld hl,APUPTRBuf
     ld d,h
     ld e,l
     inc de
