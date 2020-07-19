@@ -29,8 +29,8 @@
 ; RC2014 CP/M    7.432MHz         4'51"       4'10"
 ; YAZ180 CP/M   18.432MHz         1'40"       1'24"       1'00"
 ; YAZ180 yabios 18.432Mhz                     1'14"         54"
-; YAZ180 CP/M   36.864MHz                       58"         46"
-; YAZ180 yabios 36.864Mhz                       56"         45"
+; YAZ180 CP/M   36.864MHz         1'06"         58"         46"
+; YAZ180 yabios 36.864MHz                       56"         45"
 ; 
 ;
 ; Porting this program to another Z80 platform should be easy and straight-
@@ -67,7 +67,7 @@ defc cr         = 13                      ; carriage return
 defc lf         = 10                      ; line feed
 defc esc        = 27                      ; escape
 
-IF _CPM                           ; cp/m ram model 
+IF _CPM                                   ; cp/m ram model 
 defc eos        = '$'                     ; end of string marker
 ELSE
 defc eos        = 0                       ; end of string marker
@@ -214,14 +214,14 @@ ELSE                                    ; IF !_APU
         ld      hl, (z_1)               ; Compute DE HL = z_1 * z_1
         ld      d, h
         ld      e, l
-        call    mul_16
+        call    l_muls_32_16x16
         ld      (z_1_square_low), hl    ; z_1 ** 2 is needed later again
         ld      (z_1_square_high), de
 
         ld      hl, (z_0)               ; Compute DE HL = z_0 * z_0
         ld      d, h
         ld      e, l
-        call    mul_16
+        call    l_muls_32_16x16
         ld      (z_0_square_low), hl    ; z_1 ** 2 will be also needed
         ld      (z_0_square_high), de
 
@@ -243,7 +243,7 @@ ELSE                                    ; IF !_APU
         ld      hl, (z_0)               ; Compute DE HL = 2 * z_0 * z_1
         add     hl, hl
         ld      de, (z_1)
-        call    mul_16
+        call    l_muls_32_16x16
 
         ld      b, e                    ; Divide by scale (= 256)
         ld      c, h                    ; BC contains now z_3
@@ -793,7 +793,7 @@ IF __Z180
    ;
    ; uses  : af, bc, de, hl
 
-.mul_16
+.l_muls_32_16x16
    ld b,d                       ; d = MSB of multiplicand
    ld c,h                       ; h = MSB of multiplier
    push bc                      ; save sign info
@@ -891,7 +891,7 @@ ELSE                                ; IF !__Z180
 ; multiplication takes place, followed by negating the result if necessary.
 ;
 
-.mul_16
+.l_muls_32_16x16
        ld b,d                       ; d = MSB of multiplicand
        ld c,h                       ; h = MSB of multiplier
        push bc                      ; save sign info
@@ -919,7 +919,18 @@ ELSE                                ; IF !__Z180
        ld h,a
        inc hl
 
-l_pos_hl:
+.l_pos_hl
+        ; prepare unsigned dehl = de x hl
+        ;
+        ; multiplication of two 16-bit numbers into a 32-bit product
+        ;
+        ; enter : de = 16-bit multiplicand = y
+        ;         hl = 16-bit multiplicand = x
+        ;
+        ; exit  : dehl = 32-bit product
+        ;         carry reset
+        ;
+        ; uses  : af, bc, de, hl
        ld      b, h
        ld      c, l
 
