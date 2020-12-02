@@ -102,7 +102,7 @@ It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code 
 
 ## CP/M Implementation
 
-The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT and ASCI1 being the TTY. The CCP/BDOS is now running, and the disk interface has been completed.
+The CP/M implementation supports both ASCI interfaces, with ASCI0 being the CRT and ASCI1 being the TTY. The CP/M CCP+BDOS is now running, and the disk interface has been completed.
 
 ```bash
 > zcc +yaz180 -subtype=app --no-crt -m --list @cpm22.lst -o cpm22; z88dk-appmake +glue -b cpm22 --ihex --clean

@@ -94,6 +94,7 @@ int8_t ya_exit(char **args);    // exit and restart
 int8_t ya_ls(char **args);      // directory listing
 int8_t ya_rm(char **args);      // delete a file
 int8_t ya_cp(char **args);      // copy a file
+int8_t ya_mv(char **args);      // move (rename) a file
 int8_t ya_cd(char **args);      // change the current working directory
 int8_t ya_pwd(char **args);     // show the current working directory
 int8_t ya_mkdir(char **args);   // create a new directory
@@ -150,6 +151,7 @@ struct Builtin builtins[] = {
     { "ls", &ya_ls, "[path] - directory listing"},
     { "rm", &ya_rm, "[file] - delete a file"},
     { "cp", &ya_cp, "[src][dest] - copy a file"},
+    { "mv", &ya_mv, "[src][dest] - move (rename) a file"},
     { "cd", &ya_cd, "[path] - change the current working directory"},
     { "pwd", &ya_pwd, "- show the current working directory"},
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
@@ -586,7 +588,7 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
 
 
 /**
-   @brief Builtin command: help.
+   @brief Builtin command:
    @param args List of args.  args[0] is "help".
    @return Always returns 1, to continue executing.
  */
@@ -606,7 +608,7 @@ int8_t ya_help(char **args)
 
 
 /**
-   @brief Builtin command: exit.
+   @brief Builtin command:
    @param args List of args.  args[0] is "exit".
    @return Always returns 0, to terminate execution.
  */
@@ -705,7 +707,7 @@ int8_t ya_cp(char **args)       // copy a file
 
     struct timespec startTime, endTime, resTime;
 
-    if (args[1] == NULL && args[2] == NULL) {
+    if (args[1] == NULL || args[2] == NULL) {
         fprintf(output, "yash: expected 2 arguments to \"cp\"\n");
     } else {
         fprintf(output,"Opening \"%s\"\n", args[1]);
@@ -745,7 +747,23 @@ int8_t ya_cp(char **args)       // copy a file
 
 
 /**
-   @brief Builtin command: change directory.
+   @brief Builtin command:
+   @param args List of args.  args[0] is "mv".  args[1] is the src, args[2] is the dst
+   @return Always returns 1, to continue executing.
+ */
+int8_t ya_mv(char **args)       // move (rename) a file
+{
+    if (args[1] == NULL || args[2] == NULL) {
+        fprintf(output, "yash: expected 2 arguments to \"mv\"\n");
+    } else {
+        put_rc(f_rename((const TCHAR*)args[1],(const TCHAR*)args[2]));
+    }
+    return 1;
+}
+
+
+/**
+   @brief Builtin command:
    @param args List of args.  args[0] is "cd".  args[1] is the directory.
    @return Always returns 1, to continue executing.
  */
@@ -1168,8 +1186,8 @@ int main(int argc, char **argv)
     (void)argc;
     (void *)argv;
 
-    set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1588291200 - UNIX_OFFSET);      /* Initial time: 00.00 May 1, 2020 UTC */
+    set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
+    set_system_time(1606780800 - UNIX_OFFSET);      /* Initial time: 00.00 December 1, 2020 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
