@@ -8,7 +8,7 @@ Note that the YAZ180 is a very capable and multifaceted tool. I've not stretched
 
 I've tested the `_call_far` and `_jp_far` functions, but I haven't written large programs requiring multi-bank support. 
 
-I've written I2C drivers now 3 times (and deleted the last two attempts), and I know the drivers in the z88dk are never going to work (they were 1st iteration). Trying to use the I2C hardware buffers, in an interrupt driven memory banked environment is hard IMHO, and I've still not achieved the result I want.
+I've written I2C drivers now 4 times (and deleted the last two attempts), and I know the drivers in the z88dk have been updated and are working. Trying to use the I2C hardware buffers, in an interrupt driven memory banked environment is hard IMHO, and I've still not completely achieved the result I want.
 
 You're probably the first one to try what you're trying to do. But, don't stress.
 
