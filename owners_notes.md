@@ -136,7 +136,7 @@ zcc +yaz180 -subtype=app -SO3 -m --math32 --max-allocs-per-node400000 test.c -o 
 ```
 The YAZ180 has three main options,being `app`, `rom`, and `cpm` subtypes.
 
-The `rom` subtype is only useful where you are compiling a YABIOS, or you wish to run your YAZ180 without the yabios from the metal. In this situation all the drivers available for the YAZ180 are maintained within the z88dk, and (with the exception of I2C) everything should work.
+The `rom` subtype is only useful where you are compiling a YABIOS, or you wish to run your YAZ180 without the yabios from the metal. In this situation all the drivers available for the YAZ180 are maintained within the z88dk, and everything should just work.
 
 The `app` subtype is the go to for native applications. Everything you're running directly on YABIOS should be compiled with this subtype.
 
