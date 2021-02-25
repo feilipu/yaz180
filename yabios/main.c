@@ -597,7 +597,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v2.0 2020\n");
+    fprintf(output,"YAZ180 - yabios v2.1 2021\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -1186,8 +1186,8 @@ int main(int argc, char **argv)
     (void)argc;
     (void *)argv;
 
-    set_zone((int32_t)11 * ONE_HOUR);               /* Australian Eastern Summer Time */
-    set_system_time(1612137600 - UNIX_OFFSET);      /* Initial time: 00.00 February 1, 2021 UTC */
+    set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
+    set_system_time(1614556800 - UNIX_OFFSET);      /* Initial time: 00.00 March 1, 2021 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */

@@ -6,6 +6,7 @@
 
 INCLUDE "config_yaz180_private.inc"
 
+EXTERN  asm_z180_trap
 EXTERN  asm_asci0_pollc, asm_asci0_getc, asm_asci0_putc
 EXTERN  asm_asci1_pollc, asm_asci1_getc, asm_asci1_putc
 EXTERN  asm_asci0_flush_Rx, asm_asci1_flush_Rx
@@ -155,6 +156,8 @@ boot:       ;simplest case is to just perform parameter initialization
     jp      gocpm           ;initialize and go to cp/m
 
 wboot:      ;copy the source bank CP/M CCP/BDOS info and then go to normal start.
+    call    asm_z180_trap   ;first do opcode trap check
+
     ld      sp,(_bank_sp)   ;set SP to original (temporary) boot setting
 
     ld      a,(_cpm_src_bank)   ;get CP/M CCP/BDOS/BIOS src bank

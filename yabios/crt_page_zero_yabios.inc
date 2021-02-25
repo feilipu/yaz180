@@ -268,42 +268,25 @@ ENDIF
 
 __Test_Trap:
 
-   push af
    ld a,__IO_BASE_ADDRESS
-
    out0 (0x3f),a        ; out0 (ICR),a
 
    in0 a,(ITC)
-   
    xor $80
-   jp m, __reset
-
-   out0 (ITC),a
 
 IF (__crt_enable_trap = 1)
 
    EXTERN _z180_trap
-   jp     _z180_trap
+   call P,_z180_trap
 
 ELSE
 
    IF (__crt_enable_trap > 1)
 
-   jp     __z180_trap
-
-   ELSE
-
-   EXTERN __Unhandled_Trap
-   jp     __Unhandled_Trap
+   EXTERN __z180_trap
+   call P,__z180_trap
 
    ENDIF
-
-ENDIF
-
-IF (__crt_enable_trap <= 1)
-
-   PUBLIC _z180_trap_vector
-   defc   _z180_trap_vector = ASMPC - 2
 
 ENDIF
 

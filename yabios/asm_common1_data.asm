@@ -122,11 +122,13 @@ asci1TxIn:      defw    asciTxBuffer+1  ; non-zero item since it's initialized a
 asci1TxOut:     defw    asciTxBuffer+1  ; non-zero item since it's initialized anyway
 asci1TxLock:    defb    $FE             ; mutex for Tx1
 
-PUBLIC initString, invalidTypeStr, badCheckSumStr, LoadOKStr
+PUBLIC initString, invalidOpCode, invalidTypeStr, badCheckSumStr, LoadOKStr, newLine
 
 initString:     defm    CHAR_CR,CHAR_LF,"::",0
-invalidTypeStr: defm    CHAR_CR,CHAR_LF,"Type!",CHAR_CR,CHAR_LF,0
-badCheckSumStr: defm    CHAR_CR,CHAR_LF,"Checksum!",CHAR_CR,CHAR_LF,0
-LoadOKStr:      defm    CHAR_CR,CHAR_LF,"Done!",CHAR_CR,CHAR_LF,0
+invalidOpCode:  defm    CHAR_CR,CHAR_LF,"Invalid Instruction @ 0x",0
+invalidTypeStr: defm    CHAR_CR,CHAR_LF,"Invalid Type!",CHAR_CR,CHAR_LF,0
+badCheckSumStr: defm    CHAR_CR,CHAR_LF,"Bad Checksum!",CHAR_CR,CHAR_LF,0
+LoadOKStr:      defm    CHAR_CR,CHAR_LF,"Done!"
+newLine:        defm    CHAR_CR,CHAR_LF,0
 
 DEPHASE

@@ -28,6 +28,7 @@
 + asm_asci[01]_
 + asm_am9511a_
 + asm_disk_
++ asm_z180_trap
 
 + ide_write_sector
 + ide_read_sector

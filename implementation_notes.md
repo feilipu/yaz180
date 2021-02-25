@@ -98,7 +98,7 @@ It also generates a `yabios.def` file containing the calling linkages for the pa
 
 ## Loading Flash from outside yabios
 
-It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal. The v2.1 PCB (2017) doesn't connect A17 to the flash, so it is limited to 128kB. The CUPL has been modified to put the upper page in `BANK15`. Other CUPL options are commented out, for v2.2 PCB (2018) which has both A17 and A18 connected.
+It is possible to load (`BANK13`, `BANK14`, and) `BANK15` with application code either from the perl programming interface, or via the TL866 programming tool. Applications written in this way can be loaded to an initialised (`mkb`) bank using the `mvb` or `mkcpmb` command and then executed using `initb` as normal. The v2.1 PCB (2017) doesn't connect A17 to the flash, so it is limited to 128kB. The CUPL has been modified to put the upper page in `BANK15`. Other CUPL options are commented out, for v2.2 PCB (2018) and later, which has both A17 and A18 connected.
 
 ## CP/M Implementation
 

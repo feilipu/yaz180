@@ -12,13 +12,49 @@ PHASE   __COMMON_AREA_1_PHASE_DRIVER
 EXTERN _shadowLock, _bankLockBase
 EXTERN _bios_sp, _bank_sp
 
+EXTERN invalidOpCode, newLine
+
 ;------------------------------------------------------------------------------
 
+PUBLIC asm_z180_trap
 PUBLIC _z180_trap_rst
 
-._z180_trap_rst         ; RST  0 - also handle an application restart
-    rst 8               ; Okay, Houston, we've had a problem!
-    defb '<'            ; Stack Error Code 0x40 '<'
+.asm_z180_trap
+._z180_trap_rst         ; RST  0 - also handle an application restart, or opcode trap
+    in0 a,(ITC)         ; get the trap & interrupt register
+    xor a,$80           ; test and clear trap bit
+    ret M               ; if no trap, then return
+    pop hl              ; pop the return
+    ex (sp),hl          ; pop invalid opcode PC, stack return
+    dec hl              ; back to first byte of opcode
+    ld b,2              ; two bytes
+    bit 6,a             ; check UFO bit for 3 byte opcode
+    jr Z,trap_2         ; only two bytes
+    dec hl              ; now HL points to first of three bytes
+    inc b
+.trap_2
+    out0 (ITC),a        ; write cleared trap bit
+    push hl             ; save opcode PC
+    ld de,invalidOpCode
+    call asm_pstring    ; asm_pstring modifies AF, DE, & HL
+    pop hl              ; recover PC of invalid opcode
+    ld d,h              ; copy PC
+    ld e,l
+    call asm_phexwd     ; print the address
+    ld l,' '
+    call asm_pchar      ; print space
+.trap_loop
+    ex de,hl            ; recover PC
+    ld e,(hl)           ; get opcode
+    inc hl              ; next PC
+    ex de,hl            ; opcode to l
+    call asm_phex       ; print
+    ld l,' '
+    call asm_pchar      ; print space
+    djnz trap_loop      ; print all the opcode
+    ld de,newLine 
+    call asm_pstring    ; print new line
+    jp asm_delay
 
 ;------------------------------------------------------------------------------
 
@@ -26,14 +62,17 @@ PUBLIC _error_handler_rst
 
 ._error_handler_rst     ; RST  8
     pop hl              ; get the originating PC address
+    push hl             ; put it back for the return
     ld e,(hl)           ; get error code in E
     dec hl
     call asm_phexwd     ; output originating RST address on serial port
+    ld l,' '
+    call asm_pchar      ; print space
     ex de,hl            ; get error code in L
     call asm_phex       ; output error code on serial port
-.error_handler_loop
-    halt
-    jr error_handler_loop
+    ld de,newLine 
+    call asm_pstring    ; print new line
+    jp asm_delay
 
 ;------------------------------------------------------------------------------
 
@@ -869,7 +908,8 @@ EXTERN  __system_time_fraction, __system_time
 .system_tick_error
     rst 8                       ; Okay, Houston, we've had a problem!
     defb '@'                    ; Stack Error Code 0x40 '@'
-    
+    jr system_tick_exit
+
 ;------------------------------------------------------------------------------
 ; start of common area 1 driver - am9511a functions
 ;------------------------------------------------------------------------------
@@ -2165,6 +2205,8 @@ PUBLIC asm_pchar, asm_pstring
 
 PUBLIC asm_rhex, asm_rchar
 
+PUBLIC asm_delay
+
 EXTERN _bios_ioByte
 
 ;==============================================================================
@@ -2244,6 +2286,22 @@ EXTERN _bios_ioByte
     rrca                    ; put it in Carry
     jp NC,asm_asci1_getc    ; TTY=0 (asci1)
     jp asm_asci0_getc       ; CRT=1 (asci0)
+
+;==============================================================================
+;       DELAY SUBROUTINES
+;
+
+.asm_delay                  ; delay to allow printing before returning
+    push bc
+    ld bc,$0000
+.asm_delay_loop
+    ex (sp),hl              ; 19 cycles
+    ex (sp),hl              ; 19 cycles
+    djnz asm_delay_loop     ; 10 cycles
+    dec c
+    jr NZ,asm_delay_loop
+    pop bc
+    ret
 
 ;==============================================================================
 ;       BIOS STACK CANARY
