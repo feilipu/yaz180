@@ -67,7 +67,7 @@ You will note that in order to write to the Am9511A-1 the CPU has to slow down 4
 
 Reading from the APU is not affected by this issue, so it is done at full CPU speed.
 
-Note that in some situations the Am9511A-1 also requires that 2x Memory Wait states (and 3x I/O Wait states) be set, although it is not being accessed by memory operations. I'm still not clear why this is the case.
+Note that in some situations the Am9511A-1 also requires that 2x Memory Wait states (and 3x I/O Wait states) be provided, although it is not being accessed by memory operations. I'm still not clear why this is the case.
 
 ## ESP-01S Interface
 
@@ -81,9 +81,9 @@ Using the ESP-01S, it is possible to reach your YAZ180 via the Internet.
 
 The YABIOS has been set up as a working tool. It isn't consise in its language or its commands. So, for example, there are three steps to getting a program running.
 
-* Load the program using either `loadh 3` via the currently active serial port, or load a previously saved program (if you've got an IDE or CF drive attached) using `loadb path 3`.
+* Load the program using either `loadh 3` via the currently active serial port, or load a previously saved program (if you've got an IDE or CF drive attached) using `loadb path 3` (where we have decided to use Bank 3 for our program).
 * Save the program to your drive (if you want to) using `saveb 3 path`.
-* Establish the program bank as active, and fill the page 0 information with `mkb 3` (where we have decided to use Bank 3 for our program).
+* Establish the program bank as active, and fill the page 0 information with `mkb 3`.
 * Initiate the program by using the `initb 3`, whereby execution begins in Bank 3 at `0x0100`.
 
 Before any IDE or CF drive information can be obtained, the drive needs either to be mounted with `mount 1`, or its directory read with `ls` which will auto mount the drive.
@@ -92,13 +92,13 @@ The workflow that I use is to build new programs, which will be run as a native 
 
 It is also possible to store binary files, with any origin (default at `0x0100`) directly into a file in the IDE or CF drive on the PC, and then use `loadb` to load them into the correct place on YAZ180, and `initb` to start execution at the right address. I'd call this advanced usage. I can't remember actually doing this.
 
-Often used binary files can be stored in flash. For example in the Release 1.2, two versions of the Mandelbrot program are stored in Pages 13 (using Z180 `mul` routines), and Page 14 (using Am9511A-1 APU). Normal binaries can be accessed with the command sequence `mvb 13 3`, `mkb 3`, and `initb 3`, for example.
+Often used binary files can be stored in flash. For example in the Release 1.2, two versions of the Mandelbrot program are stored in Pages 13 (using Z180 `mul` routines), and Page 14 (using Am9511A-1 APU). The two stored binaries can be accessed with the command sequence `cpb 13 3` or `cpb 14 3`, and `mkb 3`, and `initb 3`, for example, where Bank 3 is the target bank.
 
 ## CP/M Functions
 
 There are two CP/M functions. The `mkcpmd` function builds a properly extended CP/M drive file on the IDE or CF drive attached to YAZ180. This is necessary because the CPM tools do not build the fully extended 8388608 Byte files required. But, if you have a file you can use as a template already then this comand is pretty useless (obsolete). Just do a file copy, and then within CP/M delete the contents of the drive.
 
-The `mkcpmb` command will be used all the time. This combines both the `mkb` and `loadb` actions, and will load the contents of the flash in Bank 15 into the Bank you choose, and will prepare the bank with the LBA of each of up to 4 drive files. Then a `initb` command is required to kick off CP/M.
+The `mkcpmb` command will be used all the time. This combines both the `mkb` and `loadb` actions, and will load the contents of the flash in Bank 15 into the Bank you choose, and will prepare the bank with the LBA of each of up to 4 drive files. Then a `initb` command is required to initiate CP/M.
 
 To exit CP/M an additional CCP function called `EXIT` has been added. This will return to YABIOS and allow CP/M to be restarted with different drive files.
 
@@ -150,7 +150,7 @@ Breaking down the above command line
 * `-subtype=app` - is the subtype for the platform, here build for application (with YABIOS)
 * `-v` - verbose `-nv` is silent
 * `-m` - build a map file, needed for `-create-app`
-* `-SO3` - stongly optimise using the aggressive peephole optimiser
+* `-SO3` - stongly optimise using the aggressive z88dk peephole optimiser
 * `--list` - generate list files
 * `--max-allocs-per-node` - depth of sdcc code optimisation, reduce for faster compilation
 * `-create-app` - generate finalised HEX code, also a BIN file which can be used directly.

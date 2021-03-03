@@ -11,11 +11,11 @@ Further development includes the I2C drivers, which are excluded from the yabios
 In the 256kB of Flash there are 4 pages of 64kB, split according to the memory map into Pages 0, 13, 14, and 15.
 
 * Page 0 is the boot page, containing the yabios boot code and shell.
-* Page 13 is a mandelbrot test using the Z180 `mul` instruction, showing the maximum performance at math.
+* Page 13 is a mandelbrot test using the Z180 `mul` instruction, showing the maximum math performance.
 * Page 14 is a mantelbrot test using the Am9511A-1 APU in floating point mode.
 * Page 15 is the CP/M CCP/BDOS/BIOS from which the CP/M system loads (and reloads) during normal operation.
 
-Note that the Am9511A-1 APU may have difficulty initialising itself, and may need to be power cycled. This will be obvious, because the expected output will not be provided.
+__Note__ that the Am9511A-1 APU may have difficulty initialising itself. This will be obvious, because the expected output will not be provided. In this case the yaz180 may need to be power cycled, or at a minimum reset.
 
 If no IDE disk is available for testing, most of the system can be tested by running either the Page 13 or Page 14 mandelbrot programs, or simply doing some memory dumps.
 
@@ -60,3 +60,11 @@ There is little change to the yaz180 code in this release, except a few tweaks t
 __NOTE WELL__ This release __v2.0 changes the number of directory entries in CP/M drives to 2048 directory entries__. If you don't convert __your old drives__ to this new configuration, __they will be destroyed__.
 
 There is no change to the yaz180 code in this release, except to change the directory structure. This release has been compiled with `r11556` of sdcc, using the patch file included in z88dk.
+
+### V2.1
+
+This release adds trap functionality to notify of illegal opcodes, most commonly present in programs developed for use within CP/M. This has meant that the function addresses have changed, and these are noted both here and in the [z88dk definitions file](https://github.com/z88dk/z88dk/blob/master/libsrc/_DEVELOPMENT/target/yaz180/crt_yabios_def.inc).
+
+The command to clone or copy a bank has changed to `cpb` which is more aligned to its actual function.
+
+This release has been compiled with `r12070` of sdcc, using the patch file included in z88dk.
