@@ -558,7 +558,7 @@ The command line interface is implemented in C, with the underlying functions ei
 - `mkb [bank]` - initialise the nominated bank (to warm state)
 - `cpb [src][dest]` - copy or clone the nominated src bank
 - `rmb [bank]` - remove the nominated bank (to cold state)
-- `lsb` - list the usage of banks, and whether they are cold, warm, or hot
+- `lsb` - list the usage of banks, and whether they are cold, warm, or hot (not implemented)
 - `initb [bank][origin]` - begin executing the nominated bank at nominated address
 - `loadh [bank]` - load the nominated bank with Intel Hex from ASCI0 / ASCI1 (ESA supported)
 - `loadb [path][bank][origin]` - load the nominated bank from origin with binary code

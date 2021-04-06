@@ -15,7 +15,7 @@ The CP/M BIOS functions will be below the YABIOS area, because they relate only 
 
 ## Calculating `COMMON1` addresses
 
-We have `$0500` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom, then unaligned data starts at `$F500`. That allows the code section to flow after, and makes copying on setup a single transfer.
+We have `$0500` bytes of aligned buffers, with the two ASCI and the APU. Put them at the bottom of `COMMON1`, then unaligned data starts at `$F500`. That allows the code section to flow after, and makes copying on setup a single transfer.
 
 The ASCI Tx buffers share a single page, and are interleaved. This provides 127 bytes of Tx buffer and doesn't require manual buffer wrapping. Page alignment ensure that we only have to increment the low address byte to have the buffer wrap properly.
 
@@ -161,7 +161,7 @@ The ESP-01S can't have the DIO lines pull high when booting. This means that the
 Note that for yaz180 CP/M v2.0 the maximum directory entries were increased to 2048, and the file size reduced to 8MB.
 CP/M 2.2 BDOS uses 16 bit registers to calculate the ARECORD location, which overflows beyond 8 MB files.
 
-These cpmtools entries below are for the v1.x releases of yaz180 CP/M.
+These cpmtools entries below are for the (obsolete) v1.x releases of yaz180 CP/M.
 
 ```
 diskdef yaz180v1-16MB

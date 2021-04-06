@@ -62,11 +62,11 @@ CONDITION {
 
 CONDITION {
 	IF ( IORQ & !MREQ & IO_ADDRESS:[2000..3FFF] )                    OUT BREAK ;    /* Initiate the Single Step mode following a BREAK request. */
-	IF ( IORQ & !MREQ & IO_ADDRESS:[8000..9FFF] )                    OUT I2C_CS2 ;  /* Selecte the I2C Device #2. */
-	IF ( IORQ & !MREQ & IO_ADDRESS:[A000..BFFF] )                    OUT I2C_CS1 ;  /* Selecte the I2C Device #1. */
+	IF ( IORQ & !MREQ & IO_ADDRESS:[8000..9FFF] )                    OUT I2C_CS2 ;  /* Select the I2C Device #2. */
+	IF ( IORQ & !MREQ & IO_ADDRESS:[A000..BFFF] )                    OUT I2C_CS1 ;  /* Select the I2C Device #1. */
 	}
 
 CONDITION {
 	IF ( IORQ & !MREQ & IO_ADDRESS:[4000..5FFF] )                    OUT DIO_CS ;   /* Latch the digital IO, together with !WR or !RD. */
-	IF (        !MREQ & IO_ADDRESS:[C000..DFFF] )                    OUT APU_CS ;   /* Selecte the Arithmetic Processing Unit. */
+	IF (        !MREQ & IO_ADDRESS:[C000..DFFF] )                    OUT APU_CS ;   /* Select the Arithmetic Processing Unit. */
 	}
