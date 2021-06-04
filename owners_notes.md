@@ -92,7 +92,7 @@ The workflow that I use is to build new programs, which will be run as a native 
 
 It is also possible to store binary files, with any origin (default at `0x0100`) directly into a file in the IDE or CF drive on the PC, and then use `loadb` to load them into the correct place on YAZ180, and `initb` to start execution at the right address. I'd call this advanced usage. I can't remember actually doing this.
 
-Often used binary files can be stored in flash. For example in the Release 1.2, two versions of the Mandelbrot program are stored in Pages 13 (using Z180 `mul` routines), and Page 14 (using Am9511A-1 APU). The two stored binaries can be accessed with the command sequence `cpb 13 3` or `cpb 14 3`, and `mkb 3`, and `initb 3`, for example, where Bank 3 is the target bank.
+Often used binary files can be stored in flash. For example in the Release 2.1, two versions of the Mandelbrot program are stored in Pages 13 (using Z180 `mul` routines), and Page 14 (using Am9511A-1 APU). The two stored binaries can be accessed with the command sequence `cpb 13 3` or `cpb 14 3`, and `mkb 3`, and `initb 3`, for example, where Bank 3 is the target bank.
 
 ## CP/M Functions
 

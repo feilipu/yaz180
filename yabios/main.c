@@ -1187,7 +1187,7 @@ int main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1614556800 - UNIX_OFFSET);      /* Initial time: 00.00 March 1, 2021 UTC */
+    set_system_time(1622505600 - UNIX_OFFSET);      /* Initial time: 00.00 June 1, 2021 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */

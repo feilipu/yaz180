@@ -6,15 +6,15 @@
 ;
 ; Assemble with z88dk for RC2014 CP/M
 ; zcc +rc2014 -subtype=cpm -clib=sdcc_iy -v -m --list mandel.asm -o mandel
-; appmake +glue --ihex --clean -b mandel -c mandel
+; z88dk-appmake +glue --ihex --clean -b mandel -c mandel
 ;
 ; Assemble with z88dk for YAZ180 CP/M, for example:
 ; zcc +yaz180 -subtype=cpm -v -m --list mandel.asm -o mand180
-; appmake +glue --ihex --clean -b mand180 -c mand180
+; z88dk-appmake +glue --ihex --clean -b mand180 -c mand180
 ;
 ; Assemble with z88dk for yabios app model, for example:
 ; zcc +yaz180 -subtype=app -v -m --list mandel.asm -o mandapu
-; appmake +glue --ihex --clean -b mandapu -c mandapu
+; z88dk-appmake +glue --ihex --clean -b mandapu -c mandapu
 ;
 ; To calculate the theoretical minimum time at 115200 baud.
 ; Normally 10 colour codes, and 1 character per point.
