@@ -67,4 +67,6 @@ This release adds trap functionality to notify of illegal opcodes, most commonly
 
 The command to clone or copy a bank has changed to `cpb` which is more aligned to its actual function.
 
+Hardware flow control has been enabled on ASCI0 `CRT` using `/RTS`.
+
 This release has been compiled with `r12070` of sdcc, using the patch file included in z88dk.

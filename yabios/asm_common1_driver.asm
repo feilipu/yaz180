@@ -1320,7 +1320,7 @@ PUBLIC asm_asci0_interrupt
 
     ld a,(asci0RxCount)         ; get the current Rx count
     cp __ASCI0_RX_FULLISH       ; compare the count with the preferred full size
-    jr C,asm_asci0_rx_check     ; leave the /RTS low, and check for Rx/Tx possibility
+    jr NZ,asm_asci0_rx_check    ; leave the /RTS low, and check for Rx/Tx possibility
 
     in0 a,(CNTLA0)              ; get current value of control byte A
     or CNTLA0_RTS0              ; assert /RTS
@@ -1471,7 +1471,7 @@ PUBLIC asm_asci0_getc
 
     push hl
     cp __ASCI0_RX_EMPTYISH      ; compare the count with the preferred empty size
-    jr NC,asm_asci0_getc_cont   ; if the buffer not emptyish, don't change the RTS
+    jr NZ,asm_asci0_getc_cont   ; if the buffer not emptyish, don't change the RTS
 
     in0 a,(CNTLA0)              ; get current value of control byte A
     and ~CNTLA0_RTS0            ; clear /RTS
