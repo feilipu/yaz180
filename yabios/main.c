@@ -52,8 +52,8 @@ static FIL File[MAX_FILES];     /* File object needed for each open file */
 static uint32_t driveLBAbase[4];/* Base of CPM drive files */
 
 static FILE *input;             /* defined input */
-static FILE *output;            /* defined input */
-static FILE *error;             /* defined input */
+static FILE *output;            /* defined output */
+static FILE *error;             /* defined output */
 
 const static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

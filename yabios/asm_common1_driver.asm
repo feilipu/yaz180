@@ -495,7 +495,7 @@ PUBLIC _memcpy_far
     out0 (BCR0L),c
     push bc             ; save transfer size (again)
 
-    dec hl              ; pointing at str2 far
+    dec hl              ; pointing at bank2 far
 
     in0 a,(BBR)         ; get the current bank
     rrca                ; move the current bank to low nibble
@@ -514,7 +514,7 @@ PUBLIC _memcpy_far
     dec hl
     ld e,(hl)           ; get source low address in E
 
-    dec hl              ; pointing at str1 far
+    dec hl              ; pointing at bank1 far
 
     ld a,c              ; get current bank in address format
     add a,(hl)          ; create relative far destination address, from twos complement input
