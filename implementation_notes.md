@@ -154,7 +154,7 @@ Noted that I selected the wrong device for the flash, being the 128kB version. T
 
 ## Layout issue - March 1, 2018 - PCB v2.2 2018
 
-The ESP-01S can't have the DIO lines pull high when booting. This means that the two DIO pins on the connecter must be removed, to prevent these lines from contacting.
+The ESP-01S can't have the DIO lines pulled high when booting. This means that the two DIO pins on the connecter must be removed, to prevent these lines from contacting.
 
 ## Legacy CP/M Drive - 512 Directory Entries
 
