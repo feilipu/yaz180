@@ -69,4 +69,4 @@ The command to clone or copy a bank has changed to `cpb` which is more aligned t
 
 Hardware flow control has been enabled on ASCI0 `CRT` using `/RTS`.
 
-This release has been compiled with `r12070` of sdcc, using the patch file included in z88dk.
+This release has been compiled with `r124190` of zsdcc, using the patch file included in z88dk.
