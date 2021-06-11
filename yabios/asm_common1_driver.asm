@@ -20,11 +20,14 @@ PUBLIC asm_z180_trap
 PUBLIC _z180_trap_rst
 
 .asm_z180_trap
-._z180_trap_rst         ; RST  0 - also handle an application restart, or opcode trap
+    ld a,__IO_BASE_ADDRESS
+    out0 (0x3f),a       ; set __IO_BASE_ADDRESS in ICR
     in0 a,(ITC)         ; get the trap & interrupt register
     xor a,$80           ; test and clear trap bit
     ret M               ; if no trap, then return
-    pop hl              ; pop the return
+
+._z180_trap_rst         ; RST  0 - also handle an opcode trap
+    pop hl              ; pop this function return
     ex (sp),hl          ; pop invalid opcode PC, stack return
     dec hl              ; back to first byte of opcode
     ld b,2              ; two bytes
@@ -135,13 +138,11 @@ PUBLIC _call_far_rst
     push de             ; push our destination address
 
 .call_far_exit
-    exx
-    ex af,af            ; alt register are returned
-
-    push hl
     ld hl,_shadowLock   ; give alt register mutex
     ld (hl),$FE
-    pop hl
+
+    exx
+    ex af,af            ; alt register are returned
     ret                 ; takes us out if there's error, or call onwards if success
 
 .ret_far                ; we land back here once the call_far function returns
@@ -175,13 +176,11 @@ PUBLIC _call_far_rst
     ld l,a
     ld (hl),$FE         ; free the bank we are now departing
 
-    exx                 ; alt registers are returned
-    ex af,af
-
-    push hl
     ld hl,_shadowLock   ; give alt register mutex
     ld (hl),$FE
-    pop hl
+
+    exx                 ; alt registers are returned
+    ex af,af
     ret
 
 ;------------------------------------------------------------------------------
@@ -248,6 +247,7 @@ PUBLIC _jp_far, _jp_far_rst
     xor a
     or (hl)             ; check bank is not cold
     jr Z,jp_far_exit
+
 .jp_far_try_bank_lock
     sra (hl)            ; now get the bank lock,
     jr C,jp_far_try_bank_lock  ; keep trying if the bank is hot, we can't go back
@@ -272,14 +272,11 @@ PUBLIC _jp_far, _jp_far_rst
     ld (hl),$FE         ; free the origin bank, we're not coming back
 
 .jp_far_exit
-    exx
-    ex af,af            ; alt register are returned
-
-    push hl
     ld hl,_shadowLock   ; give alt register mutex
     ld (hl),$FE
-    pop hl
 
+    exx
+    ex af,af            ; alt register are returned
     ret                 ; takes us out if there's error, or jp onwards if success
 
 .jp_far_from_bios
@@ -347,13 +344,12 @@ PUBLIC _system_rst
 .system_local_exit
     push de             ; push our destination address
 
+    ld hl,_shadowLock   ; give alt register mutex
+    ld (hl),$FE
+
     exx                 ; alt registers are returned
     ex af,af
 
-    push hl
-    ld hl,_shadowLock   ; give alt register mutex
-    ld (hl),$FE
-    pop hl
     ret                 ; call into yabios CA1
 
 .system_ret             ; we land back here once the yabios call is done
@@ -371,12 +367,10 @@ PUBLIC _system_rst
     ld hl,_bankLockBase ; get the bank Lock Base, for BANK0
     ld (hl),$FE         ; free the departing bios bank
 
-    exx                 ; alt registers are returned
-
-    push hl
     ld hl,_shadowLock   ; give alt register mutex
     ld (hl),$FE
-    pop hl
+
+    exx                 ; alt registers are returned
     ret                 ; ret (jp) to the address that we left on the stack
 
 ;------------------------------------------------------------------------------
@@ -415,13 +409,11 @@ PUBLIC _exit_far
     ld l,a
     ld (hl),$FE         ; free the bank we are now departing
 
-    exx                 ; alt registers are returned
-    ex af,af
-
-    push hl
     ld hl,_shadowLock   ; give alt register mutex
     ld (hl),$FE
-    pop hl
+
+    exx                 ; alt registers are returned
+    ex af,af
     ret                 ; ret (jp) to the address that we left on the bios stack
 
 ;------------------------------------------------------------------------------
@@ -447,7 +439,7 @@ PUBLIC _user_rst
 ; start of common area 1 - system functions
 ;------------------------------------------------------------------------------
 
-EXTERN _shadowLock, _dmac0Lock
+EXTERN _dmac0Lock
 
 ;------------------------------------------------------------------------------
 ; void *memcpy_far(far *str1, int8_t bank1, const void *str2, const int8_t bank2, size_t n)
