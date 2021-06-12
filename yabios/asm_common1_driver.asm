@@ -204,12 +204,11 @@ PUBLIC _jp_far, _jp_far_rst
 ._jp_far
     pop af              ; collect ret address
     pop hl              ; addr in HL
-    dec sp
-    pop de              ; bank in D
-    push af             ; put ret address back for posterity, if called from c application,
-                        ; perhaps we'll return one day
+    pop de              ; bank in E
+    push de
+    push hl
+    push af             ; put return address back, perhaps we'll return one day
                         ; this is the future top of _bios_sp
-    ld e,d              ; put bank in E
 
 ._jp_far_rst            ; RST 18
     push de             ; save the jump destination from EHL
