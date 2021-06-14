@@ -578,11 +578,12 @@ int8_t ya_md(char **args)       // dump RAM contents from nominated bank from no
 
     memcpy_far(buffer, 0, (void *)origin, (int8_t)bank, 0x100); // grab a page
     fprintf(output, "\nOrigin: %01X:%04X\n", bank, (uint16_t)origin);
-    origin += 0x100;                                            // go to next page (next time)
 
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x100; ptr += 16, ofs += 16) {
         put_dump(ptr, ofs, 16);
     }
+
+    origin += 0x100;                                            // go to next page (next time)
     return 1;
 }
 
@@ -930,8 +931,10 @@ int8_t ya_dd(char **args)       // disk dump
     fprintf(output, "LBA:%lu\n", sect);
     res = disk_read( 0, buffer, sect, 1);
     if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
+
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
         put_dump(ptr, ofs, 16);
+
     ++sect;
     return 1;
 }

@@ -128,8 +128,9 @@ PUBLIC _call_far_rst
     di
     ld (_bank_sp),sp    ; save the origin bank SP in Page0
     out0 (BBR),c        ; make the bank swap
-    ld sp,(_bank_sp)    ; set up the new SP in new Page0
     ei
+    ld sp,(_bank_sp)    ; set up the new SP in new Page0
+
                         ; now prepare for our return
     push bc             ; push on the origin and destination bank
 
@@ -164,8 +165,8 @@ PUBLIC _call_far_rst
     di
     ld (_bank_sp),sp    ; save the departing bank SP in Page0
     out0 (BBR),b        ; make the bank swap
-    ld sp,(_bank_sp)    ; set up the originating SP in old Page0
     ei
+    ld sp,(_bank_sp)    ; set up the originating SP in old Page0
 
     ld h,_bankLockBase/$100 ; get the BANK Lock Base, page aligned
     ld a,c              ; make the reference to destination BANKnn Lock
@@ -260,8 +261,8 @@ PUBLIC _jp_far, _jp_far_rst
     di
     ld (_bank_sp),sp    ; save the origin bank SP in Page0
     out0 (BBR),c        ; make the bank swap
-    ld sp,(_bank_sp)    ; set up the destination bank SP in new Page0
     ei
+    ld sp,(_bank_sp)    ; set up the destination bank SP in new Page0
 
 .jp_far_from_bios_ret
     push de             ; push our destination address for ret jp
@@ -282,8 +283,8 @@ PUBLIC _jp_far, _jp_far_rst
     di
     ld (_bios_sp),sp    ; save the bios SP in COMMON AREA 1
     out0 (BBR),c        ; make the bank swap
-    ld sp,(_bank_sp)    ; set up the destination bank SP in new Page0
     ei
+    ld sp,(_bank_sp)    ; set up the destination bank SP in new Page0
     jr jp_far_from_bios_ret
 
 ;------------------------------------------------------------------------------
@@ -322,8 +323,9 @@ PUBLIC _system_rst
     di
     ld (_bank_sp),sp    ; save the origin bank SP in Page0
     out0 (BBR),c        ; make the bank swap, use C because out0 doesn't do immediate
-    ld sp,(_bios_sp)    ; set up the bios SP
     ei
+    ld sp,(_bios_sp)    ; set up the bios SP
+
                         ; now prepare for our return
     push bc             ; push on the origin BBR in B
     inc sp
@@ -360,8 +362,8 @@ PUBLIC _system_rst
     di
     ld (_bios_sp),sp    ; save the departing bios SP
     out0 (BBR),b        ; make the bank swap
-    ld sp,(_bank_sp)    ; set up the originating SP in old Page0
     ei
+    ld sp,(_bank_sp)    ; set up the originating SP in old Page0
 
     ld hl,_bankLockBase ; get the bank Lock Base, for BANK0
     ld (hl),$FE         ; free the departing bios bank
@@ -396,8 +398,8 @@ PUBLIC _exit_far
     di
     ld (_bank_sp),sp   ; save the departing bank SP in Page0
     out0 (BBR),a       ; make the bank swap
-    ld sp,(_bios_sp)   ; set up the arriving SP in bios
     ei
+    ld sp,(_bios_sp)   ; set up the arriving SP in bios
 
     ld h,_bankLockBase/$100 ; get the BANK Lock Base, page aligned
     ld a,c              ; make the reference to origin BANKnn Lock
