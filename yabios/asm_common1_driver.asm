@@ -1366,13 +1366,13 @@ PUBLIC asm_asci0_init
 .asm_asci0_init
     ; initialise the ASCI0
                                 ; load the default ASCI CRT configuration
-                                ; BAUD = 115200 8n1
+                                ; BAUD = 115200 8n2
                                 ; receive enabled
                                 ; transmit enabled
                                 ; receive interrupt enabled
                                 ; transmit interrupt disabled
 
-    ld a,CNTLA0_RE|CNTLA0_TE|CNTLA0_MODE_8N1
+    ld a,CNTLA0_RE|CNTLA0_TE|CNTLA0_MODE_8N2
     out0 (CNTLA0),a             ; output to the ASCI0 control A reg
 
                                 ; PHI / PS / SS / DR = BAUD Rate
