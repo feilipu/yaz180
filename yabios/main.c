@@ -55,17 +55,58 @@ static FILE *input;             /* defined input */
 static FILE *output;            /* defined output */
 static FILE *error;             /* defined output */
 
-const static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
+static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 // EXTERNAL FUNCTIONS
 
-extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx0 flush routine
-extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx0 polling routine, checks Rx0 buffer fullness
-extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx0 receive routine, from Rx0 buffer
-extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 flush routine
-extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh); // Rx1 polling routine, checks Rx1 buffer fullness
-extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx1 receive routine, from Rx1 buffer
+#if __SCCZ80
+
+extern void jp_far(void *str, int8_t bank) __stdc;
+extern void exit_far(void) __stdc;
+
+extern int8_t bank_get_rel(uint8_t bankAbs) __stdc;
+extern uint8_t bank_get_abs(int8_t bankRel) __stdc;
+
+extern void lock_get(uint8_t * mutex) __stdc;
+extern uint8_t lock_try(uint8_t * mutex) __stdc;
+extern void lock_give(uint8_t * mutex) __stdc;
+
+extern void * memcpy_far(void * addr1, int8_t bank1, const void * addr2, const int8_t bank2, size_t n) __stdc;
+
+extern void load_hex(uint8_t bankAbs) __stdc;
+
+extern uint8_t asci0_flush_Rx(void) __stdc; // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __stdc;    // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __stdc;     // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx(void) __stdc; // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __stdc;    // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __stdc;     // Rx1 receive routine, from Rx1 buffer
+
+#elif __SDCC
+
+extern void jp_far(void *str, int8_t bank) __preserves_regs(iyl,iyh);
+extern void exit_far(void) __preserves_regs(b,c,d,e,h,l,iyl,iyh);
+
+extern int8_t bank_get_rel(uint8_t bankAbs) __preserves_regs(b,c,d,e,iyl,iyh);
+extern uint8_t bank_get_abs(int8_t bankRel) __preserves_regs(b,c,d,e,iyl,iyh);
+
+extern void lock_get(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
+extern uint8_t lock_try(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
+extern void lock_give(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
+
+extern void * memcpy_far(void * addr1, int8_t bank1, const void * addr2, const int8_t bank2, size_t n) __preserves_regs(iyl,iyh);
+
+extern void load_hex(uint8_t bankAbs) __preserves_regs(iyl,iyh);
+
+extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh);     // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);      // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh);     // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);      // Rx1 receive routine, from Rx1 buffer
+
+#endif
 
 /*
   Function Declarations for built-in shell commands:
