@@ -33,7 +33,7 @@ I selected male A type sockets for the USB because the connector is quite robust
 
 The FTDI chips are powered by the USB side, but their IO on the digital side is powered by the board. This means that during a power cycle it should be possible to leave the USB cable plugged, and not re-enumerate the USB interface. But, this doesn't always work. Often the host computer will move the USB interface to new device on power cycle, which means that the serial terminal will loose connection with the YAZ180 if it is not re-plugged.
 
-The ASCI-0 with the FTDI-232 Serial interface is set up for 115,200 baud 8n1.
+The ASCI-0 with the FTDI-232 Serial interface is set up for 115,200 baud 8n2.
 
 ## RESET and SINGLE-STEP
 
