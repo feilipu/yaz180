@@ -107,7 +107,7 @@ DEFC    wrual   =    2          ;write to unallocated
 
 
 ;
-;    jump vector for individual subroutines
+;   jump vector for individual subroutines
 ;
 PUBLIC    boot      ;cold start
 PUBLIC    wboot     ;warm start
@@ -116,7 +116,7 @@ PUBLIC    conin     ;console character in
 PUBLIC    conout    ;console character out
 PUBLIC    list      ;list character out
 PUBLIC    punch     ;punch character out
-PUBLIC    reader    ;reader character out
+PUBLIC    reader    ;reader character in
 PUBLIC    home      ;move head to home position
 PUBLIC    seldsk    ;select disk
 PUBLIC    settrk    ;set track number
@@ -146,7 +146,7 @@ wboote:
     jp    listst    ;return list status
     jp    sectran   ;sector translate
 
-;    individual subroutines to perform each function
+;   individual subroutines to perform each function
 
 boot:       ;simplest case is to just perform parameter initialization
     xor     a               ;zero in the accum
@@ -211,10 +211,9 @@ gocpm:
     ld      (hstact),a      ;host buffer inactive
     ld      (unacnt),a      ;clear unalloc count
 
-    ld      (_cpm_ccp_tfcb), a
-    ld      hl, _cpm_ccp_tfcb
-    ld      d, h
-    ld      e, l
+    ld      (_cpm_ccp_tfcb),a
+    ld      hl,_cpm_ccp_tfcb
+    ld      de,hl
     inc     de
     ld      bc, 0x20-1
     ldir                    ;clear default FCB
@@ -260,14 +259,14 @@ const:      ;console status, return 0ffh if character ready, 00h if not
     jr      NZ,const1
 const0:
     call    asm_asci0_pollc ;check whether any characters are in CRT Rx0 buffer
-    jr      NC, dataEmpty
+    jr      NC,dataEmpty
 dataReady:
     ld      a,$FF
     ret
 
 const1:
     call    asm_asci1_pollc ;check whether any characters are in TTY Rx1 buffer
-    jr      C, dataReady
+    jr      C,dataReady
 dataEmpty:
     xor     a
     ret
@@ -281,13 +280,13 @@ conin:    ;console character into register a
     jr      NZ,conin1
 conin0:
    call     asm_asci0_getc  ;check whether any characters are in CRT Rx0 buffer
-   jr       NC, conin0      ;if Rx buffer is empty
+   jr       NC,conin0       ;if Rx buffer is empty
 ;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
    ret
 
 conin1:
    call     asm_asci1_getc  ;check whether any characters are in TTY Rx1 buffer
-   jr       NC, conin1      ;if Rx buffer is empty
+   jr       NC,conin1       ;if Rx buffer is empty
 ;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
    ret
 
@@ -312,7 +311,7 @@ conout:    ;console character output from register c
     jp      asm_asci0_putc
 
 list:
-    ld      l,c             ;Store character
+    ld      l,c             ;store character
     ld      a,(_cpm_iobyte)
     and     11000000b
     cp      01000000b
@@ -322,7 +321,7 @@ list:
     ret
 
 punch:
-    ld      l,c             ;Store character
+    ld      l,c             ;store character
     ld      a,(_cpm_iobyte)
     and     00110000b
     cp      00010000b
@@ -332,7 +331,7 @@ punch:
     ret
 
 listst:     ;return list status
-    ld      a,$FF           ;Return list status of 0xFF (ready).
+    ld      a,$FF           ;return list status of 0xFF (ready).
     ret
 
 ;=============================================================================
@@ -356,8 +355,7 @@ setsec:     ;set sector passed from BDOS given by register BC
     ret
 
 sectran:    ;translate passed from BDOS sector number BC
-    ld      h,b
-    ld      l,c
+    ld      hl,bc
     ret
 
 setdma:     ;set dma address given by registers BC
@@ -367,14 +365,7 @@ setdma:     ;set dma address given by registers BC
 seldsk:    ;select disk given by register c
     ld      a,c
     cp      _cpm_disks      ;must be between 0 and 3
-    jr      C,chgdsk        ;if invalid drive will result in BDOS error
-
-seldskreset:
-    xor     a               ;reset default disk back to 0 (A:)
-    ld      (_cpm_cdisk),a
-    ld      (sekdsk),a      ;and set the seeked disk
-    ld      hl,$0000        ;return error code in HL
-    ret
+    jr      NC,seldskreset  ;invalid drive will result in BDOS error
 
 chgdsk:
     call    getLBAbase      ;get the LBA base address for disk
@@ -385,7 +376,7 @@ chgdsk:
     or      a,(hl)
     inc     hl
     or      a,(hl)
-    jr      Z,seldskreset   ;invalid disk LBA, so load default disk
+    jr      Z,seldskreset   ;invalid disk LBA, so return BDOS error
 
     ld      a,c             ;recover selected disk
     ld      (sekdsk),a      ;and set the seeked disk
@@ -400,11 +391,17 @@ chgdsk:
     inc     h
     ret                     ;return the disk dpbase in HL
 
+seldskreset:
+    xor     a               ;reset default disk back to 0 (A:)
+    ld      (_cpm_cdisk),a
+    ld      (sekdsk),a      ;and set the seeked disk
+    ld      hl,$0000        ;return error code in HL
+    ret
 ;
 ;*****************************************************
 ;*                                                   *
 ;*      The READ entry point takes the place of      *
-;*      the previous BIOS defintion for READ.        *
+;*      the previous BIOS definition for READ.       *
 ;*                                                   *
 ;*****************************************************
 
@@ -430,7 +427,7 @@ read:
 ;*****************************************************
 ;*                                                   *
 ;*    The WRITE entry point takes the place of       *
-;*      the previous BIOS defintion for WRITE.       *
+;*     the previous BIOS definition for WRITE.       *
 ;*                                                   *
 ;*****************************************************
 
@@ -587,18 +584,15 @@ match:
 ;           copy data to or from buffer
     ld      a,(seksec)      ;mask buffer number LSB
     and     secmsk          ;least significant bits, shifted off in sekhst calculation
-    ld      l,a             ;ready to shift
-
-    xor     a               ;shift left 7, for 128 bytes x seksec LSBs
-    srl     l
-    rra
-    ld      h,l
-    ld      l,a
+    ld      h,a             ;shift left 7, for 128 bytes x seksec LSBs
+    ld      l,0             ;ready to shift
+    srl     h
+    rr      l
 
 ;           HL has relative host buffer address
     ld      de,hstbuf
     add     hl,de           ;HL = host address
-    ld      de,(dmaadr)     ;get/put CP/M data destination in DE
+    ld      de,(dmaadr)     ;get/put CP/M data in destination in DE
     ld      bc,128          ;length of move
     ld      a,(readop)      ;which way?
     or      a
@@ -768,22 +762,22 @@ SECTION cpm_bios_data
 ;    no translations
 ;
 dpbase:
-;    disk Parameter header for disk 00
+;   disk Parameter header for disk 00
     defw    0000h, 0000h
     defw    0000h, 0000h
     defw    dirbf, dpblk
     defw    0000h, alv00
-;    disk parameter header for disk 01
+;   disk parameter header for disk 01
     defw    0000h, 0000h
     defw    0000h, 0000h
     defw    dirbf, dpblk
     defw    0000h, alv01
-;    disk parameter header for disk 02
+;   disk parameter header for disk 02
     defw    0000h, 0000h
     defw    0000h, 0000h
     defw    dirbf, dpblk
     defw    0000h, alv02
-;    disk parameter header for disk 03
+;   disk parameter header for disk 03
     defw    0000h, 0000h
     defw    0000h, 0000h
     defw    dirbf, dpblk

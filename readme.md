@@ -294,7 +294,7 @@ The YAZ180 CUPL code is available in the [respective directory](https://github.c
 
 Please see here for the status of [YABIOS](https://github.com/feilipu/yaz180/tree/master/yabios).
 
-Currently the YAZ180 is initialised to load [YABIOS v2.1](https://github.com/feilipu/yaz180/tree/master/yabios). Applications can be built for the `+yaz180` target using the [z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (embedded system on metal), APP (YABIOS I/O), and CP/M (BDOS I/O) sub-types.
+Currently the YAZ180 is initialised to load [YABIOS v2.2](https://github.com/feilipu/yaz180/tree/master/yabios). Applications can be built for the `+yaz180` target using the [z88dk]((https://github.com/z88dk/z88dk/tree/master/libsrc/_DEVELOPMENT/target/yaz180)) using the ROM (embedded system on metal), APP (YABIOS I/O), and CP/M (BDOS I/O) sub-types.
 
 The YABIOS supports CP/M 2.2 Page 0 compatibility, with an underlying FAT32 File System, and has been extended to allow access to z88dk libraries, and APU and floating point libraries, through the use of `RST+DEFW` short calls, and it includes both `_call_far` and `_jump_far` capability to allow applications to grow beyond 60kB. There is support for 8 MByte CP/M drives as FAT32 files on a Compact Flash or PATA IDE drive up to 128 Gbyte (LBA 28).
 

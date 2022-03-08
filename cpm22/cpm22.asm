@@ -1388,11 +1388,6 @@ CHGDRV:     DEFB    0        ;change in drives flag (0=no change).
 NBYTES:     DEFW    0        ;byte counter used by TYPE.
 
 ;
-;   Room for expansion, and prevent potential stack overflow.
-;
-ALIGN       0x20
-
-;
 ;   ccp stack area.
 ;
             DEFS    32,0
@@ -3001,7 +2996,7 @@ CHGNAM1:
     LD      BC,16           ;start 16 bytes into fcb.
     LD      DE,12           ;and update the first 12 bytes of directory.
     CALL    UPDATE
-    CALL    FINDNXT         ;get te next file name.
+    CALL    FINDNXT         ;get the next file name.
     JP      CHGNAM1         ;and continue.
 ;
 ;   Update a files attributes. The procedure is to search for
@@ -3015,8 +3010,8 @@ SAVEATTR:
 SAVATR1:
     CALL    CKFILPOS        ;was one found?
     RET     Z               ;nope, we must be done.
-    LD      BC,0            ;yes, update the first 12 bytes now.
-    LD      DE,12
+    LD      BC,0            ;yes,
+    LD      DE,12           ;update the first 12 bytes now.
     CALL    UPDATE          ;update filename and write directory.
     CALL    FINDNXT         ;and get the next file.
     JP      SAVATR1         ;then continue until done.
@@ -3703,7 +3698,7 @@ AUTOSEL:
     LD      (OLDDRV),A      ;drive.
     LD      A,(HL)          ;and save first byte of fcb also.
     LD      (AUTOFLAG),A    ;this must be non-zero.
-    AND     0E0H            ;whats this for (bits 6,7 are used for
+    AND     0E0H            ;whats this for (bits 5,6,7 are used for
     LD      (HL),A          ;something)?
     CALL    SETDSK          ;select and log in this drive.
 AUTOSL1:

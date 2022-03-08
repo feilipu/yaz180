@@ -62,42 +62,18 @@ static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x2
 
 #if __SCCZ80
 
-extern void jp_far(void *str, int8_t bank) __stdc;
-extern void exit_far(void) __stdc;
+extern void exit_far(void) __smallc;
 
-extern int8_t bank_get_rel(uint8_t bankAbs) __stdc;
-extern uint8_t bank_get_abs(int8_t bankRel) __stdc;
-
-extern void lock_get(uint8_t * mutex) __stdc;
-extern uint8_t lock_try(uint8_t * mutex) __stdc;
-extern void lock_give(uint8_t * mutex) __stdc;
-
-extern void * memcpy_far(void * addr1, int8_t bank1, const void * addr2, const int8_t bank2, size_t n) __stdc;
-
-extern void load_hex(uint8_t bankAbs) __stdc;
-
-extern uint8_t asci0_flush_Rx(void) __stdc; // Rx0 flush routine
-extern uint8_t asci0_pollc(void) __stdc;    // Rx0 polling routine, checks Rx0 buffer fullness
-extern uint8_t asci0_getc(void) __stdc;     // Rx0 receive routine, from Rx0 buffer
-extern uint8_t asci1_flush_Rx(void) __stdc; // Rx1 flush routine
-extern uint8_t asci1_pollc(void) __stdc;    // Rx1 polling routine, checks Rx1 buffer fullness
-extern uint8_t asci1_getc(void) __stdc;     // Rx1 receive routine, from Rx1 buffer
+extern uint8_t asci0_flush_Rx(void) __smallc;   // Rx0 flush routine
+extern uint8_t asci0_pollc(void) __smallc;      // Rx0 polling routine, checks Rx0 buffer fullness
+extern uint8_t asci0_getc(void) __smallc;       // Rx0 receive routine, from Rx0 buffer
+extern uint8_t asci1_flush_Rx(void) __smallc;   // Rx1 flush routine
+extern uint8_t asci1_pollc(void) __smallc;      // Rx1 polling routine, checks Rx1 buffer fullness
+extern uint8_t asci1_getc(void) __smallc;       // Rx1 receive routine, from Rx1 buffer
 
 #elif __SDCC
 
-extern void jp_far(void *str, int8_t bank) __preserves_regs(iyl,iyh);
 extern void exit_far(void) __preserves_regs(b,c,d,e,h,l,iyl,iyh);
-
-extern int8_t bank_get_rel(uint8_t bankAbs) __preserves_regs(b,c,d,e,iyl,iyh);
-extern uint8_t bank_get_abs(int8_t bankRel) __preserves_regs(b,c,d,e,iyl,iyh);
-
-extern void lock_get(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
-extern uint8_t lock_try(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
-extern void lock_give(uint8_t * mutex) __preserves_regs(b,c,d,e,iyl,iyh);
-
-extern void * memcpy_far(void * addr1, int8_t bank1, const void * addr2, const int8_t bank2, size_t n) __preserves_regs(iyl,iyh);
-
-extern void load_hex(uint8_t bankAbs) __preserves_regs(iyl,iyh);
 
 extern uint8_t asci0_flush_Rx(void) __preserves_regs(b,c,d,e,iyl,iyh);  // Rx0 flush routine
 extern uint8_t asci0_pollc(void) __preserves_regs(b,c,d,e,iyl,iyh);     // Rx0 polling routine, checks Rx0 buffer fullness
@@ -639,7 +615,7 @@ int8_t ya_help(char **args)
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v2.1 2021\n");
+    fprintf(output,"YAZ180 - yabios v2.2 2022\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -1231,7 +1207,7 @@ int main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1622505600 - UNIX_OFFSET);      /* Initial time: 00.00 June 1, 2021 UTC */
+    set_system_time(1646092800 - UNIX_OFFSET);      /* Initial time: 00.00 March 1, 2022 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
