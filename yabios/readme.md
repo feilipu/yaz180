@@ -565,10 +565,9 @@ The command line interface is implemented in C, with the underlying functions ei
 - `saveb [bank][path]` - save the nominated bank from 0x0100 to 0xF000
 
 #### System Functions
-- `md [bank][origin]` - memory dump
-- `reset` - reset YAZ180 to cold start, clear all bank information
+- `md [bank][origin]` - memory dump, origin in hexadecimal
 - `help` - this is it
-- `exit` - exit and halt
+- `exit` - exit and restart
 
 #### File System Functions
 - `ls [path]` - directory listing
@@ -582,8 +581,8 @@ The command line interface is implemented in C, with the underlying functions ei
 - `mount [path][option]` - mount a FAT file system
 
 #### Disk Functions
-- `ds [drive][path]` - disk status
-- `dd [drive][sector]` - disk dump, sector in decimal
+- `ds` - disk status
+- `dd [sector]` - disk dump, sector in decimal
 
 #### Time Functions
 - `clock [timestamp]` - set the time (UNIX epoch) using `date +%s`

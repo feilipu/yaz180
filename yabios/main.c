@@ -159,7 +159,7 @@ struct Builtin builtins[] = {
     { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
 // system related functions
-    { "md", &ya_md, "- [bank][origin] - memory dump"},
+    { "md", &ya_md, "[bank][origin] - memory dump, origin in hexadecimal"},
     { "help", &ya_help, "- this is it"},
     { "exit", &ya_exit, "- exit and restart"},
 
@@ -176,7 +176,7 @@ struct Builtin builtins[] = {
     { "mkfs", &ya_mkfs, "[type][block size] - create a FAT file system (excluded)"},
 
 // disk related functions
-    { "ds", &ya_ds, " - disk status"},
+    { "ds", &ya_ds, "- disk status"},
     { "dd", &ya_dd, "[sector] - disk dump, sector in decimal"},
 
 // time related functions
@@ -1207,7 +1207,7 @@ int main(int argc, char **argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1646092800 - UNIX_OFFSET);      /* Initial time: 00.00 March 1, 2022 UTC */
+    set_system_time(1654041600 - UNIX_OFFSET);      /* Initial time: 00.00 June 1, 2022 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     dir = (DIR *)malloc(sizeof(DIR));                       /* Get work area for the directory */
