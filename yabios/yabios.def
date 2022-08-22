@@ -230,54 +230,6 @@ DEFC asm_delay                       = $FEC1
 PUBLIC _common1_phase_end
 DEFC _common1_phase_end              = $FED0
 
-PUBLIC _free_fastcall
-DEFC _free_fastcall                  = $0581
-
-PUBLIC _malloc_fastcall
-DEFC _malloc_fastcall                = $05CE
-
-PUBLIC _realloc_callee
-DEFC _realloc_callee                 = $057A
-
-PUBLIC __divulong_callee
-DEFC __divulong_callee               = $0F48
-
-PUBLIC __modulong_callee
-DEFC __modulong_callee               = $0F69
-
-PUBLIC __mullong_callee
-DEFC __mullong_callee                = $0F76
-
-PUBLIC _fflush_fastcall
-DEFC _fflush_fastcall                = $10F1
-
-PUBLIC _fputc_callee
-DEFC _fputc_callee                   = $10F7
-
-PUBLIC _getline_callee
-DEFC _getline_callee                 = $10FF
-
-PUBLIC _atoi_fastcall
-DEFC _atoi_fastcall                  = $178E
-
-PUBLIC _atol_fastcall
-DEFC _atol_fastcall                  = $17AC
-
-PUBLIC _exit_fastcall
-DEFC _exit_fastcall                  = $17CD
-
-PUBLIC _strtoul_callee
-DEFC _strtoul_callee                 = $1786
-
-PUBLIC _memcmp_callee
-DEFC _memcmp_callee                  = $18E7
-
-PUBLIC _strcmp_callee
-DEFC _strcmp_callee                  = $18EF
-
-PUBLIC _strtok_callee
-DEFC _strtok_callee                  = $18F5
-
 PUBLIC _z180_int_asci0
 DEFC _z180_int_asci0                 = $FAC0
 
