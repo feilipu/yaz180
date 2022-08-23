@@ -70,3 +70,11 @@ The command to clone or copy a bank has changed to `cpb` which is more aligned t
 Hardware flow control has been enabled on ASCI0 `CRT` using `/RTS`.
 
 This release has been compiled with `r12419` of zsdcc, using the patch file included in z88dk.
+
+### V2.2
+
+This release provides some minor tidy up of the source code, including simplification of token parsing. The unimplemented function `lsb` has been removed from the CLI, and some defaults have been reset.
+
+The serial interfaces have been adjusted to 115200 baud 8n2.
+
+This release has been compiled with v4.2.0 `r13131` of zsdcc, using the patch file included in z88dk.
