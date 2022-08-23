@@ -198,8 +198,6 @@ uint8_t ya_num_builtins() {
 */
 
 
-// CP/M related functions
-
 /**
    @brief Builtin command:
    @param args List of args.  args[0] is "mkcpmb".  args[1] is the source bank.  args[2] is the CP/M destination bank.
@@ -647,7 +645,7 @@ int8_t ya_ls(char ** args)
     uint32_t p1;
     uint16_t s1, s2;
 
-    res = f_mount(fs, (const TCHAR*)"", 0);
+    res = f_mount(fs, (const TCHAR*)"0:", 0);
     if (res != FR_OK) { put_rc(res); return 1; }
 
     if(args[1] == NULL) {
@@ -889,9 +887,9 @@ int8_t ya_mkfs(char ** args)     // create a FAT file system
 int8_t ya_mount(char ** args)    // mount a FAT file system
 {
     if (args[1] == NULL) {
-        put_rc(f_mount(fs, (const TCHAR*)"", 0));
+        put_rc(f_mount(fs, (const TCHAR*)"0:", 0));
     } else {
-        put_rc(f_mount(fs, (const TCHAR*)"", atoi(args[1])));
+        put_rc(f_mount(fs, (const TCHAR*)"0:", atoi(args[1])));
     }
     return 1;
 }
@@ -946,7 +944,7 @@ int8_t ya_dd(char ** args)       // disk dump
 
     res = disk_read( 0, buffer, sect, 1);
     if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
-    fprintf(output, "LBA:%lu\n", sect++);
+    fprintf(output, "PD#:0 LBA:%lu\n", sect++);
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
         put_dump(ptr, ofs, 16);
     return 1;
@@ -1190,7 +1188,7 @@ void ya_loop(void)
    @param argv Argument vector.
    @return status code
  */
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
     (void)argc;
     (void *)argv;
