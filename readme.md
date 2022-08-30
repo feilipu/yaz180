@@ -308,6 +308,8 @@ CP/M is complete with console and teletype I/O, and the underlying disk sub-syst
 
 CP/M drive files can be read and written using a host PC with any operating system, by using the [`cpmtools`](http://www.moria.de/~michael/cpmtools/) utilities, simply by inserting the IDE drive in a USB drive caddy.
 
+The [`yash`](https://github.com/z88dk/z88dk-ext/blob/master/os-related/CPM/yash.c) application can be used to manage CP/M drive files without moving the PATA drive to a host computer. This application supports both read and write to the underlying FATFS file system.
+
 ## Construction Notes
 
 There are some [construction notes](https://github.com/feilipu/yaz180/tree/master/construction_notes.md) with errata, to advice on how to build the YAZ180.

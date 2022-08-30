@@ -90,8 +90,8 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
 
 ```bash
-> zcc +yaz180 -subtype=rom -O2 -v -m -clib=new -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
-> zcc +yaz180 -subtype=rom -SO3 -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32 --max-allocs-per-node400000 @yabios.lst -gpf:yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -O2 --opt-code-speed -v -m -clib=new -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -SO3 --opt-code-speed -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32 --max-allocs-per-node400000 @yabios.lst -gpf:yabios.rex -o yabios -create-app
 ```
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
@@ -148,6 +148,8 @@ end
 I have found that the [RunCPM system disk](https://github.com/MockbaTheBorg/RunCPM/tree/master/DISK) contains a good package of CP/M utilities, that can just be loaded onto a disk for a complete ready to run CP/M.
 
 I've also found the [NGS Microshell](http://www.z80.eu/microshell.html) to be very useful, so I add it to my system disk too. No need to add it permanently. In fact, adding it will remove the special `EXIT` function I built into the CCP to return to yabios.
+
+The [`yash`](https://github.com/z88dk/z88dk-ext/blob/master/os-related/CPM/yash.c) application can be used to manage CP/M drive files without moving the PATA drive to a host computer. This application supports both read and write to the underlying FATFS file system.
 
 ## Layout issue - January 31, 2018 - PCB v2.1 2017
 
