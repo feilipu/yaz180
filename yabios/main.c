@@ -62,6 +62,55 @@ static FILE * error;            /* defined output */
 static uint8_t directoryBlock[32] = {0xE5,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20,0x20, \
                                             0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+/*
+  Function Declarations for built-in shell commands:
+ */
+
+// CP/M related functions
+int8_t ya_mkcpmb(char ** args); // initialise CP/M bank with up to 4 drives
+int8_t ya_mkcpmd(char ** args); // create a FATFS file for CP/M drive
+
+// bank related functions
+int8_t ya_mkb(char ** args);    // initialise the nominated bank (to warm state)
+int8_t ya_cpb(char ** args);    // copy or clone the nominated bank
+int8_t ya_rmb(char ** args);    // remove the nominated bank (to cold state)
+int8_t ya_initb(char ** args);  // jump to and begin executing the nominated bank at nominated address
+int8_t ya_loadh(char ** args);  // load the nominated bank with intel hex from asci0/1
+int8_t ya_loadb(char ** args);  // load the nominated bank and address with binary code
+int8_t ya_saveb(char ** args);  // save the nominated bank from 0x0100 to 0xF000 by default
+
+// system related functions
+int8_t ya_md(char ** args);     // memory dump
+int8_t ya_help(char ** args);   // help
+int8_t ya_exit(char ** args);   // exit and restart
+
+// fat related functions
+int8_t ya_frag(char ** args);   // check file for fragmentation
+int8_t ya_ls(char ** args);     // directory listing
+int8_t ya_rm(char ** args);     // delete a file
+int8_t ya_cp(char ** args);     // copy a file
+int8_t ya_mv(char ** args);     // move (rename) a file
+int8_t ya_cd(char ** args);     // change the current working directory
+int8_t ya_pwd(char ** args);    // show the current working directory
+int8_t ya_mkdir(char ** args);  // create a new directory
+int8_t ya_chmod(char ** args);  // change file or directory attributes
+int8_t ya_mkfs(char ** args);   // create a FAT file system
+int8_t ya_mount(char ** args);  // mount a FAT file system
+
+// disk related functions
+int8_t ya_ds(char ** args);     // disk status
+int8_t ya_dd(char ** args);     // disk dump sector
+
+// time related functions
+int8_t ya_clock(char ** args);  // set the time (UNIX epoch)
+int8_t ya_tz(char ** args);     // set timezone (no daylight savings, so adjust manually)
+int8_t ya_diso(char ** args);   // print the local time in ISO: 2013-03-23 01:03:52
+int8_t ya_date(char ** args);   // print the local time in US: Sun Mar 23 01:03:52 2013
+
+// helper functions
+static void put_rc (FRESULT rc);    // print error codes to defined error IO
+static void put_dump (const uint8_t * buff, uint16_t ofs, uint8_t cnt);
+
 // EXTERNAL FUNCTIONS
 
 #if __SCCZ80
@@ -89,54 +138,6 @@ extern uint8_t asci1_getc(void) __preserves_regs(b,c,d,e,iyl,iyh);      // Rx1 r
 #endif
 
 /*
-  Function Declarations for built-in shell commands:
- */
-
-// CP/M related functions
-int8_t ya_mkcpmb(char ** args); // initialise CP/M bank with up to 4 drives
-int8_t ya_mkcpmd(char ** args); // create a FATFS file for CP/M drive
-
-// bank related functions
-int8_t ya_mkb(char ** args);    // initialise the nominated bank (to warm state)
-int8_t ya_cpb(char ** args);    // copy or clone the nominated bank
-int8_t ya_rmb(char ** args);    // remove the nominated bank (to cold state)
-int8_t ya_initb(char ** args);  // jump to and begin executing the nominated bank at nominated address
-int8_t ya_loadh(char ** args);  // load the nominated bank with intel hex from asci0/1
-int8_t ya_loadb(char ** args);  // load the nominated bank and address with binary code
-int8_t ya_saveb(char ** args);  // save the nominated bank from 0x0100 to 0xF000 by default
-
-// system related functions
-int8_t ya_md(char ** args);     // memory dump
-int8_t ya_help(char ** args);   // help
-int8_t ya_exit(char ** args);   // exit and restart
-
-// fat related functions
-int8_t ya_ls(char ** args);     // directory listing
-int8_t ya_rm(char ** args);     // delete a file
-int8_t ya_cp(char ** args);     // copy a file
-int8_t ya_mv(char ** args);     // move (rename) a file
-int8_t ya_cd(char ** args);     // change the current working directory
-int8_t ya_pwd(char ** args);    // show the current working directory
-int8_t ya_mkdir(char ** args);  // create a new directory
-int8_t ya_chmod(char ** args);  // change file or directory attributes
-int8_t ya_mkfs(char ** args);   // create a FAT file system
-int8_t ya_mount(char ** args);  // mount a FAT file system
-
-// disk related functions
-int8_t ya_ds(char ** args);     // disk status
-int8_t ya_dd(char ** args);     // disk dump sector
-
-// time related functions
-int8_t ya_clock(char ** args);  // set the time (UNIX epoch)
-int8_t ya_tz(char ** args);     // set timezone (no daylight savings, so adjust manually)
-int8_t ya_diso(char ** args);   // print the local time in ISO: 2013-03-23 01:03:52
-int8_t ya_date(char ** args);   // print the local time in US: Sun Mar 23 01:03:52 2013
-
-// helper functions
-static void put_rc (FRESULT rc);    // print error codes to defined error IO
-static void put_dump (const uint8_t * buff, uint16_t ofs, uint8_t cnt);
-
-/*
   List of builtin commands.
  */
 
@@ -161,13 +162,14 @@ struct Builtin builtins[] = {
     { "saveb", &ya_saveb, "[bank][path] - save the nominated bank from 0x0100 to 0xF000"},
 
 // fat related functions
-    { "mount", &ya_mount, "[option] - mount a FAT file system"},
+    { "frag", &ya_frag, "[file] - check for file fragmentation"},
     { "ls", &ya_ls, "[path] - directory listing"},
     { "rm", &ya_rm, "[file] - delete a file"},
     { "cp", &ya_cp, "[src][dest] - copy a file"},
     { "mv", &ya_mv, "[src][dest] - move (rename) a file"},
     { "cd", &ya_cd, "[path] - change the current working directory"},
     { "pwd", &ya_pwd, "- show the current working directory"},
+    { "mount", &ya_mount, "[option] - mount a FAT file system"},
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
     { "chmod", &ya_chmod, "[path][attr][mask] - change file or directory attributes"},
     { "mkfs", &ya_mkfs, "[type][block size] - create a FAT file system (excluded)"},
@@ -636,6 +638,50 @@ int8_t ya_exit(char ** args)    /* exit and restart */
 /*
   fat related functions
  */
+
+
+/**
+   @brief Builtin command:
+   @param args List of args.  args[0] is "frag".  args[1] is the name of the file.
+   @return Always returns 1, to continue executing.
+ */
+int8_t ya_frag(char ** args)    /* check file for fragmentation */
+{
+    FRESULT res;
+    DWORD clst, clsz, step;
+    FSIZE_t fsz;
+
+    if (args[1] == NULL) {
+        fprintf(output, "yash: expected 1 argument to \"frag\"\n");
+    } else {
+
+        fprintf(output,"Checking \"%s\"", args[1]);
+        res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
+        if (res != FR_OK) { put_rc(res); return 1; }
+
+        fsz = f_size(&File[0]);                                    /* File size */
+        clsz = (DWORD)(&File[0])->obj.fs->csize * FF_MAX_SS;       /* Cluster size */
+        if (fsz > 0) {                                          /* Check file size non-zero */
+            clst = (&File[0])->obj.sclust - 1;                     /* An initial cluster leading the first cluster for first test */
+            while (fsz) {                                       /* Check clusters are contiguous */
+                step = (fsz >= clsz) ? clsz : (DWORD)fsz;
+                res = f_lseek(&File[0], f_tell(&File[0]) + step);     /* Advances file pointer a cluster */
+                if (res != FR_OK) { put_rc(res); return 1; }
+                if (clst + 1 != (&File[0])->clust) break;          /* Is not the cluster next to previous one? */
+                clst = (&File[0])->clust; fsz -= step;             /* Get current cluster for next test */
+            }
+            fprintf(output," at LBA %lu", (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2)));
+            if (fsz == 0) {                                     /* All checked contiguous without fail? */
+                fprintf(output," is OK\n");
+            } else {
+                fprintf(output," is fragmented\n");
+            }
+        }
+
+        f_close(&File[0]);
+    }
+    return 1;
+}
 
 
 /**

@@ -257,6 +257,7 @@ const:      ;console status, return 0ffh if character ready, 00h if not
     and     00000011b       ;remove the reader from the mask - only console bits then remain
     cp      00000001b
     jr      NZ,const1
+
 const0:
     call    asm_asci0_pollc ;check whether any characters are in CRT Rx0 buffer
     jr      NC,dataEmpty
@@ -278,6 +279,7 @@ conin:    ;console character into register a
     jr      Z,reader        ;"BAT:" redirect
     cp      00000001b
     jr      NZ,conin1
+
 conin0:
    call     asm_asci0_getc  ;check whether any characters are in CRT Rx0 buffer
    jr       NC,conin0       ;if Rx buffer is empty

@@ -234,7 +234,7 @@ RENAM:
 GETUSR:
     LD    E,0FFH
 ;
-;   Routne to get or set the current user code.
+;   Routine to get or set the current user code.
 ;   If (E) is FF then this is a GET, else it is a SET.
 ;
 GETSETUC:
@@ -1299,7 +1299,8 @@ UNKWN4:
     LD    DE,TFCB        ;move it into place at(005Ch).
     LD    HL,FCB
     CALL    LDI_32      ;move 33 bytes in total
-    LDI
+    LD      A,(HL)
+    LD      (DE),A
     LD    HL,INBUFF+2    ;now move the remainder of the input
 UNKWN5:
     LD    A,(HL)        ;line down to (0080h). Look for a non blank.
@@ -1957,12 +1958,10 @@ HOMEDRV:
     CALL    HOME            ;home the head.
     XOR     A
     LD      HL,(SCRATCH2)   ;set our track pointer also.
-    LD      (HL),A
-    INC     HL
+    LD      (HL+),A
     LD      (HL),A
     LD      HL,(SCRATCH3)   ;and our sector pointer.
-    LD      (HL),A
-    INC     HL
+    LD      (HL+),A
     LD      (HL),A
     RET
 ;
@@ -2057,13 +2056,11 @@ TRKSEC4:
     CALL    SETTRK          ;select this track.
     POP     DE              ;reset current track pointer.
     LD      HL,(SCRATCH2)
-    LD      (HL),E
-    INC     HL
+    LD      (HL+),E
     LD      (HL),D
     POP     DE
     LD      HL,(SCRATCH3)   ;reset the first sector on this track.
-    LD      (HL),E
-    INC     HL
+    LD      (HL+),E
     LD      (HL),D
     POP     BC
     LD      A,C             ;now subtract the desired one.
@@ -2303,8 +2300,7 @@ WRTPRTD:
     INC     HL              ;remember the last one.
     EX      DE,HL
     LD      HL,(SCRATCH1)   ;and store it here.
-    LD      (HL),E          ;put low byte.
-    INC     HL
+    LD      (HL+),E         ;put low byte.
     LD      (HL),D          ;then high byte.
     RET
 ;
@@ -2387,8 +2383,7 @@ CHKNMBR:
     CALL    MOREFLS         ;SCRATCH1 too big?
     RET     C
     INC     DE              ;yes, reset it to (FILEPOS).
-    LD      (HL),D
-    DEC     HL
+    LD      (HL-),D
     LD      (HL),E
     RET
 ;
@@ -2457,8 +2452,7 @@ DIRDMA:
 ;   word containing the desired dma address.
 ;
 DIRDMA1:
-    LD      C,(HL)
-    INC     HL
+    LD      C,(HL+)
     LD      B,(HL)          ;setup (BC) and go to the bios to set it.
     JP      SETDMA
 ;
@@ -2680,7 +2674,7 @@ BITMAP:
     RR      L
     SRL     H
     RR      L
-    INC     HL              ;at least 1 byte.
+;   INC     HL              ;at least 1 byte.
     LD      BC,HL           ;set (BC) to the allocation table length.
 ;
 ;   Initialize the bitmap for this drive. Right now, the first
@@ -2691,26 +2685,27 @@ BITMAP:
 ;   'used' in the map.
 ;
     LD      HL,(ALOCVECT)   ;now zero out the table now.
+;   DEC     BC              ;loop counters
+    INC     B
+    INC     C
+    XOR     A               ;make zero
 BITMAP1:
-    LD      (HL),0
-    INC     HL
-    DEC     BC
-    LD      A,B
-    OR      C
+    LD      (HL+),A         ;zero buffer element
+    DEC     C
+    JP      NZ,BITMAP1
+    DEC     B
     JP      NZ,BITMAP1
     LD      HL,(ALLOC0)     ;get initial space used by directory.
     EX      DE,HL
     LD      HL,(ALOCVECT)   ;and put this into map.
-    LD      (HL),E
-    INC     HL
+    LD      (HL+),E
     LD      (HL),D
 ;
 ;   End of initialization portion.
 ;
     CALL    HOMEDRV         ;now home the drive.
     LD      HL,(SCRATCH1)
-    LD      (HL),3          ;force next directory request to read
-    INC     HL              ;in a sector.
+    LD      (HL+),3         ;force next directory request to read in a sector.
     LD      (HL),0
     CALL    STFILPOS        ;clear initial file position also.
 BITMAP2:
@@ -3063,19 +3058,13 @@ OPENIT2:
 ;   and (HL) are not changed. However (A) is.
 ;
 MOVEWORD:
-    LD      A,(HL)          ;check for a zero word.
-    INC     HL
-    OR      (HL)            ;both bytes zero?
-    DEC     HL
+    LD      A,(HL+)         ;check for a zero word.
+    OR      (HL-)           ;both bytes zero?
     RET     NZ              ;nope, just return.
-    LD      A,(DE)          ;yes, move two bytes from (DE) into
-    LD      (HL),A          ;this zero space.
-    INC     DE
-    INC     HL
-    LD      A,(DE)
-    LD      (HL),A
-    DEC     DE              ;don't disturb these registers.
-    DEC     HL
+    LD      A,(DE+)         ;yes, move two bytes from (DE) into
+    LD      (HL+),A         ;this zero space.
+    LD      A,(DE-)         ;don't disturb these registers.
+    LD      (HL-),A
     RET
 ;
 ;   Get here to close a file specified by (fcb).
@@ -3182,8 +3171,7 @@ GETEMPTY:
     LD      C,17            ;and clear all of this space.
     XOR     A
 GETMT1:
-    LD      (HL),A
-    INC     HL
+    LD      (HL+),A
     DEC     C
     JP      NZ,GETMT1
     LD      HL,13           ;clear the 's1' byte also.
@@ -3640,10 +3628,8 @@ SETRAN:
     CALL    COMPRAND        ;compute random position.
     LD      HL,33           ;now stuff these values into fcb.
     ADD     HL,DE
-    LD      (HL),C          ;move 'r0'.
-    INC     HL
-    LD      (HL),B          ;and 'r1'.
-    INC     HL
+    LD      (HL+),C         ;move 'r0'.
+    LD      (HL+),B         ;and 'r1'.
     LD      (HL),A          ;and lastly 'r2'.
     RET
 ;
@@ -3988,7 +3974,7 @@ CKSUMTBL:   DEFS    16,0
 ;
 ;   Stack area for BDOS calls.
 ;
-            DEFS    181,0   ;XXX floating align STKAREA to BIOS head. XXX
+            DEFS    178,0   ;XXX floating align STKAREA to BIOS head. XXX
 STKAREA:                    ;top of STKAREA stack area.
 ;
 ;**************************************************************

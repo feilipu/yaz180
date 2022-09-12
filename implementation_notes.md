@@ -88,11 +88,15 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 ## Compilation Command Line
 
 First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
-
 ```bash
-> zcc +yaz180 -subtype=rom -O2 --opt-code-speed -v -m -clib=new -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
-> zcc +yaz180 -subtype=rom -SO3 --opt-code-speed -v -m -clib=sdcc_iy -llib/yaz180/ff -llib/yaz180/time --math32 --max-allocs-per-node400000 @yabios.lst -gpf:yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -clib=sdcc_iy -SO3 --opt-code-speed --max-allocs-per-node400000 -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
 ```
+
+or
+```bash
+> zcc +yaz180 -subtype=rom -clib=new -O2 --opt-code-speed=add32,sub32,sub16,inlineints -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
+```
+
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
 It also generates a `yabios.def` file containing the calling linkages for the particular compile. Note that this API may be unstable, because of the constant development in Z88dk, sdcc, and the resulting sizes of the `ff.lib` and `time.lib` system libraries. So once the YAZ180 flash is written, then the `yaz180.def` (or possibly renamed to `yaz180.asm`) API will be needed for every application.
