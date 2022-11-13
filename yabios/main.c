@@ -659,19 +659,20 @@ int8_t ya_frag(char ** args)    /* check file for fragmentation */
         res = f_open(&File[0], (const TCHAR *)args[1], FA_OPEN_EXISTING | FA_READ);
         if (res != FR_OK) { put_rc(res); return 1; }
 
-        fsz = f_size(&File[0]);                                    /* File size */
-        clsz = (DWORD)(&File[0])->obj.fs->csize * FF_MAX_SS;       /* Cluster size */
-        if (fsz > 0) {                                          /* Check file size non-zero */
-            clst = (&File[0])->obj.sclust - 1;                     /* An initial cluster leading the first cluster for first test */
-            while (fsz) {                                       /* Check clusters are contiguous */
+        fsz = f_size(&File[0]);                                     /* File size */
+        clsz = (DWORD)(&File[0])->obj.fs->csize * FF_MAX_SS;        /* Cluster size */
+        if (fsz > 0) {                                              /* Check file size non-zero */
+            clst = (&File[0])->obj.sclust - 1;                      /* An initial cluster leading the first cluster for first test */
+            while (fsz) {                                           /* Check clusters are contiguous */
                 step = (fsz >= clsz) ? clsz : (DWORD)fsz;
-                res = f_lseek(&File[0], f_tell(&File[0]) + step);     /* Advances file pointer a cluster */
+                res = f_lseek(&File[0], f_tell(&File[0]) + step);   /* Advances file pointer a cluster */
                 if (res != FR_OK) { put_rc(res); return 1; }
-                if (clst + 1 != (&File[0])->clust) break;          /* Is not the cluster next to previous one? */
-                clst = (&File[0])->clust; fsz -= step;             /* Get current cluster for next test */
+                if (clst + 1 != (&File[0])->clust) break;           /* Is not the cluster next to previous one? */
+                clst = (&File[0])->clust;
+                fsz -= step;                                        /* Get current cluster for next test */
             }
             fprintf(output," at LBA %lu", (&File[0])->obj.fs->database + ((&File[0])->obj.fs->csize * ((&File[0])->obj.sclust - 2)));
-            if (fsz == 0) {                                     /* All checked contiguous without fail? */
+            if (fsz == 0) {                                         /* All checked contiguous without fail? */
                 fprintf(output," is OK\n");
             } else {
                 fprintf(output," is fragmented\n");

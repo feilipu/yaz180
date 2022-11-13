@@ -1875,7 +1875,7 @@ PUBLIC ide_read_block, ide_write_block
     ld d,a                  ;copy address to D
     ld bc,__IO_PIO_IDE_CTL
     out (c),a               ;drive address onto control lines
-    or __IO_IDE_RD_LINE
+    or __IO_PIO_IDE_RD_LINE
     out (c),a               ;and assert read pin
     ld bc,__IO_PIO_IDE_LSB
     in e,(c)                ;read the lower byte
@@ -1894,34 +1894,34 @@ PUBLIC ide_read_block, ide_write_block
 
 .ide_read_block
     ld bc,__IO_PIO_IDE_CTL
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;drive address onto control lines
     ld e,$0                 ;keep iterative count in e
 
 IF (__IO_PIO_IDE_CTL = __IO_PIO_IDE_MSB+1) & (__IO_PIO_IDE_MSB = __IO_PIO_IDE_LSB+1)
 .ide_rdblk2
-    ld d,__IO_IDE_DATA|__IO_IDE_RD_LINE
+    ld d,__IO_PIO_IDE_DATA|__IO_PIO_IDE_RD_LINE
     out (c),d               ;and assert read pin
     ld bc,__IO_PIO_IDE_LSB+$0200 ;drive lower lines with lsb,plus ini b offset
     ini                     ;read the lower byte (HL++)
     inc c                   ;drive upper lines with msb
     ini                     ;read the upper byte (HL++)
     inc c                   ;drive control port
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;deassert read pin
     dec e                   ;keep iterative count in e
     jr NZ,ide_rdblk2
 
 ELSE
 .ide_rdblk2
-    ld d,__IO_IDE_DATA|__IO_IDE_RD_LINE
+    ld d,__IO_PIO_IDE_DATA|__IO_PIO_IDE_RD_LINE
     out (c),d               ;and assert read pin
     ld bc,__IO_PIO_IDE_LSB  ;drive lower lines with lsb
     ini                     ;read the lower byte (HL++)
     ld bc,__IO_PIO_IDE_MSB  ;drive upper lines with msb
     ini                     ;read the upper byte (HL++)
     ld bc,__IO_PIO_IDE_CTL
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;deassert read pin
     dec e                   ;keep iterative count in e
     jr NZ,ide_rdblk2
@@ -1946,7 +1946,7 @@ ENDIF
     ld bc,__IO_PIO_IDE_CTL
     ld a,d
     out (c),a               ;drive address onto control lines
-    or __IO_IDE_WR_LINE
+    or __IO_PIO_IDE_WR_LINE
     out (c),a               ;and assert write pin
     ld bc,__IO_PIO_IDE_LSB
     out (c),e               ;drive lower lines with lsb
@@ -1970,34 +1970,34 @@ ENDIF
     ld d,__IO_PIO_IDE_WR
     out (c),d               ;config 8255 chip, write mode
     ld bc,__IO_PIO_IDE_CTL
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;drive address onto control lines
     ld e,$0                 ;keep iterative count in e
 
 IF (__IO_PIO_IDE_CTL = __IO_PIO_IDE_MSB+1) & (__IO_PIO_IDE_MSB = __IO_PIO_IDE_LSB+1)
 .ide_wrblk2 
-    ld d,__IO_IDE_DATA|__IO_IDE_WR_LINE
+    ld d,__IO_PIO_IDE_DATA|__IO_PIO_IDE_WR_LINE
     out (c),d               ;and assert write pin
     ld bc,__IO_PIO_IDE_LSB+$0200    ;drive lower lines with lsb, plus outi b offset
     outi                    ;write the lower byte (HL++)
     inc c                   ;drive upper lines with msb
     outi                    ;write the upper byte (HL++)
     inc c                   ;drive control port
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;deassert write pin
     dec e                   ;keep iterative count in e
     jr NZ,ide_wrblk2
 
 ELSE
 .ide_wrblk2 
-    ld d,__IO_IDE_DATA|__IO_IDE_WR_LINE
+    ld d,__IO_PIO_IDE_DATA|__IO_PIO_IDE_WR_LINE
     out (c),d               ;and assert write pin
     ld bc,__IO_PIO_IDE_LSB  ;drive lower lines with lsb
     outi                    ;write the lower byte (HL++)
     ld bc,__IO_PIO_IDE_MSB  ;drive upper lines with msb
     outi                    ;write the upper byte (HL++)
     ld bc,__IO_PIO_IDE_CTL
-    ld d,__IO_IDE_DATA
+    ld d,__IO_PIO_IDE_DATA
     out (c),d               ;deassert write pin
     dec e                   ;keep iterative count in e
     jr NZ,ide_wrblk2
@@ -2030,19 +2030,19 @@ PUBLIC ide_wait_ready, ide_wait_drq, ide_test_error
 
 .ide_setup_lba
     push hl
-    ld a,__IO_IDE_LBA0
+    ld a,__IO_PIO_IDE_LBA0
     call ide_write_byte     ;set LBA0 0:7
     ld e,d
-    ld a,__IO_IDE_LBA1
+    ld a,__IO_PIO_IDE_LBA1
     call ide_write_byte     ;set LBA1 8:15
     ld e,c
-    ld a,__IO_IDE_LBA2
+    ld a,__IO_PIO_IDE_LBA2
     call ide_write_byte     ;set LBA2 16:23
     ld a,b
     and 00001111b           ;lowest 4 bits used only
     or  11100000b           ;to enable LBA address mode, Master only
     ld e,a
-    ld a,__IO_IDE_LBA3
+    ld a,__IO_PIO_IDE_LBA3
     call ide_write_byte     ;set LBA3 24:27 + bits 5:7=111
     pop hl
     ret
@@ -2058,7 +2058,7 @@ PUBLIC ide_wait_ready, ide_wait_drq, ide_test_error
 .ide_wait_ready
     push af
 .ide_wait_ready2
-    ld a,__IO_IDE_ALT_STATUS    ;get IDE alt status register
+    ld a,__IO_PIO_IDE_ALT_STATUS    ;get IDE alt status register
     call ide_read_byte
     tst 00100001b           ;test for ERR or DFE
     jr NZ,ide_wait_error
@@ -2082,7 +2082,7 @@ PUBLIC ide_wait_ready, ide_wait_drq, ide_test_error
 .ide_wait_drq
     push af
 .ide_wait_drq2
-    ld a,__IO_IDE_ALT_STATUS    ;get IDE alt status register
+    ld a,__IO_PIO_IDE_ALT_STATUS    ;get IDE alt status register
     call ide_read_byte
     tst 00100001b           ;test for ERR or DFE
     jr NZ,ide_wait_error
@@ -2100,14 +2100,14 @@ PUBLIC ide_wait_ready, ide_wait_drq, ide_test_error
 
 .ide_test_error
     push af
-    ld a,__IO_IDE_ALT_STATUS    ;select status register
+    ld a,__IO_PIO_IDE_ALT_STATUS    ;select status register
     call ide_read_byte      ;get status in A
     bit 0,a                 ;test ERR bit
     jr Z,ide_test_success
     bit 5,a
     jr NZ,ide_test2         ;test write error bit
 
-    ld a,__IO_IDE_ERROR     ;select error register
+    ld a,__IO_PIO_IDE_ERROR ;select error register
     call ide_read_byte      ;get error register in a
 .ide_test2
     inc sp                  ;pop old af
@@ -2141,10 +2141,10 @@ PUBLIC ide_read_sector
     jr NC,ide_x_sector_error
     call ide_setup_lba      ;tell it which sector we want in BCDE
     ld e,$1
-    ld a,__IO_IDE_SEC_CNT
+    ld a,__IO_PIO_IDE_SEC_CNT
     call ide_write_byte     ;set sector count to 1
     ld e,__IDE_CMD_READ
-    ld a,__IO_IDE_COMMAND
+    ld a,__IO_PIO_IDE_COMMAND
     call ide_write_byte     ;ask the drive to read it
     call ide_wait_ready     ;make sure drive is ready to proceed
     jr NC,ide_x_sector_error
@@ -2186,10 +2186,10 @@ PUBLIC ide_write_sector
     jr NC,ide_x_sector_error
     call ide_setup_lba      ;tell it which sector we want in BCDE
     ld e,$1
-    ld a,__IO_IDE_SEC_CNT
+    ld a,__IO_PIO_IDE_SEC_CNT
     call ide_write_byte     ;set sector count to 1
     ld e,__IDE_CMD_WRITE
-    ld a,__IO_IDE_COMMAND
+    ld a,__IO_PIO_IDE_COMMAND
     call ide_write_byte     ;instruct drive to write a sector
     call ide_wait_ready     ;make sure drive is ready to proceed
     jr NC,ide_x_sector_error
@@ -2199,7 +2199,7 @@ PUBLIC ide_write_sector
     call ide_wait_ready
     jr NC,ide_x_sector_error
 ;   ld e,__IDE_CMD_CACHE_FLUSH
-;   ld a,__IO_IDE_COMMAND
+;   ld a,__IO_PIO_IDE_COMMAND
 ;   call ide_write_byte     ;tell drive to flush its hardware cache
 ;   call ide_wait_ready     ;wait until the write is complete
 ;   jr NC,ide_x_sector_error
