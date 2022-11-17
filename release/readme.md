@@ -76,6 +76,7 @@ This release has been compiled with `r12419` of zsdcc, using the patch file incl
 This release provides some minor tidy up of the source code, including simplification of token parsing.
 The unimplemented function `lsb` has been removed from the CLI, and some defaults have been reset.
 The `frag` function to check whether FAT32 files are contiguous has been added. This only needs to be run once to before use with CP/M.
+The ChaN FatFs library is updated to R0.15.
 
 The serial interfaces have been adjusted to 115200 baud 8n2.
 
