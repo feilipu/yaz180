@@ -80,4 +80,4 @@ The ChaN FatFs library is updated to R0.15.
 
 The serial interfaces have been adjusted to 115200 baud 8n2.
 
-This release has been compiled with v4.2.0 `r13131` of zsdcc, using the patch file included in z88dk.
+This release has been compiled with v4.3.0 `r14210` of zsdcc, using the patch file included in z88dk.

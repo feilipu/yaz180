@@ -94,7 +94,7 @@ First make sure that the ff and time libraries are installed into Z88dk using th
 
 or
 ```bash
-> zcc +yaz180 -subtype=rom -clib=new -O2 --opt-code-speed=add32,sub32,sub16,inlineints -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
+> zcc +yaz180 -subtype=rom -clib=new -O2 --opt-code-speed=all -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
 ```
 
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
