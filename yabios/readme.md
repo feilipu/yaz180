@@ -577,7 +577,6 @@ The command line interface is implemented in C, with the underlying functions ei
 - `pwd` - show the current working directory
 - `mkdir [path]` - create a new directory
 - `chmod [path][attr][mask]` - change file or directory attributes
-- `mkfs [type][block size]` - create a FAT file system (excluded)
 - `mount [path][option]` - mount a FAT file system
 
 #### Disk Functions

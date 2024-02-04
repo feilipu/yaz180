@@ -168,7 +168,7 @@ The ESP-01S can't have the DIO lines pulled high when booting. This means that t
 Note that for yaz180 CP/M v2.0 the maximum directory entries were increased to 2048, and the file size reduced to 8MB.
 CP/M 2.2 BDOS uses 16 bit registers to calculate the ARECORD location, which overflows beyond 8 MB files.
 
-These cpmtools entries below are for the (obsolete) v1.x releases of yaz180 CP/M.
+These cpmtools entries below are for the (__obsolete__) v1.x releases of yaz180 CP/M.
 
 ```
 diskdef yaz180v1-16MB

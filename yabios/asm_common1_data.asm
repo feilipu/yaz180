@@ -63,7 +63,7 @@ _bankLockBase:  defs    $10, $00        ; base address for 16 BANK locks
 PUBLIC _shadowLock, _prt0Lock, _prt1Lock, _dmac0Lock, _dmac1Lock, _csioLock
 
 _shadowLock:    defb    $FE             ; mutex for alternate registers
-_prt0Lock:      defb    $FE             ; mutex for PRT0 
+_prt0Lock:      defb    $FE             ; mutex for PRT0
 _prt1Lock:      defb    $FE             ; mutex for PRT1
 _dmac0Lock:     defb    $FE             ; mutex for DMAC0
 _dmac1Lock:     defb    $FE             ; mutex for DMAC1
@@ -96,7 +96,7 @@ _bios_ioByte:   defb    0               ; intel I/O byte
 
 PUBLIC asci0RxCount, asci0RxIn, asci0RxOut, asci0RxLock
 
-asci0RxCount:   defb    0               ; Space for Rx Buffer Management 
+asci0RxCount:   defb    0               ; Space for Rx Buffer Management
 asci0RxIn:      defw    asci0RxBuffer   ; non-zero item since it's initialized anyway
 asci0RxOut:     defw    asci0RxBuffer   ; non-zero item since it's initialized anyway
 asci0RxLock:    defb    $FE             ; mutex for Rx0
@@ -109,8 +109,8 @@ asci0TxOut:     defw    asciTxBuffer    ; non-zero item since it's initialized a
 asci0TxLock:    defb    $FE             ; mutex for Tx0
 
 PUBLIC asci1RxCount, asci1RxIn, asci1RxOut, asci1RxLock
- 
-asci1RxCount:   defb    0               ; Space for Rx Buffer Management 
+
+asci1RxCount:   defb    0               ; Space for Rx Buffer Management
 asci1RxIn:      defw    asci1RxBuffer   ; non-zero item since it's initialized anyway
 asci1RxOut:     defw    asci1RxBuffer   ; non-zero item since it's initialized anyway
 asci1RxLock:    defb    $FE             ; mutex for Rx1

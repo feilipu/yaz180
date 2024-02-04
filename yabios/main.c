@@ -94,7 +94,6 @@ int8_t ya_cd(char ** args);     // change the current working directory
 int8_t ya_pwd(char ** args);    // show the current working directory
 int8_t ya_mkdir(char ** args);  // create a new directory
 int8_t ya_chmod(char ** args);  // change file or directory attributes
-int8_t ya_mkfs(char ** args);   // create a FAT file system
 int8_t ya_mount(char ** args);  // mount a FAT file system
 
 // disk related functions
@@ -108,6 +107,7 @@ int8_t ya_diso(char ** args);   // print the local time in ISO: 2013-03-23 01:03
 int8_t ya_date(char ** args);   // print the local time in US: Sun Mar 23 01:03:52 2013
 
 // helper functions
+uint8_t ya_num_builtins(void);  // 
 static void put_rc (FRESULT rc);    // print error codes to defined error IO
 static void put_dump (const uint8_t * buff, uint16_t ofs, uint8_t cnt);
 
@@ -149,8 +149,8 @@ struct Builtin {
 
 struct Builtin builtins[] = {
   // CP/M related functions
-    { "mkcpmb", &ya_mkcpmb, "[src][dest][file][][][] - initialise dest bank for CP/M from src, 4 drive files"},
-    { "mkcpmd", &ya_mkcpmd, "[file][dir][bytes] - create a drive file for CP/M, dir entries, of bytes size"},
+    { "mkcpmb", &ya_mkcpmb, "[src][dest][file][][][] - initialise dest bank for CP/M from src bank, up to 4 drive files"},
+    { "mkcpmd", &ya_mkcpmd, "[file][dir][bytes] - create a drive file for CP/M, with dir entries, of bytes size"},
 
   // bank related functions
     { "mkb", &ya_mkb, "[bank] - initialise the nominated bank (to warm state)"},
@@ -172,7 +172,6 @@ struct Builtin builtins[] = {
     { "mount", &ya_mount, "[option] - mount a FAT file system"},
     { "mkdir", &ya_mkdir, "[path] - create a new directory"},
     { "chmod", &ya_chmod, "[path][attr][mask] - change file or directory attributes"},
-    { "mkfs", &ya_mkfs, "[type][block size] - create a FAT file system (excluded)"},
 
 // disk related functions
     { "ds", &ya_ds, "- disk status"},
@@ -190,7 +189,7 @@ struct Builtin builtins[] = {
     { "exit", &ya_exit, "- exit and restart"}
 };
 
-uint8_t ya_num_builtins() {
+uint8_t ya_num_builtins(void) {
   return sizeof(builtins) / sizeof(struct Builtin);
 }
 
@@ -611,7 +610,7 @@ int8_t ya_help(char ** args)    /* print some help */
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v2.2 2023\n");
+    fprintf(output,"YAZ180 - yabios v2.2 2024\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -900,33 +899,6 @@ int8_t ya_chmod(char ** args)   /* change file or directory attributes */
         fprintf(output, "yash: expected 3 arguments to \"chmod\"\n");
     } else {
         put_rc(f_chmod((const TCHAR*)args[1], atoi(args[2]), atoi(args[3])));
-    }
-#endif
-    return 1;
-}
-
-
-/**
-   @brief Builtin command:
-   @param args List of args.  args[0] is "mkfs".  args[1] is the type, args[2] is the block size.
-   @return Always returns 1, to continue executing.
- */
-int8_t ya_mkfs(char ** args)    /* create a FAT file system */
-{
-#if !FF_USE_MKFS
-    (void *)args;
-#else
-    char *line = NULL;
-    ssize_t bufsize = 0;        // have getline allocate a buffer for us
-
-    if (args[1] == NULL && args[2] == NULL) {
-        fprintf(output, "yash: expected 2 arguments to \"mkfs\"\n");
-    } else {
-        fprintf(output, "The drive will be erased and formatted. Are you sure [y/N]\n");
-        getline(&line, &bufsize, input);
-        if (line[0] == 'Y')
-            put_rc(f_mkfs((const TCHAR*)args[1], atoi(args[2]), atoi(args[3]), buffer, sizeof(char)*BUFFER_SIZE));
-        free(line);
     }
 #endif
     return 1;
@@ -1248,7 +1220,7 @@ int main(int argc, char ** argv)
     (void *)argv;
 
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1693526400 - UNIX_OFFSET);      /* Initial time: 00.00 September 1, 2023 UTC */
+    set_system_time(1706745600 - UNIX_OFFSET);      /* Initial time: 00.00 February 1, 2024 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));    /* Get working buffer space */
