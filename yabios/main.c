@@ -610,7 +610,7 @@ int8_t ya_help(char ** args)    /* print some help */
     uint8_t i;
     (void *)args;
 
-    fprintf(output,"YAZ180 - yabios v2.2 2024\n");
+    fprintf(output,"YAZ180 - yabios v2.3 2025\n");
     fprintf(output,"The following functions are built in:\n");
 
     for (i = 0; i < ya_num_builtins(); ++i) {
@@ -698,9 +698,6 @@ int8_t ya_ls(char ** args)      /* print directory contents */
 
     static FILINFO Finfo;       /* Static File Information */
 
-    res = f_mount(fs, (const TCHAR*)"0:", 0);
-    if (res != FR_OK) { put_rc(res); return 1; }
-
     if(args[1] == NULL) {
         res = f_opendir(&dir, (const TCHAR*)".");
     } else {
@@ -730,9 +727,9 @@ int8_t ya_ls(char ** args)      /* print directory contents */
     fprintf(output, "%4u File(s),%10lu bytes total\n%4u Dir(s)", s1, p1, s2);
 
     if(args[1] == NULL) {
-        res = f_getfree( (const TCHAR*)".", (DWORD*)&p1, &fs);
+        res = f_getfree((const TCHAR*)".", (DWORD*)&p1, &fs);
     } else {
-        res = f_getfree( (const TCHAR*)args[1], (DWORD*)&p1, &fs);
+        res = f_getfree((const TCHAR*)args[1], (DWORD*)&p1, &fs);
     }
     if (res == FR_OK) {
         fprintf(output, ", %10lu bytes free\n", p1 * (DWORD)(fs->csize * 512));
@@ -939,7 +936,7 @@ int8_t ya_ds(char ** args)      /* disk status */
 
     (void *)args;
 
-    res = f_getfree( (const TCHAR*)"", (DWORD*)&p1, &fs);
+    res = f_getfree((const TCHAR*)"", (DWORD*)&p1, &fs);
     if (res != FR_OK) { put_rc(res); return 1; }
 
     fprintf(output, "FAT type = FAT%u\nBytes/Cluster = %lu\nNumber of FATs = %u\n"
@@ -968,7 +965,7 @@ int8_t ya_dd(char ** args)      /* disk dump */
         sect = strtoul(args[1], NULL, 10);
     }
 
-    res = disk_read( 0, buffer, sect, 1);
+    res = disk_read(0, buffer, sect, 1);
     if (res != FR_OK) { fprintf(output, "rc=%d\n", (WORD)res); return 1; }
     fprintf(output, "PD#:0 LBA:%lu\n", sect++);
     for (ptr=(uint8_t *)buffer, ofs = 0; ofs < 0x200; ptr += 16, ofs += 16)
@@ -1190,6 +1187,7 @@ void ya_loop(void)
             }
         }
     }
+
     fprintf(output," :-)\n");
 
     do {
@@ -1219,8 +1217,10 @@ int main(int argc, char ** argv)
     (void)argc;
     (void *)argv;
 
+    FRESULT res;
+
     set_zone((int32_t)10 * ONE_HOUR);               /* Australian Eastern Standard Time */
-    set_system_time(1706745600 - UNIX_OFFSET);      /* Initial time: 00.00 February 1, 2024 UTC */
+    set_system_time(1747663200 - UNIX_OFFSET);      /* Initial time: 00.00 May 20, 2025 UTC */
 
     fs = (FATFS *)malloc(sizeof(FATFS));                    /* Get work area for the volume */
     buffer = (char *)malloc(BUFFER_SIZE * sizeof(char));    /* Get working buffer space */
@@ -1229,8 +1229,10 @@ int main(int argc, char ** argv)
     fprintf(ttyout, "\n\nYAZ180 - yabios - TTY\n\n> :?");
 
     // Run command loop if we got all the memory allocations we need.
-    if ( fs && buffer)
+    if (fs && buffer) {
+        if(res = f_mount(fs, (const TCHAR*)"0:", 0) != 0) put_rc(res);
         ya_loop();
+    }
 
     // Perform any shutdown/cleanup.
     free(buffer);

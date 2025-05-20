@@ -221,12 +221,8 @@ gocpm:
     ld      a,(_cpm_cdisk)  ;get current disk number
     cp      _cpm_disks      ;see if valid disk number
     jr      C,diskchk       ;disk number valid, check existence via valid LBA
-
-diskchg:
     xor     a               ;invalid disk, change to disk 0 (A:)
-    ld      (_cpm_cdisk),a  ;reset current disk number to disk0 (A:)
-    ld      c,a             ;send default disk number to the ccp
-    jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
+    ld      (_cpm_cdisk),a  ;reset current disk number to disk 0 (A:)
 
 diskchk:
     ld      c,a             ;send current disk number to the ccp
@@ -238,9 +234,10 @@ diskchk:
     or      a,(hl)
     inc     hl
     or      a,(hl)
-    jr      Z,diskchg       ;invalid disk LBA, so load disk 0 (A:) to the ccp
+    jp      NZ,__cpm_ccp_head  ;valid disk, go to ccp for further processing
 
-    jp      __cpm_ccp_head  ;valid disk, go to ccp for further processing
+    ld      c,a             ;send default disk number to the ccp
+    jp      __cpm_ccp_head  ;go to cp/m ccp for further processing
 
 ;=============================================================================
 ; Console I/O routines
@@ -394,10 +391,14 @@ chgdsk:
     ret                     ;return the disk dpbase in HL
 
 seldskreset:
+    ld      hl,$0000        ;prepare return error code in HL
+    ld      a,(_cpm_cdisk)  ;get the current default drive
+    cp      c               ;and see if it was requested
+    ret     NZ              ;if not return, otherwise
+
     xor     a               ;reset default disk back to 0 (A:)
-    ld      (_cpm_cdisk),a
-    ld      (sekdsk),a      ;and set the seeked disk
-    ld      hl,$0000        ;return error code in HL
+    ld      (_cpm_cdisk),a  ;and set the seeked disk
+    ld      (sekdsk),a      ;otherwise a loop results
     ret
 ;
 ;*****************************************************
@@ -446,8 +447,8 @@ write:
     ld      (readop),a      ;not a read operation
     ld      a,c             ;write type in c
     ld      (wrtype),a
-    and     wrual           ;write unallocated?
-    jr      Z,chkuna        ;check for unalloc
+    cp      wrual           ;write unallocated?
+    jr      NZ,chkuna       ;check for unalloc
 
 ;           write to unallocated, set parameters
     ld      a,cpmbls/128    ;next unalloc recs

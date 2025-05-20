@@ -51,7 +51,7 @@ You will need to RESET
 
 There are two causes of random stuff happening. The first is the Flash chip has lost seating. The second is the IDE or CF drive needs to be power cycled.
 
-Sometimes I find random things happening, and it is always cured by pressing down on the Flash chip, or sometimes simply extracting it and reseating.
+Sometimes I find random things happening, and it is almost always cured by pressing down on the Flash chip, or sometimes simply extracting it and reseating.
 
 When using CP/M sometimes the IDE or CF drive will get itself into an unusual state, that can't be recovered by a hard reset on the PATA interface (generated when the YAZ180 is RESET). If that happens, then a power cycle is the only option.
 

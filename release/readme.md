@@ -81,3 +81,11 @@ The ChaN FatFs library is updated to R0.15.
 The serial interfaces have been adjusted to 115200 baud 8n2.
 
 This release has been compiled with v4.4.0 `r14648` of zsdcc, using the patch file included in z88dk.
+
+### V2.3
+
+This release provides some minor tidy up of the source code, including interrupt safe disk read and write routines for SDCC. The CP/M functions #37 and #40 have been returned to the BDOS, as these were inadvertently ommited even though they are part of CP/M 2.2.
+
+The ChaN FatFs library is updated to R0.15a patch 1.
+
+This release has been compiled with v4.5.0 `r15248` of zsdcc, using the patch file included in z88dk and the z88dk on May 20, 2025.

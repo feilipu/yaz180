@@ -27,7 +27,7 @@ SECTION     cpm_tpa     ;transitory program area
 ORG         0x0100
 
 SECTION     cpm_ccp     ;base of ccp
-ORG         0xD000
+ORG         0xCF00
 
 SECTION     cpm_ccp_data
 ORG         -1
