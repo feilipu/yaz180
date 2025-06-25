@@ -40,7 +40,7 @@ SECTION cpm_page0
 
 ; address = 0x0000
 
-EXTERN  __cpm_bdos_head         ;base of bdos
+EXTERN  _cpm_bdos_fbase         ;entry of bdos
 
 PUBLIC  _cpm_iobyte
 PUBLIC  _cpm_cdisk
@@ -52,7 +52,7 @@ _cpm_iobyte:                    ;intel I/O byte
 _cpm_cdisk:                     ;address of current disk number 0=a,... 15=p
     defb    $00
 
-    jp      __cpm_bdos_head
+    jp      _cpm_bdos_fbase
 
 ;==============================================================================
 ;
@@ -73,7 +73,7 @@ SECTION     cpm_tpa
 SECTION cpm_bios                ;origin of the cpm bios
 
 EXTERN  __cpm_ccp_head          ;base of ccp
-EXTERN  __cpm_bdos_head         ;base of bdos
+EXTERN  _cpm_bdos_fbase         ;entry of bdos
 EXTERN  __cpm_bdos_data_tail    ;end of bdos
 
 ;
@@ -201,7 +201,7 @@ gocpm:
     ld      ($0001),hl      ;set address field for jmp at 0 to wboote
 
     ld      ($0005),a       ;C3 for jmp to bdos entry point
-    ld      hl,__cpm_bdos_head   ;bdos entry point
+    ld      hl,_cpm_bdos_fbase  ;bdos entry point
     ld      ($0006),hl      ;set address field of Jump at 5 to bdos
 
     ld      bc,$0080        ;default dma address is 0x0080
@@ -245,15 +245,15 @@ diskchk:
 
 const:      ;console status, return 0ffh if character ready, 00h if not
     ld      a,(_cpm_iobyte)
-    and     00001011b       ;mask off console and high bit of reader
-    cp      00001010b       ;redirected to asci1 TTY
-    jr      Z,const1
-    cp      00000010b       ;redirected to asci1 TTY
+    and     00000011b       ;mask off console
+    cp      00000010b       ;"BAT:" redirect to TTY: reader
     jr      Z,const1
 
-    and     00000011b       ;remove the reader from the mask - only console bits then remain
-    cp      00000001b
-    jr      NZ,const1
+    rrca                    ;manage remaining console bit
+    jr      C,const0        ;------x1b CON:
+    jr      NC,const1       ;------x0b TTY:
+    xor     a               ;------x-b otherwise
+    ret
 
 const0:
     call    asm_asci0_pollc ;check whether any characters are in CRT Rx0 buffer
@@ -269,65 +269,62 @@ dataEmpty:
     xor     a
     ret
 
-conin:    ;console character into register a
+conin:      ;console character into register a
     ld      a,(_cpm_iobyte)
-    and     00000011b
-    cp      00000010b
-    jr      Z,reader        ;"BAT:" redirect
-    cp      00000001b
-    jr      NZ,conin1
+    and     00000011b       ;mask off console
+    cp      00000010b       ;"BAT:" redirect to TTY: reader
+    jr      Z,reader
 
-conin0:
+    rrca                    ;manage remaining console bit
+    jr      C,conin0        ;-----xx1b CON:
+    jr      NC,conin1       ;------x0b TTY:
+    xor     a               ;------x-b otherwise
+    ret
+
+conin0:     ;------01b CRT:
    call     asm_asci0_getc  ;check whether any characters are in CRT Rx0 buffer
    jr       NC,conin0       ;if Rx buffer is empty
-;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
+;  and      $7F             ;don't strip parity bit - support 8 bit XMODEM
    ret
 
-conin1:
+conin1:     ;------00b TTY:
    call     asm_asci1_getc  ;check whether any characters are in TTY Rx1 buffer
    jr       NC,conin1       ;if Rx buffer is empty
-;  and      $7F             ;omit strip parity bit - support 8 bit XMODEM
+;  and      $7F             ;don't strip parity bit - support 8 bit XMODEM
    ret
 
 reader:
     ld      a,(_cpm_iobyte)
     and     00001100b
-    cp      00000100b
-    jr      Z,conin0
-    cp      00000000b
     jr      Z,conin1
-    ld      a,$1A           ;CTRL-Z if not asci0 or asci1
+    ld      a,$1A           ;CTRL-Z if not TTY:
     ret
 
 conout:    ;console character output from register c
     ld      l,c             ;Store character
     ld      a,(_cpm_iobyte)
     and     00000011b
-    cp      00000010b
+    cp      00000010b       ;------1xb LPT: or UL1:
     jr      Z,list          ;"BAT:" redirect
-    cp      00000001b
-    jp      NZ,asm_asci1_putc
-    jp      asm_asci0_putc
+    rrca
+    jp      C,asm_asci0_putc    ;------01b CON:
+    jp      asm_asci1_putc      ;------00b TTY:
 
 list:
     ld      l,c             ;store character
     ld      a,(_cpm_iobyte)
-    and     11000000b
-    cp      01000000b
-    jp      Z,asm_asci0_putc
-    cp      00000000b
-    jp      Z,asm_asci1_putc
-    ret
+    rlca
+    ret     C               ;1x------b LPT: or UL1:
+    rlca
+    jp      C,asm_asci0_putc    ;01------b CON:
+    jp      asm_asci1_putc      ;00------b TTY:
 
 punch:
     ld      l,c             ;store character
     ld      a,(_cpm_iobyte)
     and     00110000b
-    cp      00010000b
-    jp      Z,asm_asci0_putc
-    cp      00000000b
-    jp      Z,asm_asci1_putc
-    ret
+    jp      Z,asm_asci1_putc    ;--00----b TTY:
+    ret                         ;--x1----b PTP: or UL1:
 
 listst:     ;return list status
     ld      a,$FF           ;return list status of 0xFF (ready).

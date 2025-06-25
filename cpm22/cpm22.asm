@@ -34,7 +34,7 @@ EXTERN  __cpm_bdos_head
 
 DEFC    IOBYTE      =       _cpm_iobyte     ;i/o definition byte
 DEFC    TDRIVE      =       _cpm_cdisk      ;current drive name and user number
-DEFC    ENTRY       =       __cpm_bdos_head ;entry point for the cp/m bdos
+DEFC    ENTRY       =       _cpm_bdos_fbase ;entry point for the cp/m bdos
 DEFC    TFCB        =       _cpm_ccp_tfcb   ;default file control block
 DEFC    TBUFF       =       _cpm_ccp_tbuff  ;i/o buffer and command line storage
 DEFC    TBASE       =       _cpm_ccp_tbase  ;transient program storage area
@@ -1420,6 +1420,30 @@ SECTION cpm_bdos
 
 ALIGN       0x100           ;ALIGN the FBASE to a page
 
+DEFC    VER     =   2       ;CP/M VERSION
+DEFC    REL     =   2       ;CP/M RELEASE
+DEFC    REV     =   0       ;REVISION
+DEFC    SNH     =   00      ;SERIAL NUMBER, HIGH. 2 DIGITS
+DEFC    SNL     =   0000    ;SERIAL  NUMBER, LOW. 4 DIGITS
+
+SERNO:
+    DEFB    SNH
+    DEFB    VER*10+REL
+    DEFW    REV
+    DEFB    SNL/256
+    DEFB    SNL%256
+
+PUBLIC      _cpm_bdos_fbase
+_cpm_bdos_fbase:            ;entry for the cpm bdos
+    JP      FBASE
+;
+;   Error handler vectors - for compatibility purposes
+;
+    DEFW    BADSCTR         ;BAD SECTOR ERROR
+    DEFW    BADSLCT         ;DISK SELECT ERROR
+    DEFW    RODISK          ;DISK READ ONLY ERROR
+    DEFW    ROFILE          ;FILE READ ONLY ERROR
+;
 ;   Entry into bdos. (DE) or (E) are the parameters passed. The
 ;   function number desired is in register (C).
 ;
