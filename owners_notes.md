@@ -160,7 +160,7 @@ Breaking down the above command line
 To use z88dk to compile for CP/M for the Z180 processor, then the following commands can be used
 
 ```bash
-zcc +yaz180 -subtype=cpm -SO3 -m --list --math32 -test.c -o test
+zcc +yaz180 -subtype=cpm -SO3 -m --list --math32 test.c -o test
 appmake +glue --ihex --clean -b test -c test
 ```
 Breaking this down
@@ -174,5 +174,22 @@ Breaking this down
 Using the `cpm` subtype from the YAZ180 target supports the Z180 specific instructions more completely, and avoid the potential inclusion of Z80 undocumented instructions.
 
 Note that the alternative method of obtaining CP/M builds by using the CP/M target and `default` subtype doesn't provide access to YAZ180 specific hardware or capabilities, but that is not really a problem, as CP/M provides access to all the serial hardware via BDOS calls anyway.
+
+### File I/O under `-subtype=cpm`
+
+CP/M applications built with `+yaz180 -subtype=cpm` use BDOS for console I/O and for unprefixed file calls (`open` / `read` / `write` / `lseek` / `close` → FCB on the host CP/M drives).
+
+Optional **FatFs** on the Compact Flash / IDE (ChaN `f_*`) is a separate stack. Install with `z88dk-lib` and link the packages (PPIDE diskio is already in the yaz180 target library):
+
+```bash
+z88dk-lib +yaz180 ff time
+zcc +yaz180 -subtype=cpm -clib=new app.c \
+  -llib/yaz180/ff -llib/yaz180/time -o app -m
+```
+
+Both stacks may be used in one binary (BDOS files such as `A:` and FatFs volumes such as `0:`). Policy, dual-stack rules, and fuller recipes:
+
+* [z88dk wiki — Newlib File I/O and FatFs](https://github.com/z88dk/z88dk/wiki/Newlib_File_IO_and_FatFs)
+* Package sources: [feilipu/z88dk-libraries](https://github.com/feilipu/z88dk-libraries)
 
 

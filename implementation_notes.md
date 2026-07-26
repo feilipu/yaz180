@@ -97,6 +97,8 @@ or
 > zcc +yaz180 -subtype=rom -clib=new -O2 --opt-code-speed=all -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
 ```
 
+These `-llib/yaz180/ff` / `time` links are for **YABIOS (`-subtype=rom`)** firmware. User **CP/M applications** that call FatFs themselves use the same packages with `+yaz180 -subtype=cpm` (see [owners notes](owners_notes.md) and the [z88dk Newlib File I/O and FatFs](https://github.com/z88dk/z88dk/wiki/Newlib_File_IO_and_FatFs) wiki page).
+
 This generates a `yabios.ihx` file that can be written to the YAZ180 flash.
 
 It also generates a `yabios.def` file containing the calling linkages for the particular compile. Note that this API may be unstable, because of the constant development in Z88dk, sdcc, and the resulting sizes of the `ff.lib` and `time.lib` system libraries. So once the YAZ180 flash is written, then the `yaz180.def` (or possibly renamed to `yaz180.asm`) API will be needed for every application.
