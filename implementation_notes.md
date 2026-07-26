@@ -87,7 +87,7 @@ As part of resolving this issue, I had to delete the `_memset_far` function. I t
 
 ## Compilation Command Line
 
-First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool.
+First make sure that the ff and time libraries are installed into Z88dk using the `z88dk-lib` tool (third-party newlib libraries install under `lib/clibs/{sccz80,sdcc_ix,sdcc_iy}/lib/yaz180/`, alongside classic `lib/clibs`).
 ```bash
 > zcc +yaz180 -subtype=rom -clib=sdcc_iy -SO3 --opt-code-speed --max-allocs-per-node400000 -v -m -llib/yaz180/ff -llib/yaz180/time --math32 @yabios.lst -gpf:yabios.rex -o yabios -create-app
 ```
